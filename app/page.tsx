@@ -71,7 +71,7 @@ export default function Home() {
         </p>
 
         <p className="text-sm text-slate-400 mb-8">
-          Coming early January 2026 • Priority access for early believers & Real Ones.
+          Coming early January 2026 • Priority access for HOPE, FAKE, and The Hopeful Holders.
         </p>
 
         {/* Email Form */}
