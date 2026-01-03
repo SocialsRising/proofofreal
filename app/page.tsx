@@ -128,7 +128,7 @@ export default function Home() {
       {/* Footer Links — ⭐ RESTORED ⭐ */}
       <footer className="mt-20 mb-4 text-xs text-slate-500 flex flex-col items-center gap-3">
         <div className="flex flex-wrap justify-center gap-4 text-[12px]">
-          <a href="https://x.com/socialsrising" target="_blank" className="hover:text-emerald-400 transition">Twitter / X</a>
+          <a href="https://x.com/proofofreal" target="_blank" className="hover:text-emerald-400 transition">Twitter / X</a>
           <a href="https://discord.gg/krVPuyksQy" target="_blank" className="hover:text-emerald-400 transition">Discord</a>
           <a href="https://medium.com/@tradesgiving" target="_blank" className="hover:text-emerald-400 transition">Medium</a>
           <a href="https://opensea.io/collection/the-hopeful-" target="_blank" className="hover:text-emerald-400 transition">NFT Collection</a>
