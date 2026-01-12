@@ -85,7 +85,7 @@ export default function Home() {
             onClick={toggleMusic}
             className="text-xs border border-slate-700 rounded-full px-4 py-2 hover:border-emerald-400 hover:text-emerald-300 transition"
           >
-            {showPlayer ? "Hide POR Playlist Week 2" : "Play POR Playlist Week 2"}
+            {showPlayer ? "Hide Chapter 1 Playlist" : "Play Chapter 1 Playlist"}
           </button>
 
           {showPlayer && (
