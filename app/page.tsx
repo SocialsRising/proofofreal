@@ -71,30 +71,13 @@ export default function Home() {
         </p>
 
         <p className="text-sm text-slate-400 mb-8">
-          Coming early January 2026 • Priority access for HOPE, FAKE, and The Hopeful Holders.
+          Coming January 2026 • Priority access for HOPE, FAKE, and The Hopeful Holders.
         </p>
 
-        {/* Email Form */}
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row items-center w-full max-w-md mx-auto gap-3">
-          <input
-            type="email"
-            name="email"
-            required
-            placeholder="Enter email"
-            className="flex-1 px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 
-                       placeholder:text-slate-500 outline-none focus:ring-2 focus:ring-emerald-500"
-          />
+        <div className="mt-4 text-sm font-medium text-emerald-400 text-center">
+  Early Waitlist Sign-ups have ended. Stay tuned for the next update!
+</div>
 
-          <button type="submit" disabled={status === "loading"} className="px-6 py-2.5 rounded-xl bg-emerald-500 text-slate-950 font-semibold hover:bg-emerald-400 transition">
-            {status === "loading" ? "Joining..." : "Join Waitlist"}
-          </button>
-        </form>
-
-        <div className="mt-3 text-xs min-h-[20px]">
-          {status === "success" && <p className="text-emerald-400">You're in — welcome Real One 🧪</p>}
-          {status === "error" && <p className="text-rose-400">Error — try again or DM us.</p>}
-          {status === "idle" && <p className="text-slate-500">Early whitelist access.</p>}
-        </div>
 
         {/* 🎵 Random Playlist Player */}
         <div className="mt-8">
