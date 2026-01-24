@@ -1,4 +1,4 @@
-type RealIndexEntry = {
+export type RealIndexEntry = {
   rank: number;
   name: string;
   twitter: string;
@@ -15,7 +15,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     avatar:
       "https://pbs.twimg.com/profile_images/1849498278255071232/drdvg74U_400x400.jpg",
     score: 700,
-    tagline: "Next Gen Builder",
+    tagline: "Hall of Fame Builder",
   },
   {
     rank: 2,
@@ -24,7 +24,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     avatar:
       "https://pbs.twimg.com/profile_images/1879556312822120448/QngrqCSC_400x400.jpg",
     score: 700,
-    tagline: "Next Gen Builder",
+    tagline: "Hall of Fame Builder",
   },
   {
     rank: 3,
@@ -33,7 +33,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     avatar:
       "https://pbs.twimg.com/profile_images/1961440580279336960/PiiIs8Lh_400x400.jpg",
     score: 700,
-    tagline: "Next Gen Builder",
+    tagline: "Hall of Fame Builder",
   },
   {
     rank: 4,
@@ -42,7 +42,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     avatar:
       "https://pbs.twimg.com/profile_images/1978417853326909440/rMFjcaFo_400x400.jpg",
     score: 700,
-    tagline: "Next Gen Builder",
+    tagline: "Hall of Fame Builder",
   },
   {
     rank: 5,
@@ -51,7 +51,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     avatar:
       "https://pbs.twimg.com/profile_images/2011238808574996480/wsksC5BY_400x400.jpg",
     score: 700,
-    tagline: "Next Gen Builder",
+    tagline: "Hall of Fame Builder",
   },
   {
     rank: 6,
@@ -60,7 +60,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     avatar:
       "https://pbs.twimg.com/profile_images/1610827135978987522/qGWbuvec_400x400.jpg",
     score: 700,
-    tagline: "Real Trendsetter",
+    tagline: "Realest Trendsetter",
   },
   {
     rank: 7,
@@ -73,6 +73,15 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
   },
   {
     rank: 8,
+    name: "Greenman",
+    twitter: "https://x.com/GreenMan13XYZ",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1745576587846701058/0TIHdxEw_400x400.jpg",
+    score: 655,
+    tagline: "Angel Investor Legend",
+  },
+  {
+    rank: 9,
     name: "Gabby Dizon",
     twitter: "https://x.com/gabusch",
     avatar:
@@ -81,7 +90,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 9,
+    rank: 10,
     name: "Dith",
     twitter: "https://x.com/0xDith",
     avatar:
@@ -90,7 +99,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 10,
+    rank: 11,
     name: "Adam FDF",
     twitter: "https://x.com/AdamFDF_",
     avatar:
@@ -99,7 +108,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 11,
+    rank: 12,
     name: "Lamboland",
     twitter: "https://x.com/Lamboland_",
     avatar:
@@ -108,7 +117,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 12,
+    rank: 13,
     name: "Serpin Taxt",
     twitter: "https://x.com/serpinxbt",
     avatar:
@@ -117,7 +126,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 13,
+    rank: 14,
     name: "Gorilla",
     twitter: "https://x.com/CryptoGorilla",
     avatar:
@@ -126,7 +135,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 14,
+    rank: 15,
     name: "threadguy",
     twitter: "https://x.com/notthreadguy",
     avatar:
@@ -135,7 +144,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 15,
+    rank: 16,
     name: "Abhi(APC)",
     twitter: "https://x.com/0xAbhiP",
     avatar:
@@ -144,7 +153,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 16,
+    rank: 17,
     name: "Kam Punia",
     twitter: "https://x.com/Kam_Punia",
     avatar:
@@ -153,7 +162,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 17,
+    rank: 18,
     name: "Tyler Guyot",
     twitter: "https://x.com/tyguyot",
     avatar:
@@ -162,7 +171,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 18,
+    rank: 19,
     name: "Jack Dishman",
     twitter: "https://x.com/JackDishman",
     avatar:
@@ -171,7 +180,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 19,
+    rank: 20,
     name: "Linda Xie",
     twitter: "https://x.com/ljxie",
     avatar:
@@ -180,7 +189,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 20,
+    rank: 21,
     name: "Meta Alchemist",
     twitter: "https://x.com/meta_alchemist",
     avatar:
@@ -189,34 +198,34 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 21,
-    name: "Greenman",
-    twitter: "https://x.com/GreenMan13XYZ",
+    rank: 22,
+    name: "Adan Weitsman",
+    twitter: "https://x.com/AdamWeitsman",
     avatar:
-      "https://pbs.twimg.com/profile_images/1745576587846701058/0TIHdxEw_400x400.jpg",
+      "https://pbs.twimg.com/profile_images/1757727379441524736/gX79ae4g_400x400.jpg",
     score: 650,
-    tagline: "Angel Investor Legend",
+    tagline: "Next Gen Builder",
   },
   {
-    rank: 22,
+    rank: 23,
     name: "Sovereign",
     twitter: "https://x.com/Sovereign_Web3",
     avatar:
       "https://pbs.twimg.com/profile_images/1759597437906206720/_trDwpUX_400x400.jpg",
-    score: 600,
+    score: 610,
     tagline: "Alpha Overlord",
   },
   {
-    rank: 23,
+    rank: 24,
     name: "ole_ti",
     twitter: "https://x.com/oleeeeeee_",
     avatar:
       "https://pbs.twimg.com/profile_images/1991781070459617280/-oePKiGW_400x400.jpg",
-    score: 600,
+    score: 610,
     tagline: "Global Region Leader",
   },
   {
-    rank: 24,
+    rank: 25,
     name: "Teng Yan",
     twitter: "https://x.com/tengyanAI",
     avatar:
@@ -225,7 +234,16 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 25,
+    rank: 26,
+    name: "Josh Ong",
+    twitter: "https://x.com/beijingdou",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1602122467002155010/MI7V7cqu_400x400.png",
+    score: 560,
+    tagline: "Real Trendsetter",
+  },
+  {
+    rank: 27,
     name: "Michael Satoshi",
     twitter: "https://x.com/MichaelSatoshi",
     avatar:
@@ -234,7 +252,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 26,
+    rank: 28,
     name: "Kevin Beauregard",
     twitter: "https://x.com/KevinBeauregard",
     avatar:
@@ -243,7 +261,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 27,
+    rank: 29,
     name: "Jordan Eureka",
     twitter: "https://x.com/JordanEureka_",
     avatar:
@@ -252,7 +270,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 28,
+    rank: 30,
     name: "Kiefer Zang",
     twitter: "https://x.com/KieferZang",
     avatar:
@@ -261,7 +279,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 29,
+    rank: 31,
     name: "Smol Dev",
     twitter: "https://x.com/smoldev__",
     avatar:
@@ -270,7 +288,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 30,
+    rank: 32,
     name: "inhuman",
     twitter: "https://x.com/inhuman",
     avatar:
@@ -279,7 +297,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 31,
+    rank: 33,
     name: "MetaBull",
     twitter: "https://x.com/Meta_Bull",
     avatar:
@@ -288,16 +306,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 32,
-    name: "Josh Ong",
-    twitter: "https://x.com/beijingdou",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1602122467002155010/MI7V7cqu_400x400.png",
-    score: 550,
-    tagline: "Real Trendsetter",
-  },
-  {
-    rank: 33,
+    rank: 34,
     name: "Elisa",
     twitter: "https://x.com/eeelistar",
     avatar:
@@ -306,7 +315,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 34,
+    rank: 35,
     name: "Raiden",
     twitter: "https://x.com/raidenkrn",
     avatar:
@@ -315,7 +324,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 35,
+    rank: 36,
     name: "T.M.A.",
     twitter: "https://x.com/Tma_420",
     avatar:
@@ -324,7 +333,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 36,
+    rank: 37,
     name: "ProofofEly",
     twitter: "https://x.com/ProofOfEly",
     avatar:
@@ -333,7 +342,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 37,
+    rank: 38,
     name: "Brydisanto",
     twitter: "https://x.com/brydisanto",
     avatar:
@@ -342,7 +351,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 38,
+    rank: 39,
     name: "Aiz",
     twitter: "https://x.com/Aizcalibur",
     avatar:
@@ -351,7 +360,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 39,
+    rank: 40,
     name: "Mike Lau",
     twitter: "https://x.com/mikelauofficial",
     avatar:
@@ -360,7 +369,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 40,
+    rank: 41,
     name: "ED3N",
     twitter: "https://x.com/eden_holdings",
     avatar:
@@ -369,43 +378,43 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Next Gen Builder",
   },
   {
-    rank: 41,
+    rank: 42,
     name: "ClumsyKnight",
     twitter: "https://x.com/CLumsyKnight48",
     avatar:
       "https://pbs.twimg.com/profile_images/1997980412748935168/RdTH5Dp8_400x400.jpg",
-    score: 525,
-    tagline: "Premier Ambassador",
+    score: 535,
+    tagline: "REAL Ambassador",
   },
   {
-    rank: 42,
+    rank: 43,
     name: "Davuswho",
     twitter: "https://x.com/Davuswho",
     avatar:
       "https://pbs.twimg.com/profile_images/1977855749272285184/Hnet7ydX_400x400.jpg",
-    score: 525,
+    score: 535,
     tagline: "Core Community Contributor",
   },
   {
-    rank: 43,
+    rank: 44,
     name: "MrCoolieMoolie",
     twitter: "https://x.com/MrCoolieMoolie",
     avatar:
       "https://pbs.twimg.com/profile_images/1981918269377290240/sFIcmRQb_400x400.jpg",
-    score: 500,
+    score: 505,
     tagline: "Global Region Leader",
   },
   {
-    rank: 44,
+    rank: 45,
     name: "Tradesgiving",
     twitter: "https://x.com/tradesgiving",
     avatar:
       "https://pbs.twimg.com/profile_images/2002348523405361152/L76RZaxw_400x400.jpg",
-    score: 500,
-    tagline: "Next Gen Builder",
+    score: 505,
+    tagline: "REAL Team",
   },
   {
-    rank: 45,
+    rank: 46,
     name: "cryptoactor",
     twitter: "https://x.com/Crypto_Actor",
     avatar:
@@ -414,16 +423,16 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Top Community Supporter",
   },
   {
-    rank: 46,
+    rank: 47,
     name: "Web3GameHunters",
     twitter: "https://x.com/web3gamehunters",
     avatar:
       "https://pbs.twimg.com/profile_images/1993833132118704128/zQ-wVvLA_400x400.jpg",
-    score: 450,
+    score: 460,
     tagline: "Core Community Contributor",
   },
   {
-    rank: 47,
+    rank: 48,
     name: "Nix",
     twitter: "https://x.com/nix_eth",
     avatar:
@@ -432,7 +441,52 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 48,
+    rank: 49,
+    name: "Crusader",
+    twitter: "https://x.com/airdropcrusader",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1964027522296799232/6XrVehH5_400x400.jpg",
+    score: 415,
+    tagline: "REAL Ambassador",
+  },
+  {
+    rank: 50,
+    name: "NickPlaysCrypto",
+    twitter: "https://x.com/NickPlaysCrypto",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1932450175676514304/mfcvWK8t_400x400.jpg",
+    score: 415,
+    tagline: "Global Region Leader",
+  },
+  {
+    rank: 51,
+    name: "Nabeel",
+    twitter: "https://x.com/gamypto",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1747679342476615681/A_ku7C0f_400x400.jpg",
+    score: 410,
+    tagline: "Global Region Leader",
+  },
+  {
+    rank: 52,
+    name: "Zatch",
+    twitter: "https://x.com/Doingnothing77",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1949365559641968640/TNh5HXfj_400x400.jpg",
+    score: 410,
+    tagline: "Top Community Patron",
+  },
+  {
+    rank: 53,
+    name: "Toxic55",
+    twitter: "https://x.com/ToxiC5501",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1978922067815804929/jzAGIZkZ_400x400.jpg",
+    score: 410,
+    tagline: "Global Region Leader",
+  },
+  {
+    rank: 54,
     name: "EJR",
     twitter: "https://x.com/EJRWEB3",
     avatar:
@@ -441,7 +495,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 49,
+    rank: 55,
     name: "git",
     twitter: "https://x.com/gitsmol",
     avatar:
@@ -450,25 +504,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 50,
-    name: "Nabeel",
-    twitter: "https://x.com/gamypto",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1747679342476615681/A_ku7C0f_400x400.jpg",
-    score: 405,
-    tagline: "Global Region Leader",
-  },
-  {
-    rank: 51,
-    name: "KFW",
-    twitter: "https://x.com/LoreKfw",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1964027522296799232/6XrVehH5_400x400.jpg",
-    score: 405,
-    tagline: "Core Community Contributor",
-  },
-  {
-    rank: 52,
+    rank: 56,
     name: "MasterMurdoch",
     twitter: "https://x.com/TheGodMurdoch",
     avatar:
@@ -477,25 +513,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 53,
-    name: "Zatch",
-    twitter: "https://x.com/Doingnothing77",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1949365559641968640/TNh5HXfj_400x400.jpg",
-    score: 405,
-    tagline: "Top Community Patron",
-  },
-  {
-    rank: 54,
-    name: "Toxic55",
-    twitter: "https://x.com/ToxiC5501",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1978922067815804929/jzAGIZkZ_400x400.jpg",
-    score: 405,
-    tagline: "Global Region Leader",
-  },
-  {
-    rank: 55,
+    rank: 57,
     name: "Billy the Boss",
     twitter: "https://x.com/billyboyy005",
     avatar:
@@ -504,16 +522,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 56,
-    name: "NickPlaysCrypto",
-    twitter: "https://x.com/NickPlaysCrypto",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1932450175676514304/mfcvWK8t_400x400.jpg",
-    score: 405,
-    tagline: "Global Region Leader",
-  },
-  {
-    rank: 57,
+    rank: 58,
     name: "Mirror",
     twitter: "https://x.com/mirror_web3",
     avatar:
@@ -522,7 +531,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 58,
+    rank: 59,
     name: "Silentmode",
     twitter: "https://x.com/SilentmodeDM",
     avatar:
@@ -531,7 +540,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 59,
+    rank: 60,
     name: "Matheus Celtic",
     twitter: "https://x.com/CelticMatheus",
     avatar:
@@ -540,7 +549,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 60,
+    rank: 61,
     name: "KGlimited",
     twitter: "https://x.com/KG_Limited",
     avatar:
@@ -549,7 +558,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 61,
+    rank: 62,
     name: "Cesar Martinez",
     twitter: "https://x.com/100xCesar",
     avatar:
@@ -558,7 +567,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 62,
+    rank: 63,
     name: "wasteland",
     twitter: "https://x.com/0xwasteland",
     avatar:
@@ -567,7 +576,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 63,
+    rank: 64,
     name: "Kenni",
     twitter: "https://x.com/RealKennii",
     avatar:
@@ -576,7 +585,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 64,
+    rank: 65,
     name: "Caleb(FDF)",
     twitter: "https://x.com/calebrebelo_",
     avatar:
@@ -585,7 +594,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 65,
+    rank: 66,
     name: "Mizzy",
     twitter: "https://x.com/mizzysworld",
     avatar:
@@ -594,7 +603,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 66,
+    rank: 67,
     name: "Marcello",
     twitter: "https://x.com/marcell0x",
     avatar:
@@ -603,7 +612,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 67,
+    rank: 68,
     name: "Dreadsong",
     twitter: "https://x.com/DreadsongSOL",
     avatar:
@@ -612,7 +621,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Real Trendsetter",
   },
   {
-    rank: 68,
+    rank: 69,
     name: "Hal9000",
     twitter: "https://x.com/neveropendoors",
     avatar:
@@ -621,7 +630,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Patron from the Shadows",
   },
   {
-    rank: 69,
+    rank: 70,
     name: "Curtis Cummings",
     twitter: "https://x.com/curtisjcummings",
     avatar:
@@ -630,7 +639,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Cracked Dev",
   },
   {
-    rank: 70,
+    rank: 71,
     name: "Reborn",
     twitter: "https://x.com/Rebornmf",
     avatar:
@@ -639,7 +648,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Ultimate Diamond Hands",
   },
   {
-    rank: 71,
+    rank: 72,
     name: "DrewBleam",
     twitter: "https://x.com/DrewBleam",
     avatar:
@@ -648,7 +657,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Connector",
   },
   {
-    rank: 72,
+    rank: 73,
     name: "Kearneyy",
     twitter: "https://x.com/kearneyy",
     avatar:
@@ -657,7 +666,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Connector",
   },
   {
-    rank: 73,
+    rank: 74,
     name: "Ghost",
     twitter: "https://x.com/ghostdotxyz",
     avatar:
@@ -666,7 +675,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Connector",
   },
   {
-    rank: 74,
+    rank: 75,
     name: "Raj(ABS)",
     twitter: "https://x.com/Rajp_14",
     avatar:
@@ -675,7 +684,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Connector",
   },
   {
-    rank: 75,
+    rank: 76,
     name: "Blake Waddington",
     twitter: "https://x.com/BlakeWaddington",
     avatar:
@@ -684,7 +693,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Connector",
   },
   {
-    rank: 76,
+    rank: 77,
     name: "Web3 Wesley",
     twitter: "https://x.com/Web3Wesley",
     avatar:
@@ -693,7 +702,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Connector",
   },
   {
-    rank: 77,
+    rank: 78,
     name: "NB(APC)",
     twitter: "https://x.com/0xNB9",
     avatar:
@@ -702,7 +711,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Connector",
   },
   {
-    rank: 78,
+    rank: 79,
     name: "Betapluxx",
     twitter: "https://x.com/betapluxx",
     avatar:
@@ -711,16 +720,106 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Connector",
   },
   {
-    rank: 79,
+    rank: 80,
     name: "Guywithbrains",
     twitter: "https://x.com/wiredwisely",
     avatar:
       "https://pbs.twimg.com/profile_images/2009338698156969984/UggapXpw_400x400.jpg",
-    score: 355,
-    tagline: "Active Creator",
+    score: 365,
+    tagline: "REAL Ambassador",
   },
   {
-    rank: 80,
+    rank: 81,
+    name: "Favourrr",
+    twitter: "https://x.com/Feyvve",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1984538138706927616/JtOzGYz0_400x400.jpg",
+    score: 365,
+    tagline: "REAL Ambassador",
+  },
+  {
+    rank: 82,
+    name: "kenZaii",
+    twitter: "https://x.com/kenZaii7",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1970778907671695360/6QMGrV4S_400x400.jpg",
+    score: 365,
+    tagline: "REAL Ambassador",
+  },
+  {
+    rank: 83,
+    name: "bamboeskud",
+    twitter: "https://x.com/Bamboeskud",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1695860612104933376/reNvA-HY_400x400.jpg",
+    score: 365,
+    tagline: "Core Community Contributor",
+  },
+  {
+    rank: 84,
+    name: "iQwix",
+    twitter: "https://x.com/iiqwiix",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1959656936128782336/c2gx1Z_t_400x400.jpg",
+    score: 365,
+    tagline: "Core Community Contributor",
+  },
+  {
+    rank: 85,
+    name: "Yorks",
+    twitter: "https://x.com/generativepoet",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1996266043140935680/DFdQ0v7H_400x400.png",
+    score: 360,
+    tagline: "Patron from the Shadows",
+  },
+  {
+    rank: 86,
+    name: "Matt Force",
+    twitter: "https://x.com/Mattforce",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1969897830702841856/tHYkY7T3_400x400.jpg",
+    score: 360,
+    tagline: "Core Community Contributor",
+  },
+  {
+    rank: 87,
+    name: "Wale246",
+    twitter: "https://x.com/Wale246",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1852544145073618945/4q1xev8d_400x400.jpg",
+    score: 360,
+    tagline: "REAL Team",
+  },
+  {
+    rank: 88,
+    name: "Azeem",
+    twitter: "https://x.com/Dar_yhor",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1765332888591998979/9tBl1R6v_400x400.jpg",
+    score: 360,
+    tagline: "REAL Team",
+  },
+  {
+    rank: 89,
+    name: "HeliusTheApe",
+    twitter: "https://x.com/heliustheape",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1928191008917049347/3pZG6iWh_400x400.jpg",
+    score: 360,
+    tagline: "REAL Team",
+  },
+  {
+    rank: 90,
+    name: "elev8blyss",
+    twitter: "https://x.com/bholc646",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1786635520715669504/iRbCv_dg_400x400.jpg",
+    score: 360,
+    tagline: "Patron from the Shadows",
+  },
+  {
+    rank: 91,
     name: "Berna",
     twitter: "https://x.com/Berna7224",
     avatar:
@@ -729,52 +828,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Creator",
   },
   {
-    rank: 81,
-    name: "Yorks",
-    twitter: "https://x.com/generativepoet",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1996266043140935680/DFdQ0v7H_400x400.png",
-    score: 355,
-    tagline: "Patron from the Shadows",
-  },
-  {
-    rank: 82,
-    name: "Favourrr",
-    twitter: "https://x.com/Feyvve",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1984538138706927616/JtOzGYz0_400x400.jpg",
-    score: 355,
-    tagline: "Core Community Contributor",
-  },
-  {
-    rank: 83,
-    name: "kenZaii",
-    twitter: "https://x.com/kenZaii7",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1970778907671695360/6QMGrV4S_400x400.jpg",
-    score: 355,
-    tagline: "Core Community Contributor",
-  },
-  {
-    rank: 84,
-    name: "bamboeskud",
-    twitter: "https://x.com/Bamboeskud",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1695860612104933376/reNvA-HY_400x400.jpg",
-    score: 355,
-    tagline: "Core Community Contributor",
-  },
-  {
-    rank: 85,
-    name: "iQwix",
-    twitter: "https://x.com/iiqwiix",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1959656936128782336/c2gx1Z_t_400x400.jpg",
-    score: 355,
-    tagline: "Core Community Contributor",
-  },
-  {
-    rank: 86,
+    rank: 92,
     name: "pirateoneth",
     twitter: "https://x.com/PIRATE_ON_ETH",
     avatar:
@@ -783,43 +837,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Core Community Contributor",
   },
   {
-    rank: 87,
-    name: "Matt Force",
-    twitter: "https://x.com/Mattforce",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1969897830702841856/tHYkY7T3_400x400.jpg",
-    score: 355,
-    tagline: "Core Community Contributor",
-  },
-  {
-    rank: 88,
-    name: "Wale246",
-    twitter: "https://x.com/Wale246",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1852544145073618945/4q1xev8d_400x400.jpg",
-    score: 355,
-    tagline: "Core Community Contributor",
-  },
-  {
-    rank: 89,
-    name: "Azeem",
-    twitter: "https://x.com/Dar_yhor",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1765332888591998979/9tBl1R6v_400x400.jpg",
-    score: 355,
-    tagline: "Core Community Contributor",
-  },
-  {
-    rank: 90,
-    name: "HeliusTheApe",
-    twitter: "https://x.com/heliustheape",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1928191008917049347/3pZG6iWh_400x400.jpg",
-    score: 355,
-    tagline: "Core Community Contributor",
-  },
-  {
-    rank: 91,
+    rank: 93,
     name: "Prometheus",
     twitter: "https://x.com/just_prome",
     avatar:
@@ -828,25 +846,16 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Core Community Contributor",
   },
   {
-    rank: 92,
+    rank: 94,
     name: "John Kim",
     twitter: "https://x.com/jkim00x3",
     avatar:
       "https://pbs.twimg.com/profile_images/1712862857539563520/NiPbWKCC_400x400.jpg",
     score: 355,
-    tagline: "Alpha King",
+    tagline: "Alpha Overlord",
   },
   {
-    rank: 93,
-    name: "elev8blyss",
-    twitter: "https://x.com/bholc646",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1786635520715669504/iRbCv_dg_400x400.jpg",
-    score: 355,
-    tagline: "Patron from the Shadows",
-  },
-  {
-    rank: 94,
+    rank: 95,
     name: "Enryu",
     twitter: "https://x.com/Enryu_gfh",
     avatar:
@@ -855,7 +864,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 95,
+    rank: 96,
     name: "Eliph",
     twitter: "https://x.com/Eliph_Liztator",
     avatar:
@@ -864,7 +873,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 96,
+    rank: 97,
     name: "Jojo",
     twitter: "https://x.com/JOJO_cryptoinfo",
     avatar:
@@ -873,7 +882,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 97,
+    rank: 98,
     name: "PhenomeN",
     twitter: "https://x.com/phenomen_games",
     avatar:
@@ -882,7 +891,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 98,
+    rank: 99,
     name: "Milca0",
     twitter: "https://x.com/Milca0_",
     avatar:
@@ -891,7 +900,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 99,
+    rank: 100,
     name: "Ruddch",
     twitter: "https://x.com/Neiniciativ",
     avatar:
@@ -900,7 +909,16 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Cracked Dev",
   },
   {
-    rank: 100,
+    rank: 101,
+    name: "Boxer",
+    twitter: "https://x.com/Boxerr110",
+    avatar:
+      "https://pbs.twimg.com/profile_images/2006841215556419584/aFgNrR_T_400x400.jpg",
+    score: 305,
+    tagline: "Active Community Supporter",
+  },
+  {
+    rank: 102,
     name: "Juanito",
     twitter: "https://x.com/xjuanito",
     avatar:
@@ -909,7 +927,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Connector",
   },
   {
-    rank: 101,
+    rank: 103,
     name: "CS_Bocky",
     twitter: "https://x.com/CS_Bocky",
     avatar:
@@ -918,7 +936,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 102,
+    rank: 104,
     name: "Swolesome",
     twitter: "https://x.com/swolesome",
     avatar:
@@ -927,7 +945,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 103,
+    rank: 105,
     name: "Hasanwaifu",
     twitter: "https://x.com/hasanwaifu",
     avatar:
@@ -936,16 +954,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Creator",
   },
   {
-    rank: 104,
-    name: "Boxer",
-    twitter: "https://x.com/Boxerr110",
-    avatar:
-      "https://pbs.twimg.com/profile_images/2006841215556419584/aFgNrR_T_400x400.jpg",
-    score: 300,
-    tagline: "Active Creator",
-  },
-  {
-    rank: 105,
+    rank: 106,
     name: "Strawhatg3",
     twitter: "https://x.com/StrawHatG3",
     avatar:
@@ -954,7 +963,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Creator",
   },
   {
-    rank: 106,
+    rank: 107,
     name: "Enissay",
     twitter: "https://x.com/Enissay",
     avatar:
@@ -963,7 +972,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Creator",
   },
   {
-    rank: 107,
+    rank: 108,
     name: "akts",
     twitter: "https://x.com/oyasumiaoit",
     avatar:
@@ -972,16 +981,16 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Creator",
   },
   {
-    rank: 108,
+    rank: 109,
     name: "WhiteDuke",
     twitter: "https://x.com/WhiteeDuke",
     avatar:
       "https://pbs.twimg.com/profile_images/1985702117076525056/Zy6F660D_400x400.jpg",
     score: 300,
-    tagline: "Active Creator",
+    tagline: "REAL Ambassador",
   },
   {
-    rank: 109,
+    rank: 110,
     name: "knightrider",
     twitter: "https://x.com/sctrackboy",
     avatar:
@@ -990,7 +999,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Patron from the Shadows",
   },
   {
-    rank: 110,
+    rank: 111,
     name: "Pinkz",
     twitter: "https://x.com/Pinkz2903",
     avatar:
@@ -999,7 +1008,61 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Global Region Leader",
   },
   {
-    rank: 111,
+    rank: 112,
+    name: "Jahseh Kaeo",
+    twitter: "https://x.com/kaeo_says",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1974149825114316800/pOSmpLfG_400x400.jpg",
+    score: 285,
+    tagline: "Core Community Supporter",
+  },
+  {
+    rank: 113,
+    name: "Archivum",
+    twitter: "https://x.com/archivum_saves",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1961754269779992576/9iabtJYV_400x400.jpg",
+    score: 285,
+    tagline: "Core Community Supporter",
+  },
+  {
+    rank: 114,
+    name: "Alin3x",
+    twitter: "https://x.com/0xAlin3x",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1944822699571769344/Erx_lKIW_400x400.jpg",
+    score: 285,
+    tagline: "Core Community Supporter",
+  },
+  {
+    rank: 115,
+    name: "Martingas",
+    twitter: "https://x.com/Martin_G_Edits",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1873792035922251776/HyOKVLBn_400x400.jpg",
+    score: 285,
+    tagline: "REAL Ambassador",
+  },
+  {
+    rank: 116,
+    name: "Aziat_Dikiy",
+    twitter: "https://x.com/Aziat_Dikiy",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1987534916221808640/U2T85Zq__400x400.jpg",
+    score: 285,
+    tagline: "Core Community Supporter",
+  },
+  {
+    rank: 117,
+    name: "DgtlTrophies",
+    twitter: "https://x.com/DgtlTrophies",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1971753493183471617/dlJ527Ms_400x400.jpg",
+    score: 280,
+    tagline: "Active Community Supporter",
+  },
+  {
+    rank: 118,
     name: "Winty",
     twitter: "https://x.com/Winty_ron",
     avatar:
@@ -1008,43 +1071,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 112,
-    name: "Alin3x",
-    twitter: "https://x.com/0xAlin3x",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1944822699571769344/Erx_lKIW_400x400.jpg",
-    score: 275,
-    tagline: "Active Community Supporter",
-  },
-  {
-    rank: 113,
-    name: "Martingas",
-    twitter: "https://x.com/Martin_G_Edits",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1873792035922251776/HyOKVLBn_400x400.jpg",
-    score: 275,
-    tagline: "Active Community Supporter",
-  },
-  {
-    rank: 114,
-    name: "Jahseh Kaeo",
-    twitter: "https://x.com/kaeo_says",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1974149825114316800/pOSmpLfG_400x400.jpg",
-    score: 275,
-    tagline: "Active Community Supporter",
-  },
-  {
-    rank: 115,
-    name: "Archivum",
-    twitter: "https://x.com/archivum_saves",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1961754269779992576/9iabtJYV_400x400.jpg",
-    score: 275,
-    tagline: "Active Community Supporter",
-  },
-  {
-    rank: 116,
+    rank: 119,
     name: "Dpuck",
     twitter: "https://x.com/Nfts4bob",
     avatar:
@@ -1053,16 +1080,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 117,
-    name: "Aziat_Dikiy",
-    twitter: "https://x.com/Aziat_Dikiy",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1987534916221808640/U2T85Zq__400x400.jpg",
-    score: 275,
-    tagline: "Active Community Supporter",
-  },
-  {
-    rank: 118,
+    rank: 120,
     name: "LordArgo",
     twitter: "https://x.com/ArgoLord",
     avatar:
@@ -1071,7 +1089,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 119,
+    rank: 121,
     name: "Xang Zhong",
     twitter: "https://x.com/XangZhong",
     avatar:
@@ -1080,16 +1098,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 120,
-    name: "DgtlTrophies",
-    twitter: "https://x.com/DgtlTrophies",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1971753493183471617/dlJ527Ms_400x400.jpg",
-    score: 275,
-    tagline: "Active Community Supporter",
-  },
-  {
-    rank: 121,
+    rank: 122,
     name: "Method Five",
     twitter: "https://x.com/method_five",
     avatar:
@@ -1098,7 +1107,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 122,
+    rank: 123,
     name: "Tacolauncher",
     twitter: "https://x.com/0xtacolauncher",
     avatar:
@@ -1107,7 +1116,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 123,
+    rank: 124,
     name: "LeafTrades",
     twitter: "https://x.com/LeafTrades",
     avatar:
@@ -1116,7 +1125,16 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 124,
+    rank: 125,
+    name: "Jaycean",
+    twitter: "https://x.com/theonlyjaycean",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1995512920885657600/FdZmok8i_400x400.jpg",
+    score: 255,
+    tagline: "Active Community Supporter",
+  },
+  {
+    rank: 126,
     name: "Divljo",
     twitter: "https://x.com/Divljo31",
     avatar:
@@ -1125,16 +1143,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 125,
-    name: "Jaycean",
-    twitter: "https://x.com/theonlyjaycean",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1995512920885657600/FdZmok8i_400x400.jpg",
-    score: 250,
-    tagline: "Active Community Supporter",
-  },
-  {
-    rank: 126,
+    rank: 127,
     name: "Eric Zalusky",
     twitter: "https://x.com/ericzalusky",
     avatar:
@@ -1143,7 +1152,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 127,
+    rank: 128,
     name: "Innodiablo",
     twitter: "https://x.com/InnoDiablo",
     avatar:
@@ -1152,7 +1161,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 128,
+    rank: 129,
     name: "coffeeshark",
     twitter: "https://x.com/sam_loga",
     avatar:
@@ -1161,7 +1170,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 129,
+    rank: 130,
     name: "April Zoe",
     twitter: "https://x.com/aprilzoe",
     avatar:
@@ -1170,7 +1179,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 130,
+    rank: 131,
     name: "Elvhari",
     twitter: "https://x.com/elvhari",
     avatar:
@@ -1179,16 +1188,34 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 131,
+    rank: 132,
     name: "Yeesha",
     twitter: "https://x.com/unique_yeesha",
     avatar:
       "https://pbs.twimg.com/profile_images/1883584676301832193/mxDTHnl8_400x400.jpg",
-    score: 225,
+    score: 235,
     tagline: "Active Creator",
   },
   {
-    rank: 132,
+    rank: 133,
+    name: "Skullcrusher",
+    twitter: "https://x.com/luckyccs",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1976193924931649537/nYkHqQBz_400x400.jpg",
+    score: 205,
+    tagline: "Active Community Supporter",
+  },
+  {
+    rank: 134,
+    name: "TripleA",
+    twitter: "https://x.com/triplea01117?s=21",
+    avatar:
+      "https://pbs.twimg.com/profile_images/2010446062574522368/GcQgNnuP_400x400.jpg",
+    score: 205,
+    tagline: "Active Community Supporter",
+  },
+  {
+    rank: 135,
     name: "Shasan",
     twitter: "https://x.com/shasan2101",
     avatar:
@@ -1197,7 +1224,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 133,
+    rank: 136,
     name: "Lehson",
     twitter: "https://x.com/Lehson1",
     avatar:
@@ -1206,7 +1233,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 134,
+    rank: 137,
     name: "Icefrost",
     twitter: "https://x.com/IceFrosst",
     avatar:
@@ -1215,7 +1242,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 135,
+    rank: 138,
     name: "Ekaterina",
     twitter: "https://x.com/elfy_411",
     avatar:
@@ -1224,7 +1251,7 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 136,
+    rank: 139,
     name: "Vinsil",
     twitter: "https://x.com/0xVinsil",
     avatar:
@@ -1233,92 +1260,200 @@ export const REAL_INDEX_LEADERS: RealIndexEntry[] = [
     tagline: "Active Community Supporter",
   },
   {
-    rank: 137,
-    name: "Skullcrusher",
-    twitter: "https://x.com/luckyccs",
-    avatar:
-      "https://pbs.twimg.com/profile_images/1976193924931649537/nYkHqQBz_400x400.jpg",
-    score: 200,
-    tagline: "Active Community Supporter",
-  },
-  {
-    rank: 138,
-    name: "TripleA",
-    twitter: "https://x.com/triplea01117?s=21",
-    avatar:
-      "https://pbs.twimg.com/profile_images/2010446062574522368/GcQgNnuP_400x400.jpg",
-    score: 200,
-    tagline: "Active Community Supporter",
-  },
-  {
-    rank: 139,
+    rank: 140,
     name: "NotTino",
     twitter: "https://x.com/web3tino",
     avatar:
       "https://pbs.twimg.com/profile_images/1953198143631228928/qqcdOTr-_400x400.jpg",
-    score: 175,
+    score: 180,
     tagline: "Active Community Supporter",
   },
   {
-    rank: 140,
+    rank: 141,
     name: "Hojo",
     twitter: "https://x.com/Hojo_NG",
     avatar:
       "https://pbs.twimg.com/profile_images/1918736608632754176/3iDdQk5v_400x400.jpg",
+    score: 155,
+    tagline: "Active Community Supporter",
+  },
+  {
+    rank: 142,
+    name: "Topman77z",
+    twitter: "https://x.com/Topman77z0",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1953786844597866496/m2R_wmkl_400x400.jpg",
     score: 150,
     tagline: "Active Community Supporter",
   },
+  {
+    rank: 143,
+    name: "Akimitsu",
+    twitter: "https://x.com/Akimistuu",
+    avatar:
+      "https://pbs.twimg.com/profile_images/2013537893596160001/K_CoEh_7_400x400.jpg",
+    score: 150,
+    tagline: "Active Community Supporter",
+  },
+  {
+    rank: 144,
+    name: "Meta Maven",
+    twitter: "https://x.com/Meta_maven0",
+    avatar:
+      "https://pbs.twimg.com/profile_images/2006535187929124864/JWrpane-_400x400.jpg",
+    score: 120,
+    tagline: "Active Community Supporter",
+  },
+  {
+    rank: 145,
+    name: "Becca",
+    twitter: "https://x.com/justbehkah",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1956058912504901633/2pYG2Guc_400x400.jpg",
+    score: 120,
+    tagline: "Active Community Supporter",
+  },
+  {
+    rank: 146,
+    name: "BCJ",
+    twitter: "https://x.com/itsbcj",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1994705678162698240/aaJPBDjJ_400x400.jpg",
+    score: 110,
+    tagline: "Active Community Supporter",
+  },
+  {
+    rank: 147,
+    name: "Luffy",
+    twitter: "https://x.com/Luffy_tomm",
+    avatar:
+      "https://pbs.twimg.com/profile_images/1948148546328297472/eoIcXTH1_400x400.jpg",
+    score: 110,
+    tagline: "Active Community Supporter",
+  },
 ];
+import Image from "next/image";
+import Link from "next/link";
+
 
 export default function RealIndexLeaderboard() {
   return (
-    <section className="max-w-5xl mx-auto px-4 py-10">
-      <h1 className="text-3xl font-bold mb-6 text-white">
-        Real Index Leaderboard
-      </h1>
+    <main className="min-h-screen bg-slate-950 text-slate-100 px-4 py-10 md:px-8">
+      <section className="max-w-5xl mx-auto">
+        <header className="mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold tracking-tight">
+            Proof of Real – Week 2 Leaderboard
+          </h1>
+          <p className="text-sm md:text-base text-slate-400 mt-2">
+            The REAL Index leaderboard highlights builders, creators, and
+            community leaders shaping the on-chain future.
+          </p>
+        </header>
 
-      <div className="space-y-3">
-        {REAL_INDEX_LEADERS.map((entry) => (
-          <a
-            key={entry.rank}
-            href={entry.twitter}
-            target="_blank"
-            rel="noreferrer"
-            className="flex items-center gap-4 rounded-2xl bg-slate-900/70 border border-slate-700 hover:border-emerald-400 hover:bg-slate-900 transition p-3"
-          >
-            <div className="w-8 text-slate-400 font-semibold text-right">
-              #{entry.rank}
-            </div>
+        <div className="rounded-2xl border border-slate-800 bg-slate-900/60 shadow-xl overflow-hidden">
+          <div className="grid grid-cols-[3rem,auto,5rem] md:grid-cols-[3rem,2fr,1.2fr,5rem] px-4 py-3 text-xs md:text-sm font-semibold text-slate-400 border-b border-slate-800">
+            <span>#</span>
+            <span>Name</span>
+            <span className="hidden md:inline">Tagline</span>
+            <span className="text-right">Score</span>
+          </div>
 
-            <img
-              src={entry.avatar}
-              alt={entry.name}
-              className="w-10 h-10 rounded-full object-cover"
-            />
+          <ul className="divide-y divide-slate-800">
+            {REAL_INDEX_LEADERS.map((entry) => (
+              <li
+                key={entry.rank}
+                className="px-4 py-3 flex items-center gap-3 text-xs md:text-sm hover:bg-slate-900/80 transition"
+              >
+                <span className="w-8 text-slate-500 font-semibold">
+                  {entry.rank}
+                </span>
 
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="font-semibold text-white truncate">
-                  {entry.name}
-                </p>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-emerald-300">
+                <div className="flex-1 flex items-center gap-3">
+                  <div className="relative w-9 h-9 rounded-full overflow-hidden border border-slate-700">
+                    <img
+                      src={entry.avatar}
+                      alt={entry.name}
+                      
+                      className="object-cover"
+                    />
+                  </div>
+
+                  <div className="flex flex-col">
+                    <Link
+                      href={entry.twitter}
+                      target="_blank"
+                      className="font-medium hover:text-emerald-400 transition"
+                    >
+                      {entry.name}
+                    </Link>
+                    <span className="md:hidden text-[11px] text-slate-400">
+                      {entry.tagline}
+                    </span>
+                  </div>
+                </div>
+
+                <span className="hidden md:inline flex-1 text-slate-400 text-xs">
                   {entry.tagline}
                 </span>
-              </div>
-              <p className="text-xs text-slate-400 truncate">
-                {entry.twitter.replace("https://", "")}
-              </p>
-            </div>
 
-            <div className="flex flex-col items-end">
-              <span className="text-sm text-slate-400">Real Index</span>
-              <span className="text-lg font-bold text-emerald-400">
-                {entry.score}
-              </span>
-            </div>
+                <span className="w-14 text-right font-semibold text-emerald-400">
+                  {entry.score}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Footer Links — from welcome page */}
+      <footer className="mt-20 mb-4 text-xs text-slate-500 flex flex-col items-center gap-3">
+        <div className="flex flex-wrap justify-center gap-4 text-[12px]">
+          <a
+            href="https://x.com/proofofreal"
+            target="_blank"
+            className="hover:text-emerald-400 transition"
+          >
+            Twitter / X
           </a>
-        ))}
-      </div>
-    </section>
+          <a
+            href="https://discord.gg/krVPuyksQy"
+            target="_blank"
+            className="hover:text-emerald-400 transition"
+          >
+            Discord
+          </a>
+          <a
+            href="https://medium.com/@tradesgiving"
+            target="_blank"
+            className="hover:text-emerald-400 transition"
+          >
+            Medium
+          </a>
+          <a
+            href="https://opensea.io/collection/the-hopeful-"
+            target="_blank"
+            className="hover:text-emerald-400 transition"
+          >
+            NFT Collection
+          </a>
+          <a
+            href="https://clanker.world/clanker/0x8Ce6779DaE5bf8a1319168e763fcED44C5220B07"
+            target="_blank"
+            className="hover:text-emerald-400 transition"
+          >
+            $HOPE Trading
+          </a>
+          <a
+            href="https://portal.abs.xyz/trade?buy=0x532988fc8be76af7439de4bcaacc7707660ea3e6&showBars=true&showHistory=true"
+            target="_blank"
+            className="hover:text-emerald-400 transition"
+          >
+            $FAKE Trading
+          </a>
+        </div>
+
+        <p>© {new Date().getFullYear()} Proof of Real • Socials Rising</p>
+      </footer>
+    </main>
   );
 }
