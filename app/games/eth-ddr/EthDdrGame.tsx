@@ -26,6 +26,7 @@ const NEON = [
   0x9b59ff, // purple
   0xff5a1f, // orange
 ];
+
 const HIT_COLORS = [
   0x00ff6a, // green
   0x00c8ff, // blue
@@ -70,7 +71,7 @@ export default function EthDdrGame() {
   // mint gate (adjust any time)
   const MIN_HIT_RATE_TO_UNLOCK = 0.25; // 25%
 
-  // Public URL for tweet (set to your production domain later if you want)
+  // Public URL for tweet (set to production domain later if you want)
   const shareUrl = useMemo(() => "https://proofofreal.app/games/eth-ddr", []);
 
   // Load saved profile once
@@ -108,9 +109,9 @@ export default function EthDdrGame() {
     if (!a) return;
     try {
       a.currentTime = 0;
-      await a.play(); // requires user gesture (our Start button is the gesture)
+      await a.play(); // requires user gesture (Start button is the gesture)
     } catch {
-      // If it fails, user can still play; we can add a "Tap to enable sound" later.
+      // If it fails, game still works; can add "Tap to enable sound" later.
     }
   }
 
@@ -121,6 +122,11 @@ export default function EthDdrGame() {
       g?.destroy(true);
     } catch {}
     gameRef.current = null;
+
+    // clear tap bridge just in case
+    try {
+      delete (window as any).__ETH_DDR_SCENE__;
+    } catch {}
   }
 
   function startRun() {
@@ -150,7 +156,7 @@ export default function EthDdrGame() {
     // Bump run id so we can uniquely bridge result
     runIdRef.current += 1;
 
-    // Create Phaser game after phase changes (small timeout avoids React layout race)
+    // Create Phaser game after phase changes (avoid layout race)
     setTimeout(() => {
       initPhaser(runIdRef.current);
     }, 0);
@@ -167,14 +173,12 @@ export default function EthDdrGame() {
 
   function openTweet() {
     if (!result) return;
-    const handle = normalizeXHandle(result.xHandle);
-
     const text =
       `I just scored ${result.score} on ETH DDR 🎶\n` +
       `Max combo: ${result.comboMax} 👏 \n\n` +
       `Think you can beat me? 🫵 \n` +
       `${shareUrl}\n\n` +
-      `@proofofreal 💯 `;
+      `@proofofreal 💯`;
 
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank", "noopener,noreferrer");
@@ -202,14 +206,13 @@ export default function EthDdrGame() {
     const GOOD_WINDOW = 25;
     const MISS_LINE = hitZoneY + HIT_WINDOW; // when note passes this, it's a miss
 
-    // Beat/section pacing (simple but effective)
-    // 0–15s slow, 15–40s fast (chorus), 40–60s medium
-   const SECTIONS = [
-  { t0: 0,  t1: 10, spawnDelay: 500, speed: 240 }, // slow intro
-  { t0: 10, t1: 32, spawnDelay: 400, speed: 280 }, // medium
-  { t0: 32, t1: 55, spawnDelay: 330, speed: 320 }, // fast
-  { t0: 55, t1: 60, spawnDelay: 500, speed: 270 }, // slow outro
-];
+    // Cadence: 10 slow, 25 medium, 20 fast, 5 slow
+    const SECTIONS = [
+      { t0: 0, t1: 10, spawnDelay: 500, speed: 240 },  // slow
+      { t0: 10, t1: 32, spawnDelay: 400, speed: 280 }, // medium
+      { t0: 32, t1: 55, spawnDelay: 330, speed: 320 }, // fast
+      { t0: 55, t1: 60, spawnDelay: 500, speed: 260 }, // slow
+    ];
 
     const laneX: Record<Dir, number> = {
       Left: 100,
@@ -248,6 +251,9 @@ export default function EthDdrGame() {
       }
 
       create() {
+        // expose to React for mobile taps
+        (window as any).__ETH_DDR_SCENE__ = this;
+
         score = 0;
         timeLeft = 60;
         combo = 0;
@@ -294,12 +300,14 @@ export default function EthDdrGame() {
 
         this.add.rectangle(W / 2, hitZoneY, W, 4, 0x9b59ff, 1);
 
-        // combo text near hit line
-        this.comboText = this.add.text(W / 2, hitZoneY + 12, "Combo: 0", {
-          fontSize: "14px",
+        // BIG combo text near hit line + grows more with combo
+        this.comboText = this.add.text(W / 2, hitZoneY + 8, "0", {
+          fontSize: "26px",
           color: "#ffffff",
+          fontStyle: "700",
         });
         this.comboText.setOrigin(0.5, 0);
+        this.comboText.setAlpha(0.95);
 
         // input
         this.cursors = this.input.keyboard!.createCursorKeys();
@@ -325,11 +333,8 @@ export default function EthDdrGame() {
       }
 
       currentSection() {
-        // elapsed is in seconds
         const e = this.elapsed;
-        return (
-          SECTIONS.find((s) => e >= s.t0 && e < s.t1) ?? SECTIONS[SECTIONS.length - 1]
-        );
+        return SECTIONS.find((s) => e >= s.t0 && e < s.t1) ?? SECTIONS[SECTIONS.length - 1];
       }
 
       spawnNote() {
@@ -390,16 +395,16 @@ export default function EthDdrGame() {
         const color = Phaser.Utils.Array.GetRandom(NEON);
         const r = this.laneFlash[dir];
         r.fillColor = color;
-        r.setAlpha(0.18);
+        r.setAlpha(0.20);
         this.tweens.add({
           targets: r,
           alpha: 0,
-          duration: 120,
+          duration: 130,
         });
       }
 
       feedbackText(label: string, colorHex: number) {
-        const t = this.add.text(W / 2, hitZoneY - 48, label, {
+        const t = this.add.text(W / 2, hitZoneY - 50, label, {
           fontSize: "14px",
           color: "#" + colorHex.toString(16).padStart(6, "0"),
         });
@@ -413,28 +418,47 @@ export default function EthDdrGame() {
         });
       }
 
-      fireworksBurst() {
-        // simple fireworks burst (no assets): a handful of small circles that pop out
-        const bursts = 18;
-        const originX = Phaser.Math.Between(60, W - 60);
-        const originY = Phaser.Math.Between(80, 220);
+      fireworksBurst(intensity: number) {
+        const bursts = 18 + intensity * 10;
+        const originX = Phaser.Math.Between(40, W - 40);
+        const originY = Phaser.Math.Between(70, 260);
 
         for (let i = 0; i < bursts; i++) {
           const c = Phaser.Utils.Array.GetRandom(NEON);
-          const dot = this.add.circle(originX, originY, 3, c, 1);
+          const size = Phaser.Math.Between(2, 5 + intensity);
+          const dot = this.add.circle(originX, originY, size, c, 1);
 
           const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
-          const dist = Phaser.Math.Between(40, 120);
+          const dist = Phaser.Math.Between(50, 140 + intensity * 60);
 
           this.tweens.add({
             targets: dot,
             x: originX + Math.cos(angle) * dist,
             y: originY + Math.sin(angle) * dist,
             alpha: 0,
-            duration: Phaser.Math.Between(450, 700),
+            duration: Phaser.Math.Between(500, 850),
             onComplete: () => dot.destroy(),
           });
         }
+      }
+
+      popCombo(comboNow: number) {
+        // grow/push the combo counter more as combo increases
+        const pop = Math.min(1.0 + comboNow * 0.012, 1.75);
+        this.tweens.add({
+          targets: this.comboText,
+          scaleX: pop,
+          scaleY: pop,
+          yoyo: true,
+          duration: 95,
+        });
+
+        // color shifts at milestones (feels like leveling up)
+        if (comboNow >= 100) this.comboText.setColor("#00e5ff");
+        else if (comboNow >= 50) this.comboText.setColor("#7cff00");
+        else if (comboNow >= 25) this.comboText.setColor("#ffd400");
+        else if (comboNow >= 10) this.comboText.setColor("#ff2bd6");
+        else this.comboText.setColor("#ffffff");
       }
 
       onHit(dir: Dir, diff: number) {
@@ -453,7 +477,7 @@ export default function EthDdrGame() {
         combo += 1;
         comboMax = Math.max(comboMax, combo);
 
-        // tiny multiplier tiers (keeps it exciting)
+        // multiplier tiers
         let mult = 1;
         if (combo >= 50) mult = 2.0;
         else if (combo >= 25) mult = 1.5;
@@ -463,23 +487,26 @@ export default function EthDdrGame() {
         notesHit += 1;
 
         this.scoreText.setText(`Score: ${score}`);
-        this.comboText.setText(`Combo: ${combo}  (x${mult.toFixed(1)})`);
+        this.comboText.setText(`${combo}`);
+        this.popCombo(combo);
 
-        // visuals
         const neon = Phaser.Utils.Array.GetRandom(NEON);
         this.flashLane(dir);
         this.feedbackText(label, neon);
 
-        // fireworks milestones
-        if ([10, 25, 50, 75, 100].includes(combo)) {
-          this.fireworksBurst();
-        }
+        // bigger/more fireworks at bigger combo milestones
+        if (combo === 10) this.fireworksBurst(1);
+        if (combo === 25) { this.fireworksBurst(2); this.fireworksBurst(2); }
+        if (combo === 50) { this.fireworksBurst(3); this.fireworksBurst(3); this.fireworksBurst(3); }
+        if (combo === 75) { this.fireworksBurst(4); this.fireworksBurst(4); this.fireworksBurst(4); }
+        if (combo === 100) { this.fireworksBurst(5); this.fireworksBurst(5); this.fireworksBurst(5); this.fireworksBurst(5); }
       }
 
       onMiss() {
         if (combo > 0) {
           combo = 0;
-          this.comboText.setText("Combo: 0");
+          this.comboText.setText("0");
+          this.comboText.setColor("#ffffff");
           this.feedbackText("MISS", 0xff3b3b);
         }
       }
@@ -489,6 +516,7 @@ export default function EthDdrGame() {
         this.elapsed += dt;
 
         const section = this.currentSection();
+
         // adjust spawn pacing dynamically
         if (this.spawnEvent && this.spawnEvent.delay !== section.spawnDelay) {
           this.spawnEvent.delay = section.spawnDelay;
@@ -496,7 +524,6 @@ export default function EthDdrGame() {
 
         // move notes by section speed
         const speed = section.speed;
-
         for (const n of this.notes) {
           n.y += speed * dt;
           n.g.y = n.y;
@@ -510,7 +537,6 @@ export default function EthDdrGame() {
             continue;
           }
           if (n.y > MISS_LINE) {
-            // note passed hit window => miss
             n.g.destroy();
             this.onMiss();
             continue;
@@ -519,19 +545,15 @@ export default function EthDdrGame() {
         }
         this.notes = remaining;
 
-        // input checks
+        // keyboard input checks
         this.handleKeyPress("Up");
         this.handleKeyPress("Down");
         this.handleKeyPress("Left");
         this.handleKeyPress("Right");
       }
 
-      handleKeyPress(dir: Dir) {
-        const key = this.cursors[dir.toLowerCase()];
-        if (!key) return;
-
-        if (!Phaser.Input.Keyboard.JustDown(key)) return;
-
+      // Shared hit logic for keyboard + mobile taps
+      tryHit(dir: Dir) {
         const candidates = this.notes
           .filter((n) => n.dir === dir && Math.abs(n.y - hitZoneY) < HIT_WINDOW)
           .sort((a, b) => Math.abs(a.y - hitZoneY) - Math.abs(b.y - hitZoneY));
@@ -541,23 +563,36 @@ export default function EthDdrGame() {
         const hit = candidates[0];
         const diff = Math.abs(hit.y - hitZoneY);
 
-this.onHit(dir, diff);
+        this.onHit(dir, diff);
 
-// FLASH THE NOTE COLOR BEFORE DESTROYING
-const hitColor = Phaser.Utils.Array.GetRandom(HIT_COLORS);
+        // Note color pop before destroy
+        const hitColor = Phaser.Utils.Array.GetRandom(HIT_COLORS);
+        hit.g.clear();
+        hit.g.fillStyle(hitColor, 1);
+        hit.g.fillCircle(0, 0, 14);
 
-// redraw as a colored dot pop (fast + reliable)
-hit.g.clear();
-hit.g.fillStyle(hitColor, 1);
-hit.g.fillCircle(0, 0, 14);
+        this.time.delayedCall(60, () => {
+          hit.g.destroy();
+        });
 
-// destroy a split-moment later so you actually see it
-this.time.delayedCall(60, () => {
-  hit.g.destroy();
-});
+        // remove from list immediately
+        this.notes = this.notes.filter((n) => n !== hit);
 
-// remove from list immediately so it can't be hit twice
-this.notes = this.notes.filter((n) => n !== hit);
+        // small haptic on mobile
+        if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+          (navigator as any).vibrate?.(8);
+        }
+      }
+
+      tap(dir: Dir) {
+        this.tryHit(dir);
+      }
+
+      handleKeyPress(dir: Dir) {
+        const key = this.cursors[dir.toLowerCase()];
+        if (!key) return;
+        if (!Phaser.Input.Keyboard.JustDown(key)) return;
+        this.tryHit(dir);
       }
 
       endRun() {
@@ -613,14 +648,12 @@ this.notes = this.notes.filter((n) => n !== hit);
       if (!payload) return;
 
       if (payload.runId !== runIdRef.current) {
-        // stale
         delete (window as any).__ETH_DDR_RESULT__;
         return;
       }
 
       delete (window as any).__ETH_DDR_RESULT__;
 
-      // stop audio & show results
       stopAudio();
       cleanupGame();
 
@@ -654,12 +687,20 @@ this.notes = this.notes.filter((n) => n !== hit);
 
   return (
     <main className="relative z-10 min-h-screen bg-black/0 text-white flex flex-col items-center justify-start pt-6 px-4">
-
-      {/* Background video layer */}
+      {/* Background video layer (mobile-optimized) */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-
+        {/* soft blur fill layer */}
         <video
-          className="absolute inset-0 w-full h-full object-cover"
+          className="absolute inset-0 w-full h-full object-cover blur-[10px] opacity-40 scale-[1.25]"
+          src="/games/eth-ddr/vitalik.mp4"
+          autoPlay
+          loop
+          muted
+          playsInline
+        />
+        {/* main video layer: keep Vitalik higher + slightly zoomed on mobile */}
+        <video
+          className="absolute inset-0 w-full h-full object-cover object-[50%_18%] md:object-center scale-[1.12] md:scale-100"
           src="/games/eth-ddr/vitalik.mp4"
           autoPlay
           loop
@@ -673,20 +714,48 @@ this.notes = this.notes.filter((n) => n !== hit);
       {/* Audio (starts on Start click) */}
       <audio ref={audioRef} src="/games/eth-ddr/song.mp3" loop preload="auto" />
 
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-2xl pb-24">
         <h1 className="text-3xl font-semibold">Ethereum DDR</h1>
-<p className="text-white/70 mt-1">
-  Hit the arrow keys when notes reach the line. 60s run gogogogo.
-</p>
-        <p className="text-white/70 mt-2">
-           🧧 Happy Lunar New Years!! 🧧
+        <p className="text-white/70 mt-1">
+          Hit the arrow keys when notes reach the line. 60s run gogogogo.
         </p>
+        <p className="text-white/80 mt-2 text-lg">🧧 Happy Lunar New Years!! 🧧</p>
 
         <div className="mt-6 rounded-2xl overflow-hidden border border-white/10 bg-white/5 relative">
           {/* Phaser mount */}
           <div className="p-3">
             <div ref={containerRef} className="w-[400px] h-[600px] mx-auto" />
           </div>
+
+          {/* Mobile tap buttons (only while playing) */}
+          {phase === "playing" && (
+            <div className="md:hidden absolute inset-x-0 bottom-0 p-3">
+              <div className="grid grid-cols-4 gap-2">
+                {(["Left", "Down", "Up", "Right"] as const).map((d) => (
+                  <button
+                    key={d}
+                    className="rounded-2xl py-4 font-bold text-2xl bg-white/10 border border-white/15 active:bg-white/20 select-none"
+                    style={{ touchAction: "manipulation" }}
+                    onTouchStart={(e) => {
+                      e.preventDefault();
+                      const scene = (window as any).__ETH_DDR_SCENE__;
+                      scene?.tap?.(d);
+                    }}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      const scene = (window as any).__ETH_DDR_SCENE__;
+                      scene?.tap?.(d);
+                    }}
+                  >
+                    {d === "Left" ? "←" : d === "Down" ? "↓" : d === "Up" ? "↑" : "→"}
+                  </button>
+                ))}
+              </div>
+              <div className="text-center text-xs text-white/50 mt-2">
+                Tap buttons or use arrow keys
+              </div>
+            </div>
+          )}
 
           {/* Setup overlay */}
           {phase === "setup" && (
@@ -742,8 +811,12 @@ this.notes = this.notes.filter((n) => n !== hit);
                 <div className="text-lg font-semibold">Run complete</div>
 
                 <div className="mt-3 space-y-1 text-white/80">
-                  <div>Score: <span className="text-white font-semibold">{result.score}</span></div>
-                  <div>Max combo: <span className="text-white font-semibold">{result.comboMax}</span></div>
+                  <div>
+                    Score: <span className="text-white font-semibold">{result.score}</span>
+                  </div>
+                  <div>
+                    Max combo: <span className="text-white font-semibold">{result.comboMax}</span>
+                  </div>
                   <div>
                     Hit rate:{" "}
                     <span className="text-white font-semibold">
@@ -765,7 +838,6 @@ this.notes = this.notes.filter((n) => n !== hit);
                   <button
                     className="flex-1 rounded-xl bg-white/10 border border-white/10 text-white font-semibold py-2 hover:bg-white/15"
                     onClick={() => {
-                      // run again with same profile
                       setPhase("setup");
                       setResult(null);
                       setShared(false);
@@ -816,17 +888,49 @@ this.notes = this.notes.filter((n) => n !== hit);
           )}
         </div>
 
-        {/* Footer / links area (paste your existing ProofOfReal footer here) */}
-        <div className="mt-6 text-sm text-white/60">
-          {/* Replace this block with your copied footer links */}
+        {/* Desktop footer / links (optional - you can replace with your real footer) */}
+        <div className="mt-6 text-sm text-white/60 hidden md:block">
           <div className="flex flex-wrap gap-4">
-            <a className="hover:text-white" href="https://x.com/proofofreal" target="_blank" rel="noreferrer">X</a>
-            <a className="hover:text-white" href="#" target="_blank" rel="noreferrer">HOPE</a>
-            <a className="hover:text-white" href="#" target="_blank" rel="noreferrer">FAKE</a>
-            <a className="hover:text-white" href="#" target="_blank" rel="noreferrer">Discord</a>
+            <a className="hover:text-white" href="https://x.com/proofofreal" target="_blank" rel="noreferrer">
+              X
+            </a>
+            <a className="hover:text-white" href="#" target="_blank" rel="noreferrer">
+              HOPE
+            </a>
+            <a className="hover:text-white" href="#" target="_blank" rel="noreferrer">
+              FAKE
+            </a>
+            <a className="hover:text-white" href="#" target="_blank" rel="noreferrer">
+              Discord
+            </a>
           </div>
           <div className="mt-3 text-xs text-white/40">
             © {new Date().getFullYear()} Proof of Real • Socials Rising
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky mobile links bar (pops out at bottom) */}
+      <div className="fixed bottom-0 left-0 right-0 z-20 md:hidden">
+        <div className="mx-auto max-w-2xl px-3 pb-3">
+          <div className="rounded-2xl border border-white/10 bg-black/60 backdrop-blur px-3 py-2 flex items-center justify-between">
+            <a
+              className="text-sm text-white/80 hover:text-white"
+              href="https://x.com/proofofreal"
+              target="_blank"
+              rel="noreferrer"
+            >
+              X
+            </a>
+            <a className="text-sm text-white/80 hover:text-white" href="#" target="_blank" rel="noreferrer">
+              $FAKE
+            </a>
+            <a className="text-sm text-white/80 hover:text-white" href="#" target="_blank" rel="noreferrer">
+              $HOPE
+            </a>
+            <a className="text-sm text-white/80 hover:text-white" href="#" target="_blank" rel="noreferrer">
+              Discord
+            </a>
           </div>
         </div>
       </div>
