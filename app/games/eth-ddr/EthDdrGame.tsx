@@ -27,15 +27,6 @@ const NEON = [
   0xff5a1f, // orange
 ];
 
-const HIT_COLORS = [
-  0x00ff6a, // green
-  0x00c8ff, // blue
-  0xffffff, // white
-  0x000000, // black
-  0xff3b3b, // red
-  0xff2bd6, // pink
-];
-
 function isValidXHandle(v: string) {
   const s = v.trim().replace(/^@/, "");
   return /^[A-Za-z0-9_]{1,15}$/.test(s);
@@ -69,7 +60,7 @@ export default function EthDdrGame() {
   const runIdRef = useRef(0);
 
   // mint gate (adjust any time)
-  const MIN_HIT_RATE_TO_UNLOCK = 0.25; // 25%
+  const MIN_HIT_RATE_TO_UNLOCK = 0.69; // 69%
 
   // Public URL for tweet (set to production domain later if you want)
   const shareUrl = useMemo(() => "https://proofofreal.app/games/eth-ddr", []);
@@ -173,12 +164,13 @@ export default function EthDdrGame() {
 
   function openTweet() {
     if (!result) return;
+
     const text =
       `I just scored ${result.score} on ETH DDR 🎶\n` +
-      `Max combo: ${result.comboMax} 👏 \n\n` +
-      `Think you can beat me? 🫵 \n` +
+      `Max combo: ${result.comboMax} 💥\n\n` +
+      `Think you can beat me? 🫵\n` +
       `${shareUrl}\n\n` +
-      `@proofofreal 💯`;
+      `A @proofofreal 💯 x sacred_waste @Sacred_Waste $WASTE experience 🗑️`;
 
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank", "noopener,noreferrer");
@@ -208,7 +200,7 @@ export default function EthDdrGame() {
 
     // Cadence: 10 slow, 25 medium, 20 fast, 5 slow
     const SECTIONS = [
-      { t0: 0, t1: 10, spawnDelay: 500, speed: 240 },  // slow
+      { t0: 0, t1: 10, spawnDelay: 500, speed: 240 }, // slow
       { t0: 10, t1: 32, spawnDelay: 400, speed: 280 }, // medium
       { t0: 32, t1: 55, spawnDelay: 330, speed: 320 }, // fast
       { t0: 55, t1: 60, spawnDelay: 500, speed: 260 }, // slow
@@ -251,6 +243,8 @@ export default function EthDdrGame() {
       }
 
       create() {
+        this.cameras.main.setBackgroundColor("rgba(0,0,0,0)");
+
         // expose to React for mobile taps
         (window as any).__ETH_DDR_SCENE__ = this;
 
@@ -264,22 +258,27 @@ export default function EthDdrGame() {
         this.elapsed = 0;
         this.notes = [];
 
-        // Background base (canvas)
-        this.add.rectangle(W / 2, H / 2, W, H, 0x0b0b12, 0.88);
+    
 
-        // Lunar new year subtle text
-        const lny = this.add.text(W / 2, 180, "HAPPY LUNAR NEW YEAR 🧧", {
-          fontSize: "16px",
-          color: "#ffffff",
-        });
-        lny.setOrigin(0.5, 0.5);
-        lny.setAlpha(0.08);
+        // Subtle rhythm guide lines
+        for (let y = 0; y < H; y += 60) {
+          this.add.rectangle(W / 2, y, W, 1, 0xffffff, 0.03);
+        }
+
+        
 
         this.add.text(14, 10, "ETH DDR", { fontSize: "14px", color: "#9b59ff" });
 
         this.scoreText = this.add.text(14, 30, "Score: 0", {
           fontSize: "16px",
           color: "#ffffff",
+        });
+
+        // Combo counter TOP LEFT
+        this.comboText = this.add.text(14, 52, "Combo: 0", {
+          fontSize: "16px",
+          color: "#ffffff",
+          fontStyle: "700",
         });
 
         this.timerText = this.add.text(330, 30, "60", {
@@ -298,16 +297,12 @@ export default function EthDdrGame() {
           this.laneFlash[d] = r;
         });
 
-        this.add.rectangle(W / 2, hitZoneY, W, 4, 0x9b59ff, 1);
+        // HEAT BAR (base + glow overlay)
+(this as any).heat = 0; // 0..1
+(this as any).heatBarBase = this.add.rectangle(W / 2, hitZoneY, W, 10, 0x9b59ff, 0.65);
+(this as any).heatBarGlow = this.add.rectangle(W / 2, hitZoneY, W, 18, 0xff2bd6, 0);
+(this as any).heatBarGlow.setBlendMode(Phaser.BlendModes.ADD);
 
-        // BIG combo text near hit line + grows more with combo
-        this.comboText = this.add.text(W / 2, hitZoneY + 8, "0", {
-          fontSize: "26px",
-          color: "#ffffff",
-          fontStyle: "700",
-        });
-        this.comboText.setOrigin(0.5, 0);
-        this.comboText.setAlpha(0.95);
 
         // input
         this.cursors = this.input.keyboard!.createCursorKeys();
@@ -337,65 +332,56 @@ export default function EthDdrGame() {
         return SECTIONS.find((s) => e >= s.t0 && e < s.t1) ?? SECTIONS[SECTIONS.length - 1];
       }
 
-      spawnNote() {
-        const dirs: Dir[] = ["Left", "Down", "Up", "Right"];
-        const dir = Phaser.Utils.Array.GetRandom(dirs);
+  // Sacred Waste "logo note": triangle outline + fire emoji (directional, transparent)
+spawnNote() {
+  const dirs: Dir[] = ["Left", "Down", "Up", "Right"];
+  const dir = Phaser.Utils.Array.GetRandom(dirs);
 
-        const g = this.add.graphics();
-        g.fillStyle(0xffffff, 1);
+  // Triangle outline only (no fill)
+  const tri = this.add.graphics();
+  tri.lineStyle(3, 0xff5a1f, 1);
 
-        // draw bold triangle arrow centered at (0,0)
-        const size = 18;
-        let pts: { x: number; y: number }[] = [];
-        if (dir === "Up") {
-          pts = [
-            { x: 0, y: -size },
-            { x: -size, y: size },
-            { x: size, y: size },
-          ];
-        } else if (dir === "Down") {
-          pts = [
-            { x: 0, y: size },
-            { x: -size, y: -size },
-            { x: size, y: -size },
-          ];
-        } else if (dir === "Left") {
-          pts = [
-            { x: -size, y: 0 },
-            { x: size, y: -size },
-            { x: size, y: size },
-          ];
-        } else {
-          pts = [
-            { x: size, y: 0 },
-            { x: -size, y: -size },
-            { x: -size, y: size },
-          ];
-        }
+  const size = 20;
+  const pts = [
+    { x: 0, y: -size },     // base = UP triangle
+    { x: -size, y: size },
+    { x: size, y: size },
+  ];
 
-        g.fillPoints(pts, true);
-        g.lineStyle(2, 0x9b59ff, 1);
-        g.strokePoints(pts, true);
+  tri.strokePoints(pts, true);
 
-        const note: Note = {
-          dir,
-          x: laneX[dir],
-          y: -30,
-          g,
-        };
+  // Rotation per direction
+  const rot: Record<Dir, number> = {
+    Up: 0,
+    Right: Math.PI / 2,
+    Down: Math.PI,
+    Left: -Math.PI / 2,
+  };
 
-        g.x = note.x;
-        g.y = note.y;
+  // Fire emoji (rotates WITH the arrow)
+  const fire = this.add.text(0, 2, "🔥", { fontSize: "16px" });
+  fire.setOrigin(0.5);
 
-        this.notes.push(note);
-        notesSpawned += 1;
-      }
+  // Group + rotate together
+  const container = this.add.container(laneX[dir], -30, [tri, fire]);
+  container.rotation = rot[dir];
+
+  const note: Note = {
+    dir,
+    x: laneX[dir],
+    y: -30,
+    g: container,
+  };
+
+  this.notes.push(note);
+  notesSpawned += 1;
+}
 
       flashLane(dir: Dir) {
         const color = Phaser.Utils.Array.GetRandom(NEON);
         const r = this.laneFlash[dir];
         r.fillColor = color;
-        r.setAlpha(0.20);
+        r.setAlpha(0.2);
         this.tweens.add({
           targets: r,
           alpha: 0,
@@ -418,23 +404,51 @@ export default function EthDdrGame() {
         });
       }
 
-      fireworksBurst(intensity: number) {
+emojiPop(emoji: string, size = 72, duration = 1300) {
+  const t = this.add.text(W / 2, H / 2 - 40, emoji, {
+    fontSize: `${size}px`,
+  });
+  t.setOrigin(0.5);
+  t.setAlpha(1);
+
+  // big + readable, stays longer, then floats out
+  this.tweens.add({
+    targets: t,
+    scale: 1.25,
+    duration: Math.floor(duration * 0.35),
+    yoyo: true,
+    ease: "Sine.easeOut",
+  });
+
+  this.tweens.add({
+    targets: t,
+    alpha: 0,
+    y: t.y - 55,
+    delay: Math.floor(duration * 0.35),
+    duration: Math.floor(duration * 0.65),
+    ease: "Sine.easeIn",
+    onComplete: () => t.destroy(),
+  });
+}
+
+
+      fireworksBurst(intensity: number, originX?: number, originY?: number) {
         const bursts = 18 + intensity * 10;
-        const originX = Phaser.Math.Between(40, W - 40);
-        const originY = Phaser.Math.Between(70, 260);
+        const ox = originX ?? Phaser.Math.Between(40, W - 40);
+        const oy = originY ?? Phaser.Math.Between(70, 260);
 
         for (let i = 0; i < bursts; i++) {
           const c = Phaser.Utils.Array.GetRandom(NEON);
           const size = Phaser.Math.Between(2, 5 + intensity);
-          const dot = this.add.circle(originX, originY, size, c, 1);
+          const dot = this.add.circle(ox, oy, size, c, 1);
 
           const angle = Phaser.Math.FloatBetween(0, Math.PI * 2);
           const dist = Phaser.Math.Between(50, 140 + intensity * 60);
 
           this.tweens.add({
             targets: dot,
-            x: originX + Math.cos(angle) * dist,
-            y: originY + Math.sin(angle) * dist,
+            x: ox + Math.cos(angle) * dist,
+            y: oy + Math.sin(angle) * dist,
             alpha: 0,
             duration: Phaser.Math.Between(500, 850),
             onComplete: () => dot.destroy(),
@@ -442,8 +456,17 @@ export default function EthDdrGame() {
         }
       }
 
+      fireworksBurstCenter(intensity: number) {
+        this.fireworksBurst(intensity, W / 2, H / 2 - 40);
+      }
+
+      fireworksBurstEverywhere(intensity: number) {
+        for (let i = 0; i < 6; i++) {
+          this.fireworksBurst(intensity);
+        }
+      }
+
       popCombo(comboNow: number) {
-        // grow/push the combo counter more as combo increases
         const pop = Math.min(1.0 + comboNow * 0.012, 1.75);
         this.tweens.add({
           targets: this.comboText,
@@ -453,8 +476,9 @@ export default function EthDdrGame() {
           duration: 95,
         });
 
-        // color shifts at milestones (feels like leveling up)
-        if (comboNow >= 100) this.comboText.setColor("#00e5ff");
+        // color shifts at milestones
+        if (comboNow >= 120) this.comboText.setColor("#ff5a1f");
+        else if (comboNow >= 100) this.comboText.setColor("#00e5ff");
         else if (comboNow >= 50) this.comboText.setColor("#7cff00");
         else if (comboNow >= 25) this.comboText.setColor("#ffd400");
         else if (comboNow >= 10) this.comboText.setColor("#ff2bd6");
@@ -462,58 +486,133 @@ export default function EthDdrGame() {
       }
 
       onHit(dir: Dir, diff: number) {
-        // scoring
-        let gained = 30;
-        let label = "OK";
-        if (diff < PERFECT_WINDOW) {
-          gained = 100;
-          label = "PERFECT";
-        } else if (diff < GOOD_WINDOW) {
-          gained = 60;
-          label = "GOOD";
-        }
+  // --------------------
+  // scoring
+  // --------------------
+  let gained = 30;
+  let label = "OK";
+  if (diff < PERFECT_WINDOW) {
+    gained = 100;
+    label = "PERFECT";
+  } else if (diff < GOOD_WINDOW) {
+    gained = 60;
+    label = "GOOD";
+  }
 
-        // combo
-        combo += 1;
-        comboMax = Math.max(comboMax, combo);
+  // --------------------
+  // combo + multiplier
+  // --------------------
+  combo += 1;
+  comboMax = Math.max(comboMax, combo);
 
-        // multiplier tiers
-        let mult = 1;
-        if (combo >= 50) mult = 2.0;
-        else if (combo >= 25) mult = 1.5;
-        else if (combo >= 10) mult = 1.2;
+  let mult = 1;
+  if (combo >= 50) mult = 2.0;
+  else if (combo >= 25) mult = 1.5;
+  else if (combo >= 10) mult = 1.2;
 
-        score += Math.round(gained * mult);
-        notesHit += 1;
+  score += Math.round(gained * mult);
+  notesHit += 1;
 
-        this.scoreText.setText(`Score: ${score}`);
-        this.comboText.setText(`${combo}`);
-        this.popCombo(combo);
+  this.scoreText.setText(`Score: ${score}`);
+  this.comboText.setText(`Combo: ${combo}`);
+  this.popCombo(combo);
 
-        const neon = Phaser.Utils.Array.GetRandom(NEON);
-        this.flashLane(dir);
-        this.feedbackText(label, neon);
+  // --------------------
+  // visuals + feedback
+  // --------------------
+  const neon = Phaser.Utils.Array.GetRandom(NEON);
+  this.flashLane(dir);
+  this.feedbackText(label, neon);
 
-        // bigger/more fireworks at bigger combo milestones
-        if (combo === 10) this.fireworksBurst(1);
-        if (combo === 25) { this.fireworksBurst(2); this.fireworksBurst(2); }
-        if (combo === 50) { this.fireworksBurst(3); this.fireworksBurst(3); this.fireworksBurst(3); }
-        if (combo === 75) { this.fireworksBurst(4); this.fireworksBurst(4); this.fireworksBurst(4); }
-        if (combo === 100) { this.fireworksBurst(5); this.fireworksBurst(5); this.fireworksBurst(5); this.fireworksBurst(5); }
-      }
+  // --------------------
+  // 🔥 HEAT BAR LOGIC
+  // --------------------
+  const perfect = diff < PERFECT_WINDOW;
+  const good = diff < GOOD_WINDOW;
+
+  let add = perfect ? 0.18 : good ? 0.12 : 0.08;
+  add += Math.min(combo / 200, 0.25);
+
+  (this as any).heat = Math.min(1, (this as any).heat + add);
+
+  this.tweens.add({
+    targets: (this as any).heatBarGlow,
+    alpha: Math.min(0.9, (this as any).heat * 0.8),
+    duration: 90,
+    yoyo: true,
+  });
+
+  // --------------------
+  // 🎉 COMBO CELEBRATIONS
+  // --------------------
+  if (combo === 25) {
+    this.emojiPop("👉", 88, 1400);
+    this.fireworksBurstCenter(2);
+  }
+
+  if (combo === 50) {
+    this.emojiPop("👏", 96, 1400);
+    this.fireworksBurstCenter(3);
+    this.fireworksBurstCenter(3);
+  }
+
+  if (combo === 100) {
+    this.emojiPop("💯", 110, 1500);
+    this.fireworksBurstEverywhere(4);
+  }
+
+  if (combo === 120) {
+    this.emojiPop("🔥", 140, 1600);
+    this.fireworksBurstEverywhere(5);
+  }
+}
+
 
       onMiss() {
-        if (combo > 0) {
-          combo = 0;
-          this.comboText.setText("0");
-          this.comboText.setColor("#ffffff");
-          this.feedbackText("MISS", 0xff3b3b);
-        }
-      }
+  // --------------------
+  // 🗑️ Trash emoji on miss (big + visible)
+  // --------------------
+  if (combo >= 26) {
+    this.emojiPop("🗑️", 120, 1500);
+  }
+
+  // --------------------
+  // ❄️ HEAT COOLDOWN (D)
+  // --------------------
+  if ((this as any).heat !== undefined) {
+    (this as any).heat = Math.max(0, (this as any).heat * 0.25);
+    (this as any).heatBarGlow.setAlpha((this as any).heat * 0.55);
+  }
+
+  // --------------------
+  // combo reset + feedback
+  // --------------------
+  if (combo > 0) {
+    combo = 0;
+    this.comboText.setText("Combo: 0");
+    this.comboText.setColor("#ffffff");
+    this.feedbackText("MISS", 0xff3b3b);
+  }
+}
+
 
       update(_: number, delta: number) {
         const dt = delta / 1000;
         this.elapsed += dt;
+        // heat decays over time
+(this as any).heat = Math.max(0, (this as any).heat - dt * 0.22);
+
+// visuals
+const heat = (this as any).heat as number;
+
+// thicken + brighten with heat
+(this as any).heatBarBase.setAlpha(0.55 + heat * 0.35);
+(this as any).heatBarGlow.setAlpha(heat * 0.55);
+
+// glow grows with heat
+(this as any).heatBarGlow.width = W;
+(this as any).heatBarGlow.scaleY = 0.9 + heat * 0.8;
+
 
         const section = this.currentSection();
 
@@ -565,14 +664,18 @@ export default function EthDdrGame() {
 
         this.onHit(dir, diff);
 
-        // Note color pop before destroy
-        const hitColor = Phaser.Utils.Array.GetRandom(HIT_COLORS);
-        hit.g.clear();
-        hit.g.fillStyle(hitColor, 1);
-        hit.g.fillCircle(0, 0, 14);
-
-        this.time.delayedCall(60, () => {
-          hit.g.destroy();
+        // Pop/flash note then destroy (container-safe)
+        this.tweens.add({
+          targets: hit.g,
+          scaleX: 1.35,
+          scaleY: 1.35,
+          alpha: 0,
+          duration: 120,
+          onComplete: () => {
+            try {
+              hit.g.destroy();
+            } catch {}
+          },
         });
 
         // remove from list immediately
@@ -615,30 +718,41 @@ export default function EthDdrGame() {
         };
 
         // overlay end text (inside canvas)
-        this.add.rectangle(W / 2, H / 2, 360, 220, 0x000000, 0.85);
-        this.add.text(W / 2, 260, "RUN COMPLETE", {
-          fontSize: "20px",
-          color: "#ffffff",
-        }).setOrigin(0.5);
-        this.add.text(W / 2, 300, `Score: ${score}`, {
-          fontSize: "18px",
-          color: "#ffffff",
-        }).setOrigin(0.5);
-        this.add.text(W / 2, 330, `Max Combo: ${comboMax}`, {
-          fontSize: "14px",
-          color: "#bbbbbb",
-        }).setOrigin(0.5);
+       
+        this.add
+          .text(W / 2, 260, "RUN COMPLETE", {
+            fontSize: "20px",
+            color: "#ffffff",
+          })
+          .setOrigin(0.5);
+        this.add
+          .text(W / 2, 300, `Score: ${score}`, {
+            fontSize: "18px",
+            color: "#ffffff",
+          })
+          .setOrigin(0.5);
+        this.add
+          .text(W / 2, 330, `Max Combo: ${comboMax}`, {
+            fontSize: "14px",
+            color: "#bbbbbb",
+          })
+          .setOrigin(0.5);
       }
     }
 
     const phaserConfig: any = {
-      type: Phaser.AUTO,
-      width: W,
-      height: H,
-      parent: containerRef.current,
-      scene: [MainScene],
-      backgroundColor: "#0b0b12",
-    };
+  type: Phaser.AUTO,
+  width: W,
+  height: H,
+  parent: containerRef.current,
+  scene: [MainScene],
+  transparent: true,
+  render: {
+    clearBeforeRender: true,
+    // This is key: clear with transparent alpha instead of black
+    clearAlpha: 0,
+  },
+};
 
     gameRef.current = new Phaser.Game(phaserConfig);
 
@@ -690,38 +804,31 @@ export default function EthDdrGame() {
       {/* Background video layer (mobile-optimized) */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         {/* soft blur fill layer */}
+        
+        {/* main video layer: more visible Vitalik */}
         <video
-          className="absolute inset-0 w-full h-full object-cover blur-[10px] opacity-40 scale-[1.25]"
+          className="absolute inset-0 w-full h-full object-cover object-[50%_18%] md:object-center scale-[1.18] md:scale-100 contrast-110 saturate-125"
+
           src="/games/eth-ddr/vitalik.mp4"
           autoPlay
           loop
           muted
           playsInline
         />
-        {/* main video layer: keep Vitalik higher + slightly zoomed on mobile */}
-        <video
-          className="absolute inset-0 w-full h-full object-cover object-[50%_18%] md:object-center scale-[1.12] md:scale-100"
-          src="/games/eth-ddr/vitalik.mp4"
-          autoPlay
-          loop
-          muted
-          playsInline
-        />
-        {/* dark overlay to preserve readability */}
-        <div className="absolute inset-0 bg-black/75" />
+        {/* lighter overlay to pop the video more */}
+        <div className="absolute inset-0 bg-black/25" />
       </div>
 
       {/* Audio (starts on Start click) */}
       <audio ref={audioRef} src="/games/eth-ddr/song.mp3" loop preload="auto" />
 
-      <div className="w-full max-w-2xl pb-24">
+      <div className="w-full max-w-2xl pb-28">
         <h1 className="text-3xl font-semibold">Ethereum DDR</h1>
-        <p className="text-white/70 mt-1">
-          Hit the arrow keys when notes reach the line. 60s run gogogogo.
-        </p>
-        <p className="text-white/80 mt-2 text-lg">🧧 Happy Lunar New Years!! 🧧</p>
+        <p className="text-white/70 mt-1">Hit the arrow keys when notes reach the line. 60s run gogogogo.</p>
+       
 
-        <div className="mt-6 rounded-2xl overflow-hidden border border-white/10 bg-white/5 relative">
+<div className="mt-6 rounded-2xl overflow-hidden border border-white/10 bg-transparent relative">
+
           {/* Phaser mount */}
           <div className="p-3">
             <div ref={containerRef} className="w-[400px] h-[600px] mx-auto" />
@@ -751,9 +858,7 @@ export default function EthDdrGame() {
                   </button>
                 ))}
               </div>
-              <div className="text-center text-xs text-white/50 mt-2">
-                Tap buttons or use arrow keys
-              </div>
+              <div className="text-center text-xs text-white/50 mt-2">Tap buttons or use arrow keys</div>
             </div>
           )}
 
@@ -762,9 +867,7 @@ export default function EthDdrGame() {
             <div className="absolute inset-0 flex items-center justify-center bg-black/70 p-4">
               <div className="w-full max-w-md rounded-2xl border border-white/10 bg-black/60 p-5">
                 <div className="text-lg font-semibold">Enter to play</div>
-                <div className="text-white/60 text-sm mt-1">
-                  Required for leaderboard + rewards.
-                </div>
+                <div className="text-white/60 text-sm mt-1">Required for leaderboard + rewards.</div>
 
                 <div className="mt-4 space-y-3">
                   <div>
@@ -796,13 +899,12 @@ export default function EthDdrGame() {
                     Start Game
                   </button>
 
-                  <div className="text-xs text-white/50">
-                    Sound starts after clicking Start (browser rule).
-                  </div>
+                  <div className="text-xs text-white/50">Sound starts after clicking Start (browser rule).</div>
                 </div>
               </div>
             </div>
           )}
+          </div>
 
           {/* Results overlay */}
           {phase === "results" && result && (
@@ -819,9 +921,7 @@ export default function EthDdrGame() {
                   </div>
                   <div>
                     Hit rate:{" "}
-                    <span className="text-white font-semibold">
-                      {(result.hitRate * 100).toFixed(1)}%
-                    </span>{" "}
+                    <span className="text-white font-semibold">{(result.hitRate * 100).toFixed(1)}%</span>{" "}
                     <span className="text-white/50 text-xs">
                       ({result.notesHit}/{result.notesSpawned})
                     </span>
@@ -857,9 +957,7 @@ export default function EthDdrGame() {
                 {shared && canUnlockMint && (
                   <div className="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3">
                     <div className="text-sm font-semibold text-emerald-200">Mint unlocked</div>
-                    <div className="text-xs text-emerald-200/80 mt-1">
-                      (Placeholder for now — you’ll swap the link later)
-                    </div>
+                    <div className="text-xs text-emerald-200/80 mt-1">(Placeholder for now — you’ll swap the link later)</div>
                     <a
                       href="#"
                       className="inline-block mt-2 underline text-emerald-200 hover:text-emerald-100"
@@ -872,9 +970,7 @@ export default function EthDdrGame() {
                 )}
 
                 {shared && !canUnlockMint && (
-                  <div className="mt-4 text-sm text-white/70">
-                    Not quite enough hit rate to unlock mint this run — try again 🔥
-                  </div>
+                  <div className="mt-4 text-sm text-white/70">Not quite enough hit rate to unlock mint this run — try again 🔥</div>
                 )}
 
                 <button
@@ -888,52 +984,30 @@ export default function EthDdrGame() {
           )}
         </div>
 
-        {/* Desktop footer / links (optional - you can replace with your real footer) */}
-        <div className="mt-6 text-sm text-white/60 hidden md:block">
-          <div className="flex flex-wrap gap-4">
-            <a className="hover:text-white" href="https://x.com/proofofreal" target="_blank" rel="noreferrer">
-              X
-            </a>
-            <a className="hover:text-white" href="#" target="_blank" rel="noreferrer">
-              HOPE
-            </a>
-            <a className="hover:text-white" href="#" target="_blank" rel="noreferrer">
-              FAKE
-            </a>
-            <a className="hover:text-white" href="#" target="_blank" rel="noreferrer">
-              Discord
-            </a>
-          </div>
-          <div className="mt-3 text-xs text-white/40">
-            © {new Date().getFullYear()} Proof of Real • Socials Rising
-          </div>
-        </div>
-      </div>
+        {/* Fixed links bar (always visible) */}
+<div className="fixed bottom-0 left-0 right-0 z-30">
+  <div className="mx-auto max-w-2xl px-3 pb-3">
+    <div className="rounded-2xl border border-white/10 bg-black/50 backdrop-blur px-3 py-2 flex flex-wrap gap-x-4 gap-y-2 items-center justify-between">
+      <a className="text-sm text-white/85 hover:text-white" href="https://x.com/Sacred_Waste" target="_blank" rel="noreferrer">
+        Twitter
+      </a>
+      <a className="text-sm text-white/85 hover:text-white" href="https://opensea.io/collection/sw-prophets" target="_blank" rel="noreferrer">
+        Prophet NFTs
+      </a>
+      <a className="text-sm text-white/85 hover:text-white" href="https://www.nftstrategy.fun/strategies/0x31794fbb311adbdd7704ebdc77de9e872e21f90f" target="_blank" rel="noreferrer">
+        $444STR
+      </a>
+      <a className="text-sm text-white/85 hover:text-white" href="https://docs.sacredwaste.io/" target="_blank" rel="noreferrer">
+        Docs
+      </a>
+      <a className="text-sm text-white/85 hover:text-white" href="https://discord.com/invite/sacredwaste" target="_blank" rel="noreferrer">
+        Discord
+      </a>
+    </div>
+  </div>
+</div>
 
-      {/* Sticky mobile links bar (pops out at bottom) */}
-      <div className="fixed bottom-0 left-0 right-0 z-20 md:hidden">
-        <div className="mx-auto max-w-2xl px-3 pb-3">
-          <div className="rounded-2xl border border-white/10 bg-black/60 backdrop-blur px-3 py-2 flex items-center justify-between">
-            <a
-              className="text-sm text-white/80 hover:text-white"
-              href="https://x.com/proofofreal"
-              target="_blank"
-              rel="noreferrer"
-            >
-              X
-            </a>
-            <a className="text-sm text-white/80 hover:text-white" href="#" target="_blank" rel="noreferrer">
-              $FAKE
-            </a>
-            <a className="text-sm text-white/80 hover:text-white" href="#" target="_blank" rel="noreferrer">
-              $HOPE
-            </a>
-            <a className="text-sm text-white/80 hover:text-white" href="#" target="_blank" rel="noreferrer">
-              Discord
-            </a>
-          </div>
-        </div>
-      </div>
+
     </main>
   );
 }
