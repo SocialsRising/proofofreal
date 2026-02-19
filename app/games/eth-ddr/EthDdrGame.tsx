@@ -894,7 +894,7 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
                   </div>
 
                   <div>
-                    <label className="block text-sm text-white/70 mb-1">Wallet address</label>
+                    <label className="block text-sm text-white/70 mb-1">ETH Wallet address</label>
                     <input
                       className="w-full rounded-xl bg-white/10 border border-white/10 px-3 py-2 outline-none"
                       placeholder="0x..."
