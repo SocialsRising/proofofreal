@@ -170,7 +170,7 @@ export default function EthDdrGame() {
       `Max combo: ${result.comboMax} 💥\n\n` +
       `Think you can beat me? 🫵\n` +
       `${shareUrl}\n\n` +
-      `A @proofofreal 💯 x sacred_waste @Sacred_Waste $WASTE experience 🗑️`;
+      `A @proofofreal 💯 x @Sacred_Waste 🗑️ experience `;
 
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}`;
     window.open(url, "_blank", "noopener,noreferrer");
