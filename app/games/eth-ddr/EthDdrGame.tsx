@@ -485,7 +485,7 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
         });
 
         // color shifts at milestones
-        if (comboNow >= 120) this.comboText.setColor("#ff5a1f");
+        if (comboNow >= 150) this.comboText.setColor("#ff5a1f");
         else if (comboNow >= 100) this.comboText.setColor("#00e5ff");
         else if (comboNow >= 50) this.comboText.setColor("#7cff00");
         else if (comboNow >= 25) this.comboText.setColor("#ffd400");
@@ -569,7 +569,7 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
     this.fireworksBurstEverywhere(4);
   }
 
-  if (combo === 120) {
+  if (combo === 150) {
     this.emojiPop("🔥", 140, 1600);
     this.fireworksBurstEverywhere(5);
   }
@@ -912,7 +912,7 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
                     Start Game
                   </button>
 
-                  <div className="text-xs text-white/50"> GLHF Noobs.</div>
+                  <div className="text-xs text-white/50"> Mobile or Desktop Friendly. GLHF Noobs.</div>
                 </div>
               </div>
             </div>
