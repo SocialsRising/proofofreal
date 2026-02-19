@@ -912,7 +912,7 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
                     Start Game
                   </button>
 
-                  <div className="text-xs text-white/50">Sound starts after clicking Start (browser rule).</div>
+                  <div className="text-xs text-white/50">GLHF.</div>
                 </div>
               </div>
             </div>
