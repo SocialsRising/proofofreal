@@ -298,10 +298,11 @@ export default function EthDdrGame() {
         });
 
         // HEAT BAR (base + glow overlay)
-(this as any).heat = 0; // 0..1
-(this as any).heatBarBase = this.add.rectangle(W / 2, hitZoneY, W, 10, 0x9b59ff, 0.65);
-(this as any).heatBarGlow = this.add.rectangle(W / 2, hitZoneY, W, 18, 0xff2bd6, 0);
+(this as any).heat = 0;
+(this as any).heatBarBase = this.add.rectangle(W / 2, hitZoneY, W, 14, 0x00e5ff, 0.85);
+(this as any).heatBarGlow = this.add.rectangle(W / 2, hitZoneY, W, 28, 0xff2bd6, 0);
 (this as any).heatBarGlow.setBlendMode(Phaser.BlendModes.ADD);
+
 
 
         // input
@@ -332,22 +333,28 @@ export default function EthDdrGame() {
         return SECTIONS.find((s) => e >= s.t0 && e < s.t1) ?? SECTIONS[SECTIONS.length - 1];
       }
 
-  // Sacred Waste "logo note": triangle outline + fire emoji (directional, transparent)
+  // Sacred Waste "logo note": bold triangle outline + fire emoji (directional, transparent)
 spawnNote() {
   const dirs: Dir[] = ["Left", "Down", "Up", "Right"];
   const dir = Phaser.Utils.Array.GetRandom(dirs);
 
-  // Triangle outline only (no fill)
+  // Triangle outline only (no fill) — bolder + glow
   const tri = this.add.graphics();
-  tri.lineStyle(3, 0xff5a1f, 1);
 
-  const size = 20;
+  // Main bright outline
+  tri.lineStyle(5, 0xff7a1a, 1);
+
+  const size = 22;
   const pts = [
-    { x: 0, y: -size },     // base = UP triangle
+    { x: 0, y: -size }, // base = UP triangle
     { x: -size, y: size },
     { x: size, y: size },
   ];
 
+  tri.strokePoints(pts, true);
+
+  // Soft neon glow stroke (same shape, thicker, lower alpha)
+  tri.lineStyle(10, 0xff2bd6, 0.22);
   tri.strokePoints(pts, true);
 
   // Rotation per direction
@@ -358,8 +365,8 @@ spawnNote() {
     Left: -Math.PI / 2,
   };
 
-  // Fire emoji (rotates WITH the arrow)
-  const fire = this.add.text(0, 2, "🔥", { fontSize: "16px" });
+  // Fire emoji (rotates WITH the arrow) — slightly bigger
+  const fire = this.add.text(0, 2, "🔥", { fontSize: "18px" });
   fire.setOrigin(0.5);
 
   // Group + rotate together
@@ -376,6 +383,7 @@ spawnNote() {
   this.notes.push(note);
   notesSpawned += 1;
 }
+
 
       flashLane(dir: Dir) {
         const color = Phaser.Utils.Array.GetRandom(NEON);
@@ -546,7 +554,7 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
   // 🎉 COMBO CELEBRATIONS
   // --------------------
   if (combo === 25) {
-    this.emojiPop("👉", 88, 1400);
+    this.emojiPop("🫵", 88, 1400);
     this.fireworksBurstCenter(2);
   }
 
@@ -597,59 +605,64 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
 
 
       update(_: number, delta: number) {
-        const dt = delta / 1000;
-        this.elapsed += dt;
-        // heat decays over time
-(this as any).heat = Math.max(0, (this as any).heat - dt * 0.22);
+  const dt = delta / 1000;
+  this.elapsed += dt;
 
-// visuals
-const heat = (this as any).heat as number;
+  // --------------------
+  // 🔥 HEAT BAR UPDATE (safe + more visible)
+  // --------------------
+  if ((this as any).heatBarBase && (this as any).heatBarGlow) {
+    // decay
+    (this as any).heat = Math.max(0, ((this as any).heat ?? 0) - dt * 0.22);
+    const heat = (this as any).heat as number;
 
-// thicken + brighten with heat
-(this as any).heatBarBase.setAlpha(0.55 + heat * 0.35);
-(this as any).heatBarGlow.setAlpha(heat * 0.55);
+    // base bar stays bold even at 0 heat
+    (this as any).heatBarBase.setAlpha(0.80 + heat * 0.15);
 
-// glow grows with heat
-(this as any).heatBarGlow.width = W;
-(this as any).heatBarGlow.scaleY = 0.9 + heat * 0.8;
+    // glow shows clearly as heat rises
+    (this as any).heatBarGlow.setAlpha(heat * 0.85);
 
+    // glow thickness grows with heat
+    (this as any).heatBarGlow.scaleY = 0.9 + heat * 1.2;
+  }
 
-        const section = this.currentSection();
+  const section = this.currentSection();
 
-        // adjust spawn pacing dynamically
-        if (this.spawnEvent && this.spawnEvent.delay !== section.spawnDelay) {
-          this.spawnEvent.delay = section.spawnDelay;
-        }
+  // adjust spawn pacing dynamically
+  if (this.spawnEvent && this.spawnEvent.delay !== section.spawnDelay) {
+    this.spawnEvent.delay = section.spawnDelay;
+  }
 
-        // move notes by section speed
-        const speed = section.speed;
-        for (const n of this.notes) {
-          n.y += speed * dt;
-          n.g.y = n.y;
-        }
+  // move notes by section speed
+  const speed = section.speed;
+  for (const n of this.notes) {
+    n.y += speed * dt;
+    n.g.y = n.y;
+  }
 
-        // miss detection + cleanup
-        const remaining: Note[] = [];
-        for (const n of this.notes) {
-          if (n.y > H + 40) {
-            n.g.destroy();
-            continue;
-          }
-          if (n.y > MISS_LINE) {
-            n.g.destroy();
-            this.onMiss();
-            continue;
-          }
-          remaining.push(n);
-        }
-        this.notes = remaining;
+  // miss detection + cleanup
+  const remaining: Note[] = [];
+  for (const n of this.notes) {
+    if (n.y > H + 40) {
+      n.g.destroy();
+      continue;
+    }
+    if (n.y > MISS_LINE) {
+      n.g.destroy();
+      this.onMiss();
+      continue;
+    }
+    remaining.push(n);
+  }
+  this.notes = remaining;
 
-        // keyboard input checks
-        this.handleKeyPress("Up");
-        this.handleKeyPress("Down");
-        this.handleKeyPress("Left");
-        this.handleKeyPress("Right");
-      }
+  // keyboard input checks
+  this.handleKeyPress("Up");
+  this.handleKeyPress("Down");
+  this.handleKeyPress("Left");
+  this.handleKeyPress("Right");
+}
+
 
       // Shared hit logic for keyboard + mobile taps
       tryHit(dir: Dir) {
