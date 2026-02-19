@@ -167,7 +167,7 @@ export default function EthDdrGame() {
 
     const text =
       `I just scored ${result.score} on ETH DDR 🎶\n` +
-      `Max combo: ${result.comboMax} 💥\n\n` +
+      `Max combo: ${result.comboMax} 👏 \n\n` +
       `Think you can beat me? 🫵\n` +
       `${shareUrl}\n\n` +
       `A @proofofreal 💯 x @Sacred_Waste 🗑️ experience `;
@@ -267,7 +267,7 @@ export default function EthDdrGame() {
 
         
 
-        this.add.text(14, 10, "ETH DDR", { fontSize: "14px", color: "#9b59ff" });
+        this.add.text(14, 10, "ETH DDR", { fontSize: "20px", color: "#9b59ff" });
 
         this.scoreText = this.add.text(14, 30, "Score: 0", {
           fontSize: "16px",
