@@ -946,7 +946,7 @@ spawnTrashNote(dir: Dir) {
             <div className="absolute inset-0 flex items-center justify-center bg-black/70 p-4">
               <div className="w-full max-w-md rounded-2xl border border-white/10 bg-black/60 p-5">
                 <div className="text-lg font-semibold">Enter to Play ETH DDR</div>
-                <div className="text-white/60 text-sm mt-1">Hit notes as they come down to the bar.</div>
+                <div className="text-white/60 text-sm mt-1">Hit notes as they come down to the bar. Avoid Trash. </div>
 
                 <div className="mt-4 space-y-3">
                   <div>
