@@ -1,9 +1,10 @@
-"use client";
+ "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
 type Dir = "Up" | "Down" | "Left" | "Right";
-type Note = { dir: Dir; x: number; y: number; g: any };
+type NoteKind = "normal" | "trash" | "sparkle";
+type Note = { dir: Dir; kind: NoteKind; x: number; y: number; g: any };
 
 type RunResult = {
   score: number;
@@ -53,6 +54,7 @@ export default function EthDdrGame() {
 
   // ===== Media refs =====
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const fahhRef = useRef<HTMLAudioElement | null>(null);
 
   // ===== Phaser refs =====
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -100,10 +102,17 @@ export default function EthDdrGame() {
     if (!a) return;
     try {
       a.currentTime = 0;
-      await a.play(); // requires user gesture (Start button is the gesture)
-    } catch {
-      // If it fails, game still works; can add "Tap to enable sound" later.
-    }
+      await a.play(); // requires user gesture
+    } catch {}
+  }
+
+  function playFahh() {
+    const f = fahhRef.current;
+    if (!f) return;
+    try {
+      f.currentTime = 0;
+      f.play();
+    } catch {}
   }
 
   function cleanupGame() {
@@ -114,7 +123,6 @@ export default function EthDdrGame() {
     } catch {}
     gameRef.current = null;
 
-    // clear tap bridge just in case
     try {
       delete (window as any).__ETH_DDR_SCENE__;
     } catch {}
@@ -138,16 +146,11 @@ export default function EthDdrGame() {
     setResult(null);
     setPhase("playing");
 
-    // Start audio immediately on user click
     startAudio();
-
-    // Make sure any existing Phaser instance is destroyed
     cleanupGame();
 
-    // Bump run id so we can uniquely bridge result
     runIdRef.current += 1;
 
-    // Create Phaser game after phase changes (avoid layout race)
     setTimeout(() => {
       initPhaser(runIdRef.current);
     }, 0);
@@ -184,7 +187,6 @@ export default function EthDdrGame() {
     const PhaserMod = await import("phaser");
     const Phaser = PhaserMod.default;
 
-    // If user navigated away or restarted during await
     if (runId !== runIdRef.current) return;
 
     // Game constants
@@ -196,14 +198,14 @@ export default function EthDdrGame() {
     const HIT_WINDOW = 55;
     const PERFECT_WINDOW = 10;
     const GOOD_WINDOW = 25;
-    const MISS_LINE = hitZoneY + HIT_WINDOW; // when note passes this, it's a miss
+    const MISS_LINE = hitZoneY + HIT_WINDOW;
 
-    // Cadence: 10 slow, 25 medium, 20 fast, 5 slow
+    // Cadence
     const SECTIONS = [
-      { t0: 0, t1: 10, spawnDelay: 500, speed: 240 }, // slow
-      { t0: 10, t1: 32, spawnDelay: 400, speed: 280 }, // medium
-      { t0: 32, t1: 55, spawnDelay: 330, speed: 320 }, // fast
-      { t0: 55, t1: 60, spawnDelay: 500, speed: 260 }, // slow
+      { t0: 0, t1: 10, spawnDelay: 500, speed: 240 },
+      { t0: 10, t1: 32, spawnDelay: 400, speed: 280 },
+      { t0: 32, t1: 55, spawnDelay: 330, speed: 320 },
+      { t0: 55, t1: 60, spawnDelay: 500, speed: 260 },
     ];
 
     const laneX: Record<Dir, number> = {
@@ -213,11 +215,19 @@ export default function EthDdrGame() {
       Right: 300,
     };
 
+    const rot: Record<Dir, number> = {
+      Up: 0,
+      Right: Math.PI / 2,
+      Down: Math.PI,
+      Left: -Math.PI / 2,
+    };
+
     let score = 0;
     let timeLeft = 60;
     let combo = 0;
     let comboMax = 0;
 
+    // IMPORTANT: notesSpawned is ONLY for notes that count toward hit rate
     let notesSpawned = 0;
     let notesHit = 0;
 
@@ -232,10 +242,8 @@ export default function EthDdrGame() {
       spawnEvent!: any;
       countdownEvent!: any;
 
-      // lane flash rectangles
       laneFlash: Record<Dir, any> = {} as any;
 
-      // elapsed tracking
       elapsed = 0;
 
       constructor() {
@@ -244,8 +252,6 @@ export default function EthDdrGame() {
 
       create() {
         this.cameras.main.setBackgroundColor("rgba(0,0,0,0)");
-
-        // expose to React for mobile taps
         (window as any).__ETH_DDR_SCENE__ = this;
 
         score = 0;
@@ -258,14 +264,10 @@ export default function EthDdrGame() {
         this.elapsed = 0;
         this.notes = [];
 
-    
-
         // Subtle rhythm guide lines
         for (let y = 0; y < H; y += 60) {
-          this.add.rectangle(W / 2, y, W, 1, 0xffffff, 0.03);
+          this.add.rectangle(W / 2, y, W, 1, 0xffffff, 0.04);
         }
-
-        
 
         this.add.text(14, 10, "ETH DDR", { fontSize: "20px", color: "#9b59ff" });
 
@@ -274,7 +276,6 @@ export default function EthDdrGame() {
           color: "#ffffff",
         });
 
-        // Combo counter TOP LEFT
         this.comboText = this.add.text(14, 52, "Combo: 0", {
           fontSize: "16px",
           color: "#ffffff",
@@ -286,29 +287,26 @@ export default function EthDdrGame() {
           color: "#ffffff",
         });
 
-        // lanes + hit line
+        // Lanes
         (["Left", "Down", "Up", "Right"] as Dir[]).forEach((d) => {
           const x = laneX[d];
-          this.add.rectangle(x, H / 2, 2, H, 0xffffff, 0.08);
+          this.add.rectangle(x, H / 2, 2, H, 0xffffff, 0.10);
 
-          // flash overlay per lane
           const r = this.add.rectangle(x, H / 2, 60, H, 0x9b59ff, 0);
           r.setAlpha(0);
           this.laneFlash[d] = r;
         });
 
-        // HEAT BAR (base + glow overlay)
-(this as any).heat = 0;
-(this as any).heatBarBase = this.add.rectangle(W / 2, hitZoneY, W, 14, 0x00e5ff, 0.85);
-(this as any).heatBarGlow = this.add.rectangle(W / 2, hitZoneY, W, 28, 0xff2bd6, 0);
-(this as any).heatBarGlow.setBlendMode(Phaser.BlendModes.ADD);
+        // HEAT BAR (thicker + clearer)
+        (this as any).heat = 0;
+        (this as any).heatBarBase = this.add.rectangle(W / 2, hitZoneY, W, 16, 0x00e5ff, 0.95);
+        (this as any).heatBarGlow = this.add.rectangle(W / 2, hitZoneY, W, 34, 0xff2bd6, 0);
+        (this as any).heatBarGlow.setBlendMode(Phaser.BlendModes.ADD);
 
-
-
-        // input
+        // Input
         this.cursors = this.input.keyboard!.createCursorKeys();
 
-        // spawn notes using initial section pacing
+        // Spawn notes
         const s0 = SECTIONS[0];
         this.spawnEvent = this.time.addEvent({
           delay: s0.spawnDelay,
@@ -316,7 +314,7 @@ export default function EthDdrGame() {
           callback: () => this.spawnNote(),
         });
 
-        // countdown
+        // Countdown
         this.countdownEvent = this.time.addEvent({
           delay: 1000,
           loop: true,
@@ -333,63 +331,155 @@ export default function EthDdrGame() {
         return SECTIONS.find((s) => e >= s.t0 && e < s.t1) ?? SECTIONS[SECTIONS.length - 1];
       }
 
-  // Sacred Waste "logo note": bold triangle outline + fire emoji (directional, transparent)
-spawnNote() {
-  const dirs: Dir[] = ["Left", "Down", "Up", "Right"];
-  const dir = Phaser.Utils.Array.GetRandom(dirs);
+      // --- SPAWN MIX ---
+      // trash: occasional (punishes), sparkle: occasional (bonus), normal: rest
+      spawnNote() {
+        const dirs: Dir[] = ["Left", "Down", "Up", "Right"];
+        const dir = Phaser.Utils.Array.GetRandom(dirs);
 
-  // Triangle outline only (no fill) — bolder + glow
+        // roughly: trash 10%, sparkle 12%, normal 78%
+        const r = Math.random();
+        if (r < 0.10) return this.spawnTrashNote(dir);
+        if (r < 0.22) return this.spawnSparkleNote(dir);
+        return this.spawnNormalNote(dir);
+      }
+
+      // Normal Sacred Waste note: bold triangle + fire (directional, transparent)
+      spawnNormalNote(dir: Dir) {
+        const tri = this.add.graphics();
+
+        // Bold + high-contrast outline
+        tri.lineStyle(6, 0xff7a1a, 1);
+
+        const size = 22;
+        const pts = [
+          { x: 0, y: -size },
+          { x: -size, y: size },
+          { x: size, y: size },
+        ];
+        tri.strokePoints(pts, true);
+
+        // Glow
+        tri.lineStyle(12, 0xff2bd6, 0.18);
+        tri.strokePoints(pts, true);
+
+        const fire = this.add.text(0, 2, "🔥", { fontSize: "20px" });
+        fire.setOrigin(0.5);
+
+        const container = this.add.container(laneX[dir], -30, [tri, fire]);
+        container.rotation = rot[dir];
+
+        const note: Note = { dir, kind: "normal", x: laneX[dir], y: -30, g: container };
+        this.notes.push(note);
+        notesSpawned += 1;
+      }
+
+       // Trash bin note: if hit => -500 + combo reset + fahhh
+spawnTrashNote(dir: Dir) {
+  // Build direction-specific triangle points so it's ALWAYS facing correctly.
+  // (No relying on container.rotation)
+  const size = 22;
+
+  let pts: { x: number; y: number }[] = [];
+  if (dir === "Up") {
+    pts = [
+      { x: 0, y: -size },
+      { x: -size, y: size },
+      { x: size, y: size },
+    ];
+  } else if (dir === "Down") {
+    pts = [
+      { x: 0, y: size },
+      { x: -size, y: -size },
+      { x: size, y: -size },
+    ];
+  } else if (dir === "Left") {
+    pts = [
+      { x: -size, y: 0 },
+      { x: size, y: -size },
+      { x: size, y: size },
+    ];
+  } else {
+    // Right
+    pts = [
+      { x: size, y: 0 },
+      { x: -size, y: -size },
+      { x: -size, y: size },
+    ];
+  }
+
   const tri = this.add.graphics();
 
-  // Main bright outline
-  tri.lineStyle(5, 0xff7a1a, 1);
-
-  const size = 22;
-  const pts = [
-    { x: 0, y: -size }, // base = UP triangle
-    { x: -size, y: size },
-    { x: size, y: size },
-  ];
-
+  // bold black outline
+  tri.lineStyle(7, 0x000000, 1);
   tri.strokePoints(pts, true);
 
-  // Soft neon glow stroke (same shape, thicker, lower alpha)
-  tri.lineStyle(10, 0xff2bd6, 0.22);
+  // subtle highlight so it reads on video
+  tri.lineStyle(12, 0xffffff, 0.08);
   tri.strokePoints(pts, true);
 
-  // Rotation per direction
-  const rot: Record<Dir, number> = {
-    Up: 0,
-    Right: Math.PI / 2,
-    Down: Math.PI,
-    Left: -Math.PI / 2,
-  };
+  // bigger bin in the middle
+  const bin = this.add.text(0, 2, "🗑️", { fontSize: "28px" });
+  bin.setOrigin(0.5);
 
-  // Fire emoji (rotates WITH the arrow) — slightly bigger
-  const fire = this.add.text(0, 2, "🔥", { fontSize: "18px" });
-  fire.setOrigin(0.5);
+  // container NOT rotated (triangle points already are)
+  const container = this.add.container(laneX[dir], -30, [tri, bin]);
 
-  // Group + rotate together
-  const container = this.add.container(laneX[dir], -30, [tri, fire]);
-  container.rotation = rot[dir];
+  // wobble so it's obvious
+  this.tweens.add({
+    targets: container,
+    angle: { from: -6, to: 6 },
+    duration: 160,
+    yoyo: true,
+    repeat: -1,
+  });
 
   const note: Note = {
     dir,
+    kind: "trash",
     x: laneX[dir],
     y: -30,
     g: container,
   };
 
   this.notes.push(note);
-  notesSpawned += 1;
+  // IMPORTANT: trash does NOT increment notesSpawned
 }
 
+      // Sparkle bonus note: same triangle design, +500 if hit (counts to hit rate)
+      spawnSparkleNote(dir: Dir) {
+        const tri = this.add.graphics();
+
+        tri.lineStyle(6, 0xffd400, 1);
+
+        const size = 22;
+        const pts = [
+          { x: 0, y: -size },
+          { x: -size, y: size },
+          { x: size, y: size },
+        ];
+        tri.strokePoints(pts, true);
+
+        // sparkle glow
+        tri.lineStyle(14, 0xffffff, 0.14);
+        tri.strokePoints(pts, true);
+
+        const star = this.add.text(0, 2, "✨", { fontSize: "22px" });
+        star.setOrigin(0.5);
+
+        const container = this.add.container(laneX[dir], -30, [tri, star]);
+        container.rotation = rot[dir];
+
+        const note: Note = { dir, kind: "sparkle", x: laneX[dir], y: -30, g: container };
+        this.notes.push(note);
+        notesSpawned += 1;
+      }
 
       flashLane(dir: Dir) {
         const color = Phaser.Utils.Array.GetRandom(NEON);
         const r = this.laneFlash[dir];
         r.fillColor = color;
-        r.setAlpha(0.2);
+        r.setAlpha(0.22);
         this.tweens.add({
           targets: r,
           alpha: 0,
@@ -412,33 +502,31 @@ spawnNote() {
         });
       }
 
-emojiPop(emoji: string, size = 72, duration = 1300) {
-  const t = this.add.text(W / 2, H / 2 - 40, emoji, {
-    fontSize: `${size}px`,
-  });
-  t.setOrigin(0.5);
-  t.setAlpha(1);
+      emojiPop(emoji: string, size = 72, duration = 1300) {
+        const t = this.add.text(W / 2, H / 2 - 40, emoji, {
+          fontSize: `${size}px`,
+        });
+        t.setOrigin(0.5);
+        t.setAlpha(1);
 
-  // big + readable, stays longer, then floats out
-  this.tweens.add({
-    targets: t,
-    scale: 1.25,
-    duration: Math.floor(duration * 0.35),
-    yoyo: true,
-    ease: "Sine.easeOut",
-  });
+        this.tweens.add({
+          targets: t,
+          scale: 1.25,
+          duration: Math.floor(duration * 0.35),
+          yoyo: true,
+          ease: "Sine.easeOut",
+        });
 
-  this.tweens.add({
-    targets: t,
-    alpha: 0,
-    y: t.y - 55,
-    delay: Math.floor(duration * 0.35),
-    duration: Math.floor(duration * 0.65),
-    ease: "Sine.easeIn",
-    onComplete: () => t.destroy(),
-  });
-}
-
+        this.tweens.add({
+          targets: t,
+          alpha: 0,
+          y: t.y - 55,
+          delay: Math.floor(duration * 0.35),
+          duration: Math.floor(duration * 0.65),
+          ease: "Sine.easeIn",
+          onComplete: () => t.destroy(),
+        });
+      }
 
       fireworksBurst(intensity: number, originX?: number, originY?: number) {
         const bursts = 18 + intensity * 10;
@@ -469,9 +557,7 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
       }
 
       fireworksBurstEverywhere(intensity: number) {
-        for (let i = 0; i < 6; i++) {
-          this.fireworksBurst(intensity);
-        }
+        for (let i = 0; i < 6; i++) this.fireworksBurst(intensity);
       }
 
       popCombo(comboNow: number) {
@@ -484,8 +570,7 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
           duration: 95,
         });
 
-        // color shifts at milestones
-        if (comboNow >= 150) this.comboText.setColor("#ff5a1f");
+        if (comboNow >= 120) this.comboText.setColor("#ff5a1f");
         else if (comboNow >= 100) this.comboText.setColor("#00e5ff");
         else if (comboNow >= 50) this.comboText.setColor("#7cff00");
         else if (comboNow >= 25) this.comboText.setColor("#ffd400");
@@ -493,178 +578,171 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
         else this.comboText.setColor("#ffffff");
       }
 
-      onHit(dir: Dir, diff: number) {
-  // --------------------
-  // scoring
-  // --------------------
-  let gained = 30;
-  let label = "OK";
-  if (diff < PERFECT_WINDOW) {
-    gained = 100;
-    label = "PERFECT";
-  } else if (diff < GOOD_WINDOW) {
-    gained = 60;
-    label = "GOOD";
-  }
+      applyHeat(diff: number) {
+        const perfect = diff < PERFECT_WINDOW;
+        const good = diff < GOOD_WINDOW;
 
-  // --------------------
-  // combo + multiplier
-  // --------------------
-  combo += 1;
-  comboMax = Math.max(comboMax, combo);
+        let add = perfect ? 0.18 : good ? 0.12 : 0.08;
+        add += Math.min(combo / 200, 0.25);
 
-  let mult = 1;
-  if (combo >= 50) mult = 2.0;
-  else if (combo >= 25) mult = 1.5;
-  else if (combo >= 10) mult = 1.2;
+        (this as any).heat = Math.min(1, (this as any).heat + add);
 
-  score += Math.round(gained * mult);
-  notesHit += 1;
+        this.tweens.add({
+          targets: (this as any).heatBarGlow,
+          alpha: Math.min(0.95, (this as any).heat * 0.85),
+          duration: 90,
+          yoyo: true,
+        });
+      }
 
-  this.scoreText.setText(`Score: ${score}`);
-  this.comboText.setText(`Combo: ${combo}`);
-  this.popCombo(combo);
+      onNormalOrSparkleHit(dir: Dir, diff: number, isSparkle: boolean) {
+        // scoring base
+        let gained = 30;
+        let label = "OK";
+        if (diff < PERFECT_WINDOW) {
+          gained = 100;
+          label = "PERFECT";
+        } else if (diff < GOOD_WINDOW) {
+          gained = 60;
+          label = "GOOD";
+        }
 
-  // --------------------
-  // visuals + feedback
-  // --------------------
-  const neon = Phaser.Utils.Array.GetRandom(NEON);
-  this.flashLane(dir);
-  this.feedbackText(label, neon);
+        // combo
+        combo += 1;
+        comboMax = Math.max(comboMax, combo);
 
-  // --------------------
-  // 🔥 HEAT BAR LOGIC
-  // --------------------
-  const perfect = diff < PERFECT_WINDOW;
-  const good = diff < GOOD_WINDOW;
+        // multiplier tiers
+        let mult = 1;
+        if (combo >= 50) mult = 2.0;
+        else if (combo >= 25) mult = 1.5;
+        else if (combo >= 10) mult = 1.2;
 
-  let add = perfect ? 0.18 : good ? 0.12 : 0.08;
-  add += Math.min(combo / 200, 0.25);
+        score += Math.round(gained * mult);
 
-  (this as any).heat = Math.min(1, (this as any).heat + add);
+        // sparkle bonus (+500) requested
+        if (isSparkle) {
+          score += 500;
+          this.emojiPop("✨", 84, 1100);
+        }
 
-  this.tweens.add({
-    targets: (this as any).heatBarGlow,
-    alpha: Math.min(0.9, (this as any).heat * 0.8),
-    duration: 90,
-    yoyo: true,
-  });
+        notesHit += 1;
 
-  // --------------------
-  // 🎉 COMBO CELEBRATIONS
-  // --------------------
-  if (combo === 25) {
-    this.emojiPop("🫵", 88, 1400);
-    this.fireworksBurstCenter(2);
-  }
+        this.scoreText.setText(`Score: ${score}`);
+        this.comboText.setText(`Combo: ${combo}`);
+        this.popCombo(combo);
 
-  if (combo === 50) {
-    this.emojiPop("👏", 96, 1400);
-    this.fireworksBurstCenter(3);
-    this.fireworksBurstCenter(3);
-  }
+        const neon = Phaser.Utils.Array.GetRandom(NEON);
+        this.flashLane(dir);
+        this.feedbackText(isSparkle ? "BONUS +500" : label, neon);
 
-  if (combo === 100) {
-    this.emojiPop("💯", 110, 1500);
-    this.fireworksBurstEverywhere(4);
-  }
+        this.applyHeat(diff);
 
-  if (combo === 150) {
-    this.emojiPop("🔥", 140, 1600);
-    this.fireworksBurstEverywhere(5);
-  }
-}
+        // celebrations
+        if (combo === 25) {
+          this.emojiPop("🫵", 88, 1400);
+          this.fireworksBurstCenter(2);
+        }
+        if (combo === 50) {
+          this.emojiPop("👏", 96, 1400);
+          this.fireworksBurstCenter(3);
+          this.fireworksBurstCenter(3);
+        }
+        if (combo === 100) {
+          this.emojiPop("💯", 110, 1500);
+          this.fireworksBurstEverywhere(4);
+        }
+        if (combo === 120) {
+          this.emojiPop("🔥", 150, 1650);
+          this.fireworksBurstEverywhere(5);
+        }
+      }
 
+      onTrashHit() {
+        score = Math.max(0, score - 500);
+        combo = 0;
 
-      onMiss() {
-  // --------------------
-  // 🗑️ Trash emoji on miss (big + visible)
-  // --------------------
-  if (combo >= 26) {
-    this.emojiPop("🗑️", 120, 1500);
-  }
+        this.scoreText.setText(`Score: ${score}`);
+        this.comboText.setText(`Combo: ${combo}`);
+        this.comboText.setColor("#ffffff");
 
-  // --------------------
-  // ❄️ HEAT COOLDOWN (D)
-  // --------------------
-  if ((this as any).heat !== undefined) {
-    (this as any).heat = Math.max(0, (this as any).heat * 0.25);
-    (this as any).heatBarGlow.setAlpha((this as any).heat * 0.55);
-  }
+        this.emojiPop("🗑️", 120, 1400);
+        this.feedbackText("-500", 0xff3b3b);
 
-  // --------------------
-  // combo reset + feedback
-  // --------------------
-  if (combo > 0) {
-    combo = 0;
-    this.comboText.setText("Combo: 0");
-    this.comboText.setColor("#ffffff");
-    this.feedbackText("MISS", 0xff3b3b);
-  }
-}
+        // heat cooldown
+        if ((this as any).heat !== undefined) {
+          (this as any).heat = Math.max(0, (this as any).heat * 0.2);
+          (this as any).heatBarGlow.setAlpha((this as any).heat * 0.85);
+        }
 
+        // trigger sound via React audio ref
+        (window as any).__ETH_DDR_FAHH__ = true;
+      }
 
       update(_: number, delta: number) {
-  const dt = delta / 1000;
-  this.elapsed += dt;
+        const dt = delta / 1000;
+        this.elapsed += dt;
 
-  // --------------------
-  // 🔥 HEAT BAR UPDATE (safe + more visible)
-  // --------------------
-  if ((this as any).heatBarBase && (this as any).heatBarGlow) {
-    // decay
-    (this as any).heat = Math.max(0, ((this as any).heat ?? 0) - dt * 0.22);
-    const heat = (this as any).heat as number;
+        // heat decay
+        if ((this as any).heatBarBase && (this as any).heatBarGlow) {
+          (this as any).heat = Math.max(0, ((this as any).heat ?? 0) - dt * 0.22);
+          const heat = (this as any).heat as number;
 
-    // base bar stays bold even at 0 heat
-    (this as any).heatBarBase.setAlpha(0.80 + heat * 0.15);
+          (this as any).heatBarBase.setAlpha(0.90 + heat * 0.08);
+          (this as any).heatBarGlow.setAlpha(heat * 0.95);
+          (this as any).heatBarGlow.scaleY = 0.95 + heat * 1.25;
+        }
 
-    // glow shows clearly as heat rises
-    (this as any).heatBarGlow.setAlpha(heat * 0.85);
+        const section = this.currentSection();
+        if (this.spawnEvent && this.spawnEvent.delay !== section.spawnDelay) {
+          this.spawnEvent.delay = section.spawnDelay;
+        }
 
-    // glow thickness grows with heat
-    (this as any).heatBarGlow.scaleY = 0.9 + heat * 1.2;
-  }
+        // move notes
+        const speed = section.speed;
+        for (const n of this.notes) {
+          n.y += speed * dt;
+          n.g.y = n.y;
+        }
 
-  const section = this.currentSection();
+        // miss detection + cleanup
+        const remaining: Note[] = [];
+        for (const n of this.notes) {
+          if (n.y > H + 40) {
+            n.g.destroy();
+            continue;
+          }
+          if (n.y > MISS_LINE) {
+            n.g.destroy();
 
-  // adjust spawn pacing dynamically
-  if (this.spawnEvent && this.spawnEvent.delay !== section.spawnDelay) {
-    this.spawnEvent.delay = section.spawnDelay;
-  }
+            // only normal/sparkle misses break combo + show miss feedback
+            if (n.kind !== "trash") {
+              if (combo > 0) {
+                if (combo >= 26) this.emojiPop("🗑️", 120, 1400);
+                combo = 0;
+                this.comboText.setText("Combo: 0");
+                this.comboText.setColor("#ffffff");
+                this.feedbackText("MISS", 0xff3b3b);
+              }
+              // heat cooldown
+              if ((this as any).heat !== undefined) {
+                (this as any).heat = Math.max(0, (this as any).heat * 0.25);
+                (this as any).heatBarGlow.setAlpha((this as any).heat * 0.95);
+              }
+            }
 
-  // move notes by section speed
-  const speed = section.speed;
-  for (const n of this.notes) {
-    n.y += speed * dt;
-    n.g.y = n.y;
-  }
+            continue;
+          }
+          remaining.push(n);
+        }
+        this.notes = remaining;
 
-  // miss detection + cleanup
-  const remaining: Note[] = [];
-  for (const n of this.notes) {
-    if (n.y > H + 40) {
-      n.g.destroy();
-      continue;
-    }
-    if (n.y > MISS_LINE) {
-      n.g.destroy();
-      this.onMiss();
-      continue;
-    }
-    remaining.push(n);
-  }
-  this.notes = remaining;
+        // keyboard input
+        this.handleKeyPress("Up");
+        this.handleKeyPress("Down");
+        this.handleKeyPress("Left");
+        this.handleKeyPress("Right");
+      }
 
-  // keyboard input checks
-  this.handleKeyPress("Up");
-  this.handleKeyPress("Down");
-  this.handleKeyPress("Left");
-  this.handleKeyPress("Right");
-}
-
-
-      // Shared hit logic for keyboard + mobile taps
       tryHit(dir: Dir) {
         const candidates = this.notes
           .filter((n) => n.dir === dir && Math.abs(n.y - hitZoneY) < HIT_WINDOW)
@@ -675,9 +753,15 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
         const hit = candidates[0];
         const diff = Math.abs(hit.y - hitZoneY);
 
-        this.onHit(dir, diff);
+        // route by kind
+        if (hit.kind === "trash") {
+          this.onTrashHit();
+        } else {
+          const isSparkle = hit.kind === "sparkle";
+          this.onNormalOrSparkleHit(dir, diff, isSparkle);
+        }
 
-        // Pop/flash note then destroy (container-safe)
+        // pop + destroy
         this.tweens.add({
           targets: hit.g,
           scaleX: 1.35,
@@ -691,10 +775,8 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
           },
         });
 
-        // remove from list immediately
         this.notes = this.notes.filter((n) => n !== hit);
 
-        // small haptic on mobile
         if (typeof navigator !== "undefined" && "vibrate" in navigator) {
           (navigator as any).vibrate?.(8);
         }
@@ -720,7 +802,6 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
 
         const hitRate = notesSpawned > 0 ? notesHit / notesSpawned : 0;
 
-        // bridge to React
         (window as any).__ETH_DDR_RESULT__ = {
           runId,
           score,
@@ -730,47 +811,40 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
           hitRate,
         };
 
-        // overlay end text (inside canvas)
-       
         this.add
-          .text(W / 2, 260, "RUN COMPLETE", {
-            fontSize: "20px",
-            color: "#ffffff",
-          })
+          .text(W / 2, 260, "RUN COMPLETE", { fontSize: "20px", color: "#ffffff" })
           .setOrigin(0.5);
         this.add
-          .text(W / 2, 300, `Score: ${score}`, {
-            fontSize: "18px",
-            color: "#ffffff",
-          })
+          .text(W / 2, 300, `Score: ${score}`, { fontSize: "18px", color: "#ffffff" })
           .setOrigin(0.5);
         this.add
-          .text(W / 2, 330, `Max Combo: ${comboMax}`, {
-            fontSize: "14px",
-            color: "#bbbbbb",
-          })
+          .text(W / 2, 330, `Max Combo: ${comboMax}`, { fontSize: "14px", color: "#bbbbbb" })
           .setOrigin(0.5);
       }
     }
 
     const phaserConfig: any = {
-  type: Phaser.AUTO,
-  width: W,
-  height: H,
-  parent: containerRef.current,
-  scene: [MainScene],
-  transparent: true,
-  render: {
-    clearBeforeRender: true,
-    // This is key: clear with transparent alpha instead of black
-    clearAlpha: 0,
-  },
-};
+      type: Phaser.AUTO,
+      width: W,
+      height: H,
+      parent: containerRef.current,
+      scene: [MainScene],
+      transparent: true,
+      render: {
+        clearBeforeRender: true,
+        clearAlpha: 0,
+      },
+    };
 
     gameRef.current = new Phaser.Game(phaserConfig);
 
-    // poll result
     const interval = window.setInterval(() => {
+      // fahh trigger
+      if ((window as any).__ETH_DDR_FAHH__) {
+        delete (window as any).__ETH_DDR_FAHH__;
+        playFahh();
+      }
+
       const payload = (window as any).__ETH_DDR_RESULT__;
       if (!payload) return;
 
@@ -796,12 +870,11 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
 
       setResult(r);
       setPhase("results");
-    }, 200);
+    }, 120);
 
     (gameRef.current as any).__interval__ = interval;
   }
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       stopAudio();
@@ -814,40 +887,33 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
 
   return (
     <main className="relative z-10 min-h-screen bg-black/0 text-white flex flex-col items-center justify-start pt-6 px-4">
-      {/* Background video layer (mobile-optimized) */}
+      {/* Background video layer */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
-        {/* soft blur fill layer */}
-        
-        {/* main video layer: more visible Vitalik */}
         <video
-          className="absolute inset-0 w-full h-full object-cover object-[50%_18%] md:object-center scale-[1.18] md:scale-100 contrast-110 saturate-125"
-
+          className="absolute inset-0 w-full h-full object-cover object-[50%_18%] md:object-center scale-[1.12] md:scale-100 contrast-110 saturate-125"
           src="/games/eth-ddr/vitalik.mp4"
           autoPlay
           loop
           muted
           playsInline
         />
-        {/* lighter overlay to pop the video more */}
-        <div className="absolute inset-0 bg-black/25" />
       </div>
 
-      {/* Audio (starts on Start click) */}
+      {/* Audio */}
       <audio ref={audioRef} src="/games/eth-ddr/song.mp3" loop preload="auto" />
+      <audio ref={fahhRef} src="/games/eth-ddr/fahhh.mp3" preload="auto" />
 
-      <div className="w-full max-w-2xl pb-28">
-        <h1 className="text-3xl font-semibold">Ethereum DDR</h1>
-        <p className="text-white/70 mt-1">Hit the arrow keys when notes reach the line. 60s run gogogogo.</p>
-       
+      <div className="w-full max-w-2xl pb-28 relative z-10">
+        <h1 className="text-3xl font-semibold"></h1>
+        <p className="text-white/70 mt-1"></p>
 
-<div className="mt-6 rounded-2xl overflow-hidden border border-white/10 bg-transparent relative">
-
+        <div className="mt-6 rounded-2xl overflow-hidden border border-white/10 bg-transparent relative">
           {/* Phaser mount */}
           <div className="p-3">
             <div ref={containerRef} className="w-[400px] h-[600px] mx-auto" />
           </div>
 
-          {/* Mobile tap buttons (only while playing) */}
+          {/* Mobile tap buttons */}
           {phase === "playing" && (
             <div className="md:hidden absolute inset-x-0 bottom-0 p-3">
               <div className="grid grid-cols-4 gap-2">
@@ -880,7 +946,7 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
             <div className="absolute inset-0 flex items-center justify-center bg-black/70 p-4">
               <div className="w-full max-w-md rounded-2xl border border-white/10 bg-black/60 p-5">
                 <div className="text-lg font-semibold">Enter to Play ETH DDR</div>
-                <div className="text-white/60 text-sm mt-1"></div>
+                <div className="text-white/60 text-sm mt-1">Hit notes as they come down to the bar.</div>
 
                 <div className="mt-4 space-y-3">
                   <div>
@@ -912,12 +978,11 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
                     Start Game
                   </button>
 
-                  <div className="text-xs text-white/50"> Mobile or Desktop Friendly. GLHF Noobs.</div>
+                  <div className="text-xs text-white/50">Mobile or Desktop Friendly. GLHF.</div>
                 </div>
               </div>
             </div>
           )}
-          </div>
 
           {/* Results overlay */}
           {phase === "results" && result && (
@@ -966,11 +1031,10 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
                   {(MIN_HIT_RATE_TO_UNLOCK * 100).toFixed(0)}%.
                 </div>
 
-                {/* Mint placeholder (revealed after share + gate) */}
                 {shared && canUnlockMint && (
                   <div className="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3">
                     <div className="text-sm font-semibold text-emerald-200">Mint unlocked</div>
-                    <div className="text-xs text-emerald-200/80 mt-1">(Placeholder for now — you’ll swap the link later)</div>
+                    <div className="text-xs text-emerald-200/80 mt-1">(Placeholder — swap link later)</div>
                     <a
                       href="#"
                       className="inline-block mt-2 underline text-emerald-200 hover:text-emerald-100"
@@ -983,7 +1047,7 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
                 )}
 
                 {shared && !canUnlockMint && (
-                  <div className="mt-4 text-sm text-white/70">Not quite enough hit rate to unlock mint this run — try again 🔥</div>
+                  <div className="mt-4 text-sm text-white/70">Not enough hit rate to unlock mint — try again 🔥</div>
                 )}
 
                 <button
@@ -996,31 +1060,30 @@ emojiPop(emoji: string, size = 72, duration = 1300) {
             </div>
           )}
         </div>
+      </div>
 
-        {/* Fixed links bar (always visible) */}
-<div className="fixed bottom-0 left-0 right-0 z-30">
-  <div className="mx-auto max-w-2xl px-3 pb-3">
-    <div className="rounded-2xl border border-white/10 bg-black/50 backdrop-blur px-3 py-2 flex flex-wrap gap-x-4 gap-y-2 items-center justify-between">
-      <a className="text-sm text-white/85 hover:text-white" href="https://x.com/Sacred_Waste" target="_blank" rel="noreferrer">
-        Twitter
-      </a>
-      <a className="text-sm text-white/85 hover:text-white" href="https://opensea.io/collection/sw-prophets" target="_blank" rel="noreferrer">
-        Prophet NFTs
-      </a>
-      <a className="text-sm text-white/85 hover:text-white" href="https://www.nftstrategy.fun/strategies/0x31794fbb311adbdd7704ebdc77de9e872e21f90f" target="_blank" rel="noreferrer">
-        $444STR
-      </a>
-      <a className="text-sm text-white/85 hover:text-white" href="https://docs.sacredwaste.io/" target="_blank" rel="noreferrer">
-        Docs
-      </a>
-      <a className="text-sm text-white/85 hover:text-white" href="https://discord.com/invite/sacredwaste" target="_blank" rel="noreferrer">
-        Discord
-      </a>
-    </div>
-  </div>
-</div>
-
-
+      {/* Fixed links bar (always visible) */}
+      <div className="fixed bottom-0 left-0 right-0 z-30">
+        <div className="mx-auto max-w-2xl px-3 pb-3">
+          <div className="rounded-2xl border border-white/10 bg-black/50 backdrop-blur px-3 py-2 flex flex-wrap gap-x-4 gap-y-2 items-center justify-between">
+            <a className="text-sm text-white/85 hover:text-white" href="https://x.com/Sacred_Waste" target="_blank" rel="noreferrer">
+              Twitter
+            </a>
+            <a className="text-sm text-white/85 hover:text-white" href="https://opensea.io/collection/sw-prophets" target="_blank" rel="noreferrer">
+              Prophet NFTs
+            </a>
+            <a className="text-sm text-white/85 hover:text-white" href="https://www.nftstrategy.fun/strategies/0x31794fbb311adbdd7704ebdc77de9e872e21f90f" target="_blank" rel="noreferrer">
+              $444STR
+            </a>
+            <a className="text-sm text-white/85 hover:text-white" href="https://docs.sacredwaste.io/" target="_blank" rel="noreferrer">
+              Docs
+            </a>
+            <a className="text-sm text-white/85 hover:text-white" href="https://discord.com/invite/sacredwaste" target="_blank" rel="noreferrer">
+              Discord
+            </a>
+          </div>
+        </div>
+      </div>
     </main>
   );
 }
