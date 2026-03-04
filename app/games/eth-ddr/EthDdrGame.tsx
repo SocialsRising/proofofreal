@@ -66,7 +66,7 @@ export default function EthDdrGame() {
 
   // Public URL for tweet (set to production domain later if you want)
   const shareUrl = useMemo(() => "https://proofofreal.app/games/eth-ddr", []);
-
+const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f6b4ebd15220b703cc3a949f/1";
   // Load saved profile once
   useEffect(() => {
     try {
@@ -812,7 +812,7 @@ spawnTrashNote(dir: Dir) {
         };
 
         this.add
-          .text(W / 2, 260, "RUN COMPLETE", { fontSize: "20px", color: "#ffffff" })
+          .text(W / 2, 260, "Mission Complete!!", { fontSize: "20px", color: "#ffffff" })
           .setOrigin(0.5);
         this.add
           .text(W / 2, 300, `Score: ${score}`, { fontSize: "18px", color: "#ffffff" })
@@ -988,17 +988,17 @@ spawnTrashNote(dir: Dir) {
           {phase === "results" && result && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/70 p-4">
               <div className="w-full max-w-md rounded-2xl border border-white/10 bg-black/60 p-5">
-                <div className="text-lg font-semibold">Run complete</div>
+                <div className="text-lg font-semibold">Mission Complete!!</div>
 
                 <div className="mt-3 space-y-1 text-white/80">
                   <div>
                     Score: <span className="text-white font-semibold">{result.score}</span>
                   </div>
                   <div>
-                    Max combo: <span className="text-white font-semibold">{result.comboMax}</span>
+                    Max Combo: <span className="text-white font-semibold">{result.comboMax}</span>
                   </div>
                   <div>
-                    Hit rate:{" "}
+                    Hit Rate:{" "}
                     <span className="text-white font-semibold">{(result.hitRate * 100).toFixed(1)}%</span>{" "}
                     <span className="text-white/50 text-xs">
                       ({result.notesHit}/{result.notesSpawned})
@@ -1036,13 +1036,13 @@ spawnTrashNote(dir: Dir) {
                     <div className="text-sm font-semibold text-emerald-200">Mint unlocked</div>
                     <div className="text-xs text-emerald-200/80 mt-1">(Placeholder — swap link later)</div>
                     <a
-                      href="#"
-                      className="inline-block mt-2 underline text-emerald-200 hover:text-emerald-100"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      Mint on OpenSea
-                    </a>
+  href={OPENSEA_LEVEL2_URL}
+  className="inline-block mt-2 underline text-emerald-200 hover:text-emerald-100"
+  target="_blank"
+  rel="noreferrer"
+>
+  View Level 2 NFT on OpenSea
+</a>
                   </div>
                 )}
 
