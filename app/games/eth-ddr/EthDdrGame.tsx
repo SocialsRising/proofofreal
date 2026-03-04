@@ -1035,14 +1035,32 @@ spawnTrashNote(dir: Dir) {
                   <div className="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3">
                     <div className="text-sm font-semibold text-emerald-200">Mint unlocked</div>
                     <div className="text-xs text-emerald-200/80 mt-1">()</div>
-                    <a
-  href="https://opensea.io/item/ethereum/0x5806be331a159f11f6b4ebd15220b703cc3a949f/1"
-  target="_blank"
-  rel="noopener noreferrer"
-  className="inline-block mt-2 underline text-emerald-200 hover:text-emerald-100"
->
-  Mint on OpenSea
-</a>
+                    {shared && canUnlockMint && (
+  <div className="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3 relative">
+    <div className="text-sm font-semibold text-emerald-200">Mint unlocked</div>
+
+    {/* click-isolated zone */}
+    <div className="relative z-[9999] pointer-events-auto">
+      <a
+        href="https://opensea.io/item/ethereum/0x5806be331a159f11f6b4ebd15220b703cc3a949f/1"
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          window.open(
+            "https://opensea.io/item/ethereum/0x5806be331a159f11f6b4ebd15220b703cc3a949f/1",
+            "_blank",
+            "noopener,noreferrer"
+          );
+        }}
+        className="inline-block mt-2 underline text-emerald-200 hover:text-emerald-100"
+      >
+        Mint on OpenSea
+      </a>
+    </div>
+  </div>
+)}
                   </div>
                 )}
 
