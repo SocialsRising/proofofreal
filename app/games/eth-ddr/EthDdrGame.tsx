@@ -1034,14 +1034,14 @@ spawnTrashNote(dir: Dir) {
                 {shared && canUnlockMint && (
                   <div className="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3">
                     <div className="text-sm font-semibold text-emerald-200">Mint unlocked</div>
-                    <div className="text-xs text-emerald-200/80 mt-1">(Placeholder — swap link later)</div>
+                    <div className="text-xs text-emerald-200/80 mt-1">()</div>
                     <a
-  href={OPENSEA_LEVEL2_URL}
-  className="inline-block mt-2 underline text-emerald-200 hover:text-emerald-100"
+  href="https://opensea.io/item/ethereum/0x5806be331a159f11f6b4ebd15220b703cc3a949f/1"
   target="_blank"
-  rel="noreferrer"
+  rel="noopener noreferrer"
+  className="inline-block mt-2 underline text-emerald-200 hover:text-emerald-100"
 >
-  View Level 2 NFT on OpenSea
+  Mint on OpenSea
 </a>
                   </div>
                 )}
