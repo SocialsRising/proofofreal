@@ -1,4 +1,4 @@
- "use client";
+"use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
@@ -13,19 +13,17 @@ type RunResult = {
   notesHit: number;
   hitRate: number;
   xHandle: string;
-  wallet: string;
 };
 
 const STORAGE_KEY = "ethddr_profile_v1";
 
-// Neon palette for lane flashes / feedback
 const NEON = [
-  0xff2bd6, // pink
-  0x00e5ff, // cyan
-  0x7cff00, // lime
-  0xffd400, // yellow
-  0x9b59ff, // purple
-  0xff5a1f, // orange
+  0xff2bd6,
+  0x00e5ff,
+  0x7cff00,
+  0xffd400,
+  0x9b59ff,
+  0xff5a1f,
 ];
 
 function isValidXHandle(v: string) {
@@ -37,56 +35,43 @@ function normalizeXHandle(v: string) {
   return v.trim().replace(/^@/, "");
 }
 
-function isValidWallet(v: string) {
-  const s = v.trim();
-  return /^0x[a-fA-F0-9]{40}$/.test(s);
-}
-
 export default function EthDdrGame() {
-  // ===== React/UI state =====
   const [phase, setPhase] = useState<"setup" | "playing" | "results">("setup");
   const [xHandle, setXHandle] = useState("");
-  const [wallet, setWallet] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const [result, setResult] = useState<RunResult | null>(null);
   const [shared, setShared] = useState(false);
 
-  // ===== Media refs =====
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const fahhRef = useRef<HTMLAudioElement | null>(null);
 
-  // ===== Phaser refs =====
   const containerRef = useRef<HTMLDivElement | null>(null);
   const gameRef = useRef<any>(null);
   const runIdRef = useRef(0);
 
-  // mint gate (adjust any time)
-  const MIN_HIT_RATE_TO_UNLOCK = 0.69; // 69%
-
-  // Public URL for tweet (set to production domain later if you want)
+  const MIN_HIT_RATE_TO_UNLOCK = 0.69;
   const shareUrl = useMemo(() => "https://proofofreal.app/games/eth-ddr", []);
-const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f6b4ebd15220b703cc3a949f/1";
-  // Load saved profile once
+  const OPENSEA_LEVEL2_URL =
+    "https://opensea.io/item/ethereum/0x5806be331a159f11f6b4ebd15220b703cc3a949f/1";
+
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return;
       const data = JSON.parse(raw);
       if (typeof data?.xHandle === "string") setXHandle(data.xHandle);
-      if (typeof data?.wallet === "string") setWallet(data.wallet);
     } catch {}
   }, []);
 
-  // Save profile whenever changes
   useEffect(() => {
     try {
       localStorage.setItem(
         STORAGE_KEY,
-        JSON.stringify({ xHandle: normalizeXHandle(xHandle), wallet: wallet.trim() })
+        JSON.stringify({ xHandle: normalizeXHandle(xHandle) })
       );
     } catch {}
-  }, [xHandle, wallet]);
+  }, [xHandle]);
 
   function stopAudio() {
     const a = audioRef.current;
@@ -102,7 +87,7 @@ const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f
     if (!a) return;
     try {
       a.currentTime = 0;
-      await a.play(); // requires user gesture
+      await a.play();
     } catch {}
   }
 
@@ -131,14 +116,9 @@ const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f
   function startRun() {
     setError(null);
     const x = normalizeXHandle(xHandle);
-    const w = wallet.trim();
 
     if (!isValidXHandle(x)) {
       setError("Enter a valid X handle (letters/numbers/_ up to 15).");
-      return;
-    }
-    if (!isValidWallet(w)) {
-      setError("Enter a valid wallet address (0x + 40 hex characters).");
       return;
     }
 
@@ -180,7 +160,6 @@ const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f
     setShared(true);
   }
 
-  // ===== Phaser init =====
   async function initPhaser(runId: number) {
     if (!containerRef.current) return;
 
@@ -189,18 +168,15 @@ const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f
 
     if (runId !== runIdRef.current) return;
 
-    // Game constants
     const W = 400;
     const H = 600;
     const hitZoneY = 520;
 
-    // Timing windows
     const HIT_WINDOW = 55;
     const PERFECT_WINDOW = 10;
     const GOOD_WINDOW = 25;
     const MISS_LINE = hitZoneY + HIT_WINDOW;
 
-    // Cadence
     const SECTIONS = [
       { t0: 0, t1: 10, spawnDelay: 500, speed: 240 },
       { t0: 10, t1: 32, spawnDelay: 400, speed: 280 },
@@ -226,14 +202,11 @@ const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f
     let timeLeft = 60;
     let combo = 0;
     let comboMax = 0;
-
-    // IMPORTANT: notesSpawned is ONLY for notes that count toward hit rate
     let notesSpawned = 0;
     let notesHit = 0;
 
     class MainScene extends Phaser.Scene {
       cursors!: any;
-
       scoreText!: any;
       timerText!: any;
       comboText!: any;
@@ -241,9 +214,7 @@ const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f
       notes: Note[] = [];
       spawnEvent!: any;
       countdownEvent!: any;
-
       laneFlash: Record<Dir, any> = {} as any;
-
       elapsed = 0;
 
       constructor() {
@@ -264,7 +235,6 @@ const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f
         this.elapsed = 0;
         this.notes = [];
 
-        // Subtle rhythm guide lines
         for (let y = 0; y < H; y += 60) {
           this.add.rectangle(W / 2, y, W, 1, 0xffffff, 0.04);
         }
@@ -287,26 +257,22 @@ const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f
           color: "#ffffff",
         });
 
-        // Lanes
         (["Left", "Down", "Up", "Right"] as Dir[]).forEach((d) => {
           const x = laneX[d];
-          this.add.rectangle(x, H / 2, 2, H, 0xffffff, 0.10);
+          this.add.rectangle(x, H / 2, 2, H, 0xffffff, 0.1);
 
           const r = this.add.rectangle(x, H / 2, 60, H, 0x9b59ff, 0);
           r.setAlpha(0);
           this.laneFlash[d] = r;
         });
 
-        // HEAT BAR (thicker + clearer)
         (this as any).heat = 0;
         (this as any).heatBarBase = this.add.rectangle(W / 2, hitZoneY, W, 16, 0x00e5ff, 0.95);
         (this as any).heatBarGlow = this.add.rectangle(W / 2, hitZoneY, W, 34, 0xff2bd6, 0);
         (this as any).heatBarGlow.setBlendMode(Phaser.BlendModes.ADD);
 
-        // Input
         this.cursors = this.input.keyboard!.createCursorKeys();
 
-        // Spawn notes
         const s0 = SECTIONS[0];
         this.spawnEvent = this.time.addEvent({
           delay: s0.spawnDelay,
@@ -314,7 +280,6 @@ const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f
           callback: () => this.spawnNote(),
         });
 
-        // Countdown
         this.countdownEvent = this.time.addEvent({
           delay: 1000,
           loop: true,
@@ -331,24 +296,19 @@ const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f
         return SECTIONS.find((s) => e >= s.t0 && e < s.t1) ?? SECTIONS[SECTIONS.length - 1];
       }
 
-      // --- SPAWN MIX ---
-      // trash: occasional (punishes), sparkle: occasional (bonus), normal: rest
       spawnNote() {
         const dirs: Dir[] = ["Left", "Down", "Up", "Right"];
         const dir = Phaser.Utils.Array.GetRandom(dirs);
 
-        // roughly: trash 10%, sparkle 12%, normal 78%
         const r = Math.random();
-        if (r < 0.10) return this.spawnTrashNote(dir);
+        if (r < 0.1) return this.spawnTrashNote(dir);
         if (r < 0.22) return this.spawnSparkleNote(dir);
         return this.spawnNormalNote(dir);
       }
 
-      // Normal Sacred Waste note: bold triangle + fire (directional, transparent)
       spawnNormalNote(dir: Dir) {
         const tri = this.add.graphics();
 
-        // Bold + high-contrast outline
         tri.lineStyle(6, 0xff7a1a, 1);
 
         const size = 22;
@@ -359,7 +319,6 @@ const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f
         ];
         tri.strokePoints(pts, true);
 
-        // Glow
         tri.lineStyle(12, 0xff2bd6, 0.18);
         tri.strokePoints(pts, true);
 
@@ -374,79 +333,68 @@ const OPENSEA_LEVEL2_URL = "https://opensea.io/item/ethereum/0x5806be331a159f11f
         notesSpawned += 1;
       }
 
-       // Trash bin note: if hit => -500 + combo reset + fahhh
-spawnTrashNote(dir: Dir) {
-  // Build direction-specific triangle points so it's ALWAYS facing correctly.
-  // (No relying on container.rotation)
-  const size = 22;
+      spawnTrashNote(dir: Dir) {
+        const size = 22;
 
-  let pts: { x: number; y: number }[] = [];
-  if (dir === "Up") {
-    pts = [
-      { x: 0, y: -size },
-      { x: -size, y: size },
-      { x: size, y: size },
-    ];
-  } else if (dir === "Down") {
-    pts = [
-      { x: 0, y: size },
-      { x: -size, y: -size },
-      { x: size, y: -size },
-    ];
-  } else if (dir === "Left") {
-    pts = [
-      { x: -size, y: 0 },
-      { x: size, y: -size },
-      { x: size, y: size },
-    ];
-  } else {
-    // Right
-    pts = [
-      { x: size, y: 0 },
-      { x: -size, y: -size },
-      { x: -size, y: size },
-    ];
-  }
+        let pts: { x: number; y: number }[] = [];
+        if (dir === "Up") {
+          pts = [
+            { x: 0, y: -size },
+            { x: -size, y: size },
+            { x: size, y: size },
+          ];
+        } else if (dir === "Down") {
+          pts = [
+            { x: 0, y: size },
+            { x: -size, y: -size },
+            { x: size, y: -size },
+          ];
+        } else if (dir === "Left") {
+          pts = [
+            { x: -size, y: 0 },
+            { x: size, y: -size },
+            { x: size, y: size },
+          ];
+        } else {
+          pts = [
+            { x: size, y: 0 },
+            { x: -size, y: -size },
+            { x: -size, y: size },
+          ];
+        }
 
-  const tri = this.add.graphics();
+        const tri = this.add.graphics();
 
-  // bold black outline
-  tri.lineStyle(7, 0x000000, 1);
-  tri.strokePoints(pts, true);
+        tri.lineStyle(7, 0x000000, 1);
+        tri.strokePoints(pts, true);
 
-  // subtle highlight so it reads on video
-  tri.lineStyle(12, 0xffffff, 0.08);
-  tri.strokePoints(pts, true);
+        tri.lineStyle(12, 0xffffff, 0.08);
+        tri.strokePoints(pts, true);
 
-  // bigger bin in the middle
-  const bin = this.add.text(0, 2, "🗑️", { fontSize: "28px" });
-  bin.setOrigin(0.5);
+        const bin = this.add.text(0, 2, "🗑️", { fontSize: "28px" });
+        bin.setOrigin(0.5);
 
-  // container NOT rotated (triangle points already are)
-  const container = this.add.container(laneX[dir], -30, [tri, bin]);
+        const container = this.add.container(laneX[dir], -30, [tri, bin]);
 
-  // wobble so it's obvious
-  this.tweens.add({
-    targets: container,
-    angle: { from: -6, to: 6 },
-    duration: 160,
-    yoyo: true,
-    repeat: -1,
-  });
+        this.tweens.add({
+          targets: container,
+          angle: { from: -6, to: 6 },
+          duration: 160,
+          yoyo: true,
+          repeat: -1,
+        });
 
-  const note: Note = {
-    dir,
-    kind: "trash",
-    x: laneX[dir],
-    y: -30,
-    g: container,
-  };
+        const note: Note = {
+          dir,
+          kind: "trash",
+          x: laneX[dir],
+          y: -30,
+          g: container,
+        };
 
-  this.notes.push(note);
-  // IMPORTANT: trash does NOT increment notesSpawned
-}
+        this.notes.push(note);
+      }
 
-      // Sparkle bonus note: same triangle design, +500 if hit (counts to hit rate)
       spawnSparkleNote(dir: Dir) {
         const tri = this.add.graphics();
 
@@ -460,7 +408,6 @@ spawnTrashNote(dir: Dir) {
         ];
         tri.strokePoints(pts, true);
 
-        // sparkle glow
         tri.lineStyle(14, 0xffffff, 0.14);
         tri.strokePoints(pts, true);
 
@@ -596,7 +543,6 @@ spawnTrashNote(dir: Dir) {
       }
 
       onNormalOrSparkleHit(dir: Dir, diff: number, isSparkle: boolean) {
-        // scoring base
         let gained = 30;
         let label = "OK";
         if (diff < PERFECT_WINDOW) {
@@ -607,11 +553,9 @@ spawnTrashNote(dir: Dir) {
           label = "GOOD";
         }
 
-        // combo
         combo += 1;
         comboMax = Math.max(comboMax, combo);
 
-        // multiplier tiers
         let mult = 1;
         if (combo >= 50) mult = 2.0;
         else if (combo >= 25) mult = 1.5;
@@ -619,7 +563,6 @@ spawnTrashNote(dir: Dir) {
 
         score += Math.round(gained * mult);
 
-        // sparkle bonus (+500) requested
         if (isSparkle) {
           score += 500;
           this.emojiPop("✨", 84, 1100);
@@ -637,7 +580,6 @@ spawnTrashNote(dir: Dir) {
 
         this.applyHeat(diff);
 
-        // celebrations
         if (combo === 25) {
           this.emojiPop("🫵", 88, 1400);
           this.fireworksBurstCenter(2);
@@ -668,13 +610,11 @@ spawnTrashNote(dir: Dir) {
         this.emojiPop("🗑️", 120, 1400);
         this.feedbackText("-500", 0xff3b3b);
 
-        // heat cooldown
         if ((this as any).heat !== undefined) {
           (this as any).heat = Math.max(0, (this as any).heat * 0.2);
           (this as any).heatBarGlow.setAlpha((this as any).heat * 0.85);
         }
 
-        // trigger sound via React audio ref
         (window as any).__ETH_DDR_FAHH__ = true;
       }
 
@@ -682,12 +622,11 @@ spawnTrashNote(dir: Dir) {
         const dt = delta / 1000;
         this.elapsed += dt;
 
-        // heat decay
         if ((this as any).heatBarBase && (this as any).heatBarGlow) {
           (this as any).heat = Math.max(0, ((this as any).heat ?? 0) - dt * 0.22);
           const heat = (this as any).heat as number;
 
-          (this as any).heatBarBase.setAlpha(0.90 + heat * 0.08);
+          (this as any).heatBarBase.setAlpha(0.9 + heat * 0.08);
           (this as any).heatBarGlow.setAlpha(heat * 0.95);
           (this as any).heatBarGlow.scaleY = 0.95 + heat * 1.25;
         }
@@ -697,14 +636,12 @@ spawnTrashNote(dir: Dir) {
           this.spawnEvent.delay = section.spawnDelay;
         }
 
-        // move notes
         const speed = section.speed;
         for (const n of this.notes) {
           n.y += speed * dt;
           n.g.y = n.y;
         }
 
-        // miss detection + cleanup
         const remaining: Note[] = [];
         for (const n of this.notes) {
           if (n.y > H + 40) {
@@ -714,7 +651,6 @@ spawnTrashNote(dir: Dir) {
           if (n.y > MISS_LINE) {
             n.g.destroy();
 
-            // only normal/sparkle misses break combo + show miss feedback
             if (n.kind !== "trash") {
               if (combo > 0) {
                 if (combo >= 26) this.emojiPop("🗑️", 120, 1400);
@@ -723,7 +659,6 @@ spawnTrashNote(dir: Dir) {
                 this.comboText.setColor("#ffffff");
                 this.feedbackText("MISS", 0xff3b3b);
               }
-              // heat cooldown
               if ((this as any).heat !== undefined) {
                 (this as any).heat = Math.max(0, (this as any).heat * 0.25);
                 (this as any).heatBarGlow.setAlpha((this as any).heat * 0.95);
@@ -736,7 +671,6 @@ spawnTrashNote(dir: Dir) {
         }
         this.notes = remaining;
 
-        // keyboard input
         this.handleKeyPress("Up");
         this.handleKeyPress("Down");
         this.handleKeyPress("Left");
@@ -753,7 +687,6 @@ spawnTrashNote(dir: Dir) {
         const hit = candidates[0];
         const diff = Math.abs(hit.y - hitZoneY);
 
-        // route by kind
         if (hit.kind === "trash") {
           this.onTrashHit();
         } else {
@@ -761,7 +694,6 @@ spawnTrashNote(dir: Dir) {
           this.onNormalOrSparkleHit(dir, diff, isSparkle);
         }
 
-        // pop + destroy
         this.tweens.add({
           targets: hit.g,
           scaleX: 1.35,
@@ -839,7 +771,6 @@ spawnTrashNote(dir: Dir) {
     gameRef.current = new Phaser.Game(phaserConfig);
 
     const interval = window.setInterval(() => {
-      // fahh trigger
       if ((window as any).__ETH_DDR_FAHH__) {
         delete (window as any).__ETH_DDR_FAHH__;
         playFahh();
@@ -865,7 +796,6 @@ spawnTrashNote(dir: Dir) {
         notesHit: payload.notesHit,
         hitRate: payload.hitRate,
         xHandle: normalizeXHandle(xHandle),
-        wallet: wallet.trim(),
       };
 
       setResult(r);
@@ -880,14 +810,12 @@ spawnTrashNote(dir: Dir) {
       stopAudio();
       cleanupGame();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const canUnlockMint = !!result && result.hitRate >= MIN_HIT_RATE_TO_UNLOCK;
 
   return (
     <main className="relative z-10 min-h-screen bg-black/0 text-white flex flex-col items-center justify-start pt-6 px-4">
-      {/* Background video layer */}
       <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <video
           className="absolute inset-0 w-full h-full object-cover object-[50%_18%] md:object-center scale-[1.12] md:scale-100 contrast-110 saturate-125"
@@ -899,7 +827,6 @@ spawnTrashNote(dir: Dir) {
         />
       </div>
 
-      {/* Audio */}
       <audio ref={audioRef} src="/games/eth-ddr/song.mp3" loop preload="auto" />
       <audio ref={fahhRef} src="/games/eth-ddr/fahhh.mp3" preload="auto" />
 
@@ -908,12 +835,10 @@ spawnTrashNote(dir: Dir) {
         <p className="text-white/70 mt-1"></p>
 
         <div className="mt-6 rounded-2xl overflow-hidden border border-white/10 bg-transparent relative">
-          {/* Phaser mount */}
           <div className="p-3">
             <div ref={containerRef} className="w-[400px] h-[600px] mx-auto" />
           </div>
 
-          {/* Mobile tap buttons */}
           {phase === "playing" && (
             <div className="md:hidden absolute inset-x-0 bottom-0 p-3">
               <div className="grid grid-cols-4 gap-2">
@@ -941,12 +866,11 @@ spawnTrashNote(dir: Dir) {
             </div>
           )}
 
-          {/* Setup overlay */}
           {phase === "setup" && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/70 p-4">
               <div className="w-full max-w-md rounded-2xl border border-white/10 bg-black/60 p-5">
                 <div className="text-lg font-semibold">Enter to Play ETH DDR</div>
-                <div className="text-white/60 text-sm mt-1">Hit notes as they come down to the bar. Avoid Trash. </div>
+                <div className="text-white/60 text-sm mt-1">Hit notes as they come down to the bar. Avoid Trash.</div>
 
                 <div className="mt-4 space-y-3">
                   <div>
@@ -956,16 +880,6 @@ spawnTrashNote(dir: Dir) {
                       placeholder="e.g. daniellong (no @ needed)"
                       value={xHandle}
                       onChange={(e) => setXHandle(e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm text-white/70 mb-1">ETH Wallet address</label>
-                    <input
-                      className="w-full rounded-xl bg-white/10 border border-white/10 px-3 py-2 outline-none"
-                      placeholder="0x..."
-                      value={wallet}
-                      onChange={(e) => setWallet(e.target.value)}
                     />
                   </div>
 
@@ -984,7 +898,6 @@ spawnTrashNote(dir: Dir) {
             </div>
           )}
 
-          {/* Results overlay */}
           {phase === "results" && result && (
             <div className="absolute inset-0 flex items-center justify-center bg-black/70 p-4">
               <div className="w-full max-w-md rounded-2xl border border-white/10 bg-black/60 p-5">
@@ -1032,35 +945,24 @@ spawnTrashNote(dir: Dir) {
                 </div>
 
                 {shared && canUnlockMint && (
-                  <div className="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3">
+                  <div className="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3 relative">
                     <div className="text-sm font-semibold text-emerald-200">Mint unlocked</div>
-                    <div className="text-xs text-emerald-200/80 mt-1">()</div>
-                    {shared && canUnlockMint && (
-  <div className="mt-4 rounded-xl border border-emerald-400/30 bg-emerald-500/10 p-3 relative">
-    <div className="text-sm font-semibold text-emerald-200">Mint unlocked</div>
 
-    {/* click-isolated zone */}
-    <div className="relative z-[9999] pointer-events-auto">
-      <a
-        href="https://opensea.io/item/ethereum/0x5806be331a159f11f6b4ebd15220b703cc3a949f/1"
-        target="_blank"
-        rel="noopener noreferrer"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          window.open(
-            "https://opensea.io/item/ethereum/0x5806be331a159f11f6b4ebd15220b703cc3a949f/1",
-            "_blank",
-            "noopener,noreferrer"
-          );
-        }}
-        className="inline-block mt-2 underline text-emerald-200 hover:text-emerald-100"
-      >
-        Mint on OpenSea
-      </a>
-    </div>
-  </div>
-)}
+                    <div className="relative z-[9999] pointer-events-auto">
+                      <a
+                        href={OPENSEA_LEVEL2_URL}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          window.open(OPENSEA_LEVEL2_URL, "_blank", "noopener,noreferrer");
+                        }}
+                        className="inline-block mt-2 underline text-emerald-200 hover:text-emerald-100"
+                      >
+                        Mint on OpenSea
+                      </a>
+                    </div>
                   </div>
                 )}
 
@@ -1072,7 +974,7 @@ spawnTrashNote(dir: Dir) {
                   className="mt-4 w-full text-xs underline text-white/60 hover:text-white"
                   onClick={restartToSetup}
                 >
-                  Edit X handle / wallet
+                  Edit X handle
                 </button>
               </div>
             </div>
@@ -1080,7 +982,6 @@ spawnTrashNote(dir: Dir) {
         </div>
       </div>
 
-      {/* Fixed links bar (always visible) */}
       <div className="fixed bottom-0 left-0 right-0 z-30">
         <div className="mx-auto max-w-2xl px-3 pb-3">
           <div className="rounded-2xl border border-white/10 bg-black/50 backdrop-blur px-3 py-2 flex flex-wrap gap-x-4 gap-y-2 items-center justify-between">
