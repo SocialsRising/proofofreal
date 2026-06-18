@@ -7,18 +7,19 @@
 <style>
   :root { --neon:#ff2a6d; --cyan:#05d9e8; --gold:#f9c80e; }
   * { box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color:transparent; }
-  html,body { height:100%; background:#05010f; overflow:hidden; font-family:'Courier New',monospace; color:#fff; touch-action:none; }
+  html,body { height:100%; background:#05010f; overflow:hidden; overscroll-behavior:none; font-family:'Courier New',monospace; color:#fff; touch-action:none; }
   #wrap { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
   canvas { display:block; image-rendering:pixelated; background:#05010f; max-width:100%; max-height:100%; }
   #touch { position:fixed; inset:0; pointer-events:none; z-index:20; display:none; }
-  .pad { position:absolute; bottom:12px; display:flex; gap:18px; }
-  .pad.left { left:20px; } .pad.right { right:20px; }
-  .btn { pointer-events:auto; width:84px; height:84px; border-radius:50%;
-    background:rgba(255,42,109,0.30); border:3px solid var(--neon); color:#fff; font-size:17px; font-weight:bold;
+  .pad { position:absolute; bottom:10px; display:flex; gap:14px; }
+  .pad.left { left:12px; } .pad.right { right:12px; }
+  /* translucent so the gameplay shows THROUGH the controls (full-screen play) */
+  .btn { pointer-events:auto; width:78px; height:78px; border-radius:50%;
+    background:rgba(255,42,109,0.16); border:2px solid rgba(255,42,109,0.85); color:rgba(255,255,255,0.92); font-size:15px; font-weight:bold;
     display:flex; align-items:center; justify-content:center; user-select:none; -webkit-user-select:none; touch-action:none; text-align:center; line-height:1.1; }
-  .btn:active { background:rgba(255,42,109,0.65); }
-  .btn.sh { border-color:var(--cyan); background:rgba(5,217,232,0.30); } .btn.sh:active { background:rgba(5,217,232,0.65); }
-  .btn.sp { border-color:var(--gold); background:rgba(249,200,14,0.30); } .btn.sp:active { background:rgba(249,200,14,0.65); }
+  .btn:active { background:rgba(255,42,109,0.55); }
+  .btn.sh { border-color:rgba(5,217,232,0.85); background:rgba(5,217,232,0.16); } .btn.sh:active { background:rgba(5,217,232,0.55); }
+  .btn.sp { border-color:rgba(249,200,14,0.85); background:rgba(249,200,14,0.16); } .btn.sp:active { background:rgba(249,200,14,0.55); }
   #rotate { position:fixed; top:0; left:0; right:0; z-index:25; display:none; pointer-events:none;
     background:rgba(5,1,15,0.85); color:var(--gold); font-weight:bold; font-size:13px; text-align:center; padding:7px; }
   @media (orientation:portrait){ #rotate{ display:block; } }
@@ -74,12 +75,10 @@ const VW=960, VH=540;
 const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
 canvas.width=VW; canvas.height=VH;
 const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
-const CTRL_BAND=isTouch?108:0;   // reserve a bottom strip for touch controls so they never cover the map
-function fit(){ const availH=window.innerHeight-CTRL_BAND;
-  const r=Math.min(window.innerWidth/VW, availH/VH);
+function fit(){ const r=Math.min(window.innerWidth/VW, window.innerHeight/VH);   // fill the whole screen
   canvas.style.width=(VW*r)+'px'; canvas.style.height=(VH*r)+'px'; }
 addEventListener('resize',fit); fit();
-if(isTouch){ document.getElementById('touch').style.display='block'; document.getElementById('wrap').style.paddingBottom=CTRL_BAND+'px'; }
+if(isTouch) document.getElementById('touch').style.display='block';
 
 const GROUND=VH-64;
 const HOOP={x:VW*0.84, y:VH*0.34, r:24};
@@ -126,7 +125,8 @@ const Sound=(()=>{
     special(){ tone(440,0.05,'square',0.6); tone(660,0.15,'square',0.5); setTimeout(()=>tone(990,0.25,'sawtooth',0.6),120); },
     win(){ [523,659,784,1047,1319,1568].forEach((f,i)=>setTimeout(()=>tone(f,0.32,'square',0.55),i*120));
            setTimeout(()=>{ tone(784,0.6,'square',0.4); tone(1047,0.6,'square',0.4); tone(1319,0.6,'square',0.4); },760); },
-    lose(){ [330,247,196,131].forEach((f,i)=>setTimeout(()=>tone(f,0.35,'sawtooth',0.5),i*160)); },
+    lose(){ [392,330,262,196].forEach((f,i)=>setTimeout(()=>tone(f,0.4,'sawtooth',0.55),i*180));
+            setTimeout(()=>{ tone(131,0.7,'sawtooth',0.5); tone(98,0.7,'square',0.35); },760); },
   };
 })();
 document.getElementById('mute').addEventListener('click',e=>{ const m=!Sound.isMuted(); Sound.setMuted(m);
