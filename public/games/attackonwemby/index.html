@@ -11,9 +11,9 @@
   #wrap { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
   canvas { display:block; image-rendering:pixelated; background:#05010f; max-width:100%; max-height:100%; }
   #touch { position:fixed; inset:0; pointer-events:none; z-index:20; display:none; }
-  .pad { position:absolute; bottom:24px; display:flex; gap:18px; }
+  .pad { position:absolute; bottom:12px; display:flex; gap:18px; }
   .pad.left { left:20px; } .pad.right { right:20px; }
-  .btn { pointer-events:auto; width:88px; height:88px; border-radius:50%;
+  .btn { pointer-events:auto; width:84px; height:84px; border-radius:50%;
     background:rgba(255,42,109,0.30); border:3px solid var(--neon); color:#fff; font-size:17px; font-weight:bold;
     display:flex; align-items:center; justify-content:center; user-select:none; -webkit-user-select:none; touch-action:none; text-align:center; line-height:1.1; }
   .btn:active { background:rgba(255,42,109,0.65); }
@@ -73,11 +73,13 @@ const CUTIN_DUR=1.4;
 const VW=960, VH=540;
 const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
 canvas.width=VW; canvas.height=VH;
-function fit(){ const r=Math.min(window.innerWidth/VW,window.innerHeight/VH);
+const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
+const CTRL_BAND=isTouch?108:0;   // reserve a bottom strip for touch controls so they never cover the map
+function fit(){ const availH=window.innerHeight-CTRL_BAND;
+  const r=Math.min(window.innerWidth/VW, availH/VH);
   canvas.style.width=(VW*r)+'px'; canvas.style.height=(VH*r)+'px'; }
 addEventListener('resize',fit); fit();
-const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
-if(isTouch) document.getElementById('touch').style.display='block';
+if(isTouch){ document.getElementById('touch').style.display='block'; document.getElementById('wrap').style.paddingBottom=CTRL_BAND+'px'; }
 
 const GROUND=VH-64;
 const HOOP={x:VW*0.84, y:VH*0.34, r:24};
@@ -122,7 +124,8 @@ const Sound=(()=>{
     cheer(){ [523,659,784].forEach((f,i)=>setTimeout(()=>tone(f,0.2,'square',0.25),i*40)); },
     streak(){ [659,880,1175].forEach((f,i)=>setTimeout(()=>tone(f,0.18,'square',0.4),i*60)); },
     special(){ tone(440,0.05,'square',0.6); tone(660,0.15,'square',0.5); setTimeout(()=>tone(990,0.25,'sawtooth',0.6),120); },
-    win(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.3,'square',0.5),i*140)); },
+    win(){ [523,659,784,1047,1319,1568].forEach((f,i)=>setTimeout(()=>tone(f,0.32,'square',0.55),i*120));
+           setTimeout(()=>{ tone(784,0.6,'square',0.4); tone(1047,0.6,'square',0.4); tone(1319,0.6,'square',0.4); },760); },
     lose(){ [330,247,196,131].forEach((f,i)=>setTimeout(()=>tone(f,0.35,'sawtooth',0.5),i*160)); },
   };
 })();
@@ -209,6 +212,14 @@ function shareText(){ const t= result==='win'
   : `The Wemby Titan bricked me into next week... ${made} buckets, ${Math.round(damageDealt)} dmg. Can YOU save NYC? 🗽🏀`;
   return `${t} ATTACK ON WEMBY ${CONFIG.SHARE_HASHTAG}`; }
 function shareURL(){ return 'https://twitter.com/intent/tweet?text='+encodeURIComponent(shareText())+'&url='+encodeURIComponent(CONFIG.SITE_URL); }
+function shareNow(){ const webUrl=shareURL();
+  if(isTouch){ // try to deep-link straight into the X app, fall back to the web composer
+    const appUrl='twitter://post?message='+encodeURIComponent(shareText()+'\n'+CONFIG.SITE_URL);
+    let opened=false; const onHide=()=>{ opened=true; };
+    document.addEventListener('visibilitychange',onHide,{once:true});
+    window.location.href=appUrl;
+    setTimeout(()=>{ document.removeEventListener('visibilitychange',onHide); if(!opened) window.open(webUrl,'_blank'); },800);
+  } else { window.open(webUrl,'_blank'); } }
 
 /* ---------------- Shooting ---------------- */
 function shoot(){ if(player.shotT>0) return;
@@ -603,6 +614,8 @@ function drawTitle(){
   ctx.fillStyle=`rgba(249,200,14,${0.5+0.5*Math.sin(performance.now()/300)})`; ctx.font='bold 30px Courier New';
   ctx.fillText(isTouch?'TAP TO START':'PRESS ANY KEY TO START',VW/2,VH/2+96); ctx.restore(); }
 function drawOver(){ drawBackground(); drawHoop(); drawTitan(); ctx.fillStyle='rgba(5,1,15,0.8)'; ctx.fillRect(0,0,VW,VH); ctx.textAlign='center';
+  if(result==='win'){ const cc=['#f9c80e','#ff2a6d','#05d9e8','#1D428A','#F58426']; const tt=performance.now()/1000;   // victory confetti
+    for(let i=0;i<46;i++){ const x=(i*101)%VW, y=((tt*130+i*61)%(VH+40))-20; ctx.save(); ctx.translate(x,y); ctx.rotate(tt*3+i); ctx.fillStyle=cc[i%5]; ctx.fillRect(-4,-4,8,8); ctx.restore(); } }
   if(result==='win'){ ctx.fillStyle='#f9c80e'; ctx.font='bold 50px Courier New'; ctx.fillText('NEW YORK IS SAVED',VW/2,VH/2-96); }
   else { ctx.fillStyle='#ff2a6d'; ctx.font='bold 50px Courier New'; ctx.fillText('THE CITY HAS FALLEN',VW/2,VH/2-96); }
   ctx.fillStyle='rgba(255,255,255,0.06)'; ctx.fillRect(VW/2-230,VH/2-74,460,190); ctx.strokeStyle='#05d9e8'; ctx.lineWidth=2; ctx.strokeRect(VW/2-230,VH/2-74,460,190);
@@ -617,7 +630,7 @@ function drawOver(){ drawBackground(); drawHoop(); drawTitan(); ctx.fillStyle='r
   ctx.fillStyle='#1da1f2'; ctx.fillRect(endBtns.share.x,endBtns.share.y,190,48); ctx.fillStyle='#fff'; ctx.font='bold 18px Courier New'; ctx.fillText('SHARE ON X',endBtns.share.x+95,endBtns.share.y+30);
   ctx.fillStyle='#ff2a6d'; ctx.fillRect(endBtns.again.x,endBtns.again.y,190,48); ctx.fillStyle='#fff'; ctx.fillText('PLAY AGAIN',endBtns.again.x+95,endBtns.again.y+30); }
 function handleEndClick(x,y){ const inside=b=>x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h;
-  if(endBtns.share&&inside(endBtns.share)) window.open(shareURL(),'_blank');
+  if(endBtns.share&&inside(endBtns.share)) shareNow();
   else if(endBtns.again&&inside(endBtns.again)) startGame(); }
 
 /* ---------------- Loop ---------------- */
