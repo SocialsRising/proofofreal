@@ -207,14 +207,15 @@ function hurtPlayer(){ if(player.invuln>0) return;
   if(hp<=0){ hp=0; endGame('lose'); } }
 function endGame(r){ result=r; state='over'; shake=0; redTint=0; Sound.stopMusic(); if(r==='win') Sound.win(); else Sound.lose(); }
 
-function shareText(){ const t= result==='win'
-  ? `I saved New York! Took down the alien Wemby Titan with ${Math.ceil(timeLeft)}s left, ${made} buckets, best streak x${bestCombo}! 🗽🏀`
-  : `The Wemby Titan bricked me into next week... ${made} buckets, ${Math.round(damageDealt)} dmg. Can YOU save NYC? 🗽🏀`;
-  return `${t} ATTACK ON WEMBY ${CONFIG.SHARE_HASHTAG}`; }
-function shareURL(){ return 'https://twitter.com/intent/tweet?text='+encodeURIComponent(shareText())+'&url='+encodeURIComponent(CONFIG.SITE_URL); }
+function shareText(){ const url=CONFIG.SITE_URL;
+  if(result==='win'){
+    return `Just clapped the Alien Titan and saved NYC.\n\n${Math.ceil(timeLeft)}s left · ${made} buckets · best streak x${bestCombo}\n\nCan you beat Wemby @mememaxxers?\n\n${url}`;
+  }
+  return `The Alien Titan got me bricked up...\n\n${made} buckets · ${Math.round(damageDealt)} dmg\n\nHelp me save NYC from Wemby @mememaxxers!\n\n${url}`; }
+function shareURL(){ return 'https://twitter.com/intent/tweet?text='+encodeURIComponent(shareText()); }
 function shareNow(){ const webUrl=shareURL();
   if(isTouch){ // try to deep-link straight into the X app, fall back to the web composer
-    const appUrl='twitter://post?message='+encodeURIComponent(shareText()+'\n'+CONFIG.SITE_URL);
+    const appUrl='twitter://post?message='+encodeURIComponent(shareText());
     let opened=false; const onHide=()=>{ opened=true; };
     document.addEventListener('visibilitychange',onHide,{once:true});
     window.location.href=appUrl;
