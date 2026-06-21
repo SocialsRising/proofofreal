@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Which Horror Timeline Monster Are You? — @mememaxxers</title>
+<meta name="description" content="Every timeline is haunted. Take the 60-second quiz to reveal which classic & modern horror archetype haunts YOUR feed. 20 monsters. Powered by proofofreal." />
+<!-- Open Graph / link unfurl -->
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="proofofreal" />
+<meta property="og:title" content="Which Horror Timeline Monster Are You? 🔪" />
+<meta property="og:description" content="15 cursed questions. 20 monsters. Find out which horror archetype haunts your timeline — then post your card & tag @mememaxxers." />
+<meta property="og:url" content="https://proofofreal.app/social/horrorvillainquiz" />
+<meta property="og:image" content="https://proofofreal.app/social/horrorvillainquiz/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<!-- Twitter / X card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@mememaxxers" />
+<meta name="twitter:title" content="Which Horror Timeline Monster Are You? 🔪" />
+<meta name="twitter:description" content="15 cursed questions. 20 monsters. Find your timeline's horror archetype & tag @mememaxxers." />
+<meta name="twitter:image" content="https://proofofreal.app/social/horrorvillainquiz/og-image.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet" />
+<style>
+  /* ============================================================
+     CONFIG — edit these when you wire into proofofreal
+     ============================================================ */
+  :root{
+    --blood:#c11414;
+    --blood-bright:#ff1e1e;
+    --void:#070708;
+    --void2:#0e0d10;
+    --panel:#141318;
+    --panel2:#1c1a21;
+    --bone:#e9e4da;
+    --ash:#8b8693;
+    --green:#39ff6a;
+    --gold:#e8b923;
+    --line:rgba(255,255,255,.08);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:
+      radial-gradient(1200px 600px at 50% -10%, rgba(193,20,20,.18), transparent 60%),
+      radial-gradient(900px 500px at 90% 110%, rgba(57,255,106,.06), transparent 55%),
+      var(--void);
+    color:var(--bone);
+    min-height:100%;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .grain:before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:1;opacity:.06;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:overlay;
+  }
+  .wrap{position:relative;z-index:2;max-width:680px;margin:0 auto;padding:28px 20px 80px;min-height:100vh;display:flex;flex-direction:column;justify-content:center}
+
+  /* glitch title */
+  .brand{text-align:center;margin-bottom:6px}
+  .brand .tag{font-size:12px;letter-spacing:.32em;color:var(--ash);text-transform:uppercase}
+  h1.title{
+    font-family:'Creepster',cursive;font-weight:400;line-height:.95;
+    font-size:clamp(38px,9vw,72px);letter-spacing:.02em;color:var(--bone);
+    text-shadow:0 0 18px rgba(193,20,20,.55);position:relative;margin:6px 0 2px;
+  }
+  h1.title .red{color:var(--blood-bright)}
+  .sub{color:var(--ash);font-size:15px;max-width:440px;margin:14px auto 0;line-height:1.5}
+
+  .card{
+    background:linear-gradient(180deg,var(--panel),var(--void2));
+    border:1px solid var(--line);border-radius:20px;padding:26px 22px;
+    box-shadow:0 30px 80px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.04);
+  }
+
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;gap:9px;
+    font-family:inherit;font-weight:800;font-size:16px;cursor:pointer;border:none;
+    padding:15px 26px;border-radius:13px;transition:transform .12s ease, filter .12s ease;
+    text-decoration:none;
+  }
+  .btn:active{transform:translateY(1px) scale(.99)}
+  .btn-primary{background:linear-gradient(180deg,var(--blood-bright),var(--blood));color:#fff;box-shadow:0 10px 30px rgba(193,20,20,.45)}
+  .btn-primary:hover{filter:brightness(1.08)}
+  .btn-x{background:#000;color:#fff;border:1px solid #2a2a2a}
+  .btn-ghost{background:transparent;color:var(--bone);border:1px solid var(--line)}
+  .btn-block{width:100%}
+  .row{display:flex;gap:12px;flex-wrap:wrap}
+  .row .btn{flex:1 1 auto}
+
+  /* intro */
+  #intro .meta{display:flex;gap:18px;justify-content:center;color:var(--ash);font-size:13px;margin:18px 0 22px;flex-wrap:wrap}
+  #intro .meta b{color:var(--bone)}
+  .field{margin:18px 0 6px;text-align:left}
+  .field label{display:block;font-size:13px;color:var(--ash);margin-bottom:7px;letter-spacing:.02em}
+  .input{
+    width:100%;background:var(--void);border:1px solid var(--line);color:var(--bone);
+    padding:14px 14px;border-radius:11px;font-family:inherit;font-size:15px;
+  }
+  .input:focus{outline:none;border-color:var(--blood)}
+  .hint{font-size:12px;color:var(--ash);margin-top:6px}
+
+  /* quiz */
+  .progress{height:8px;background:var(--void);border-radius:999px;overflow:hidden;margin-bottom:18px;border:1px solid var(--line)}
+  .progress > i{display:block;height:100%;background:linear-gradient(90deg,var(--blood),var(--blood-bright));width:0;transition:width .35s ease}
+  .qcount{font-size:12px;letter-spacing:.26em;text-transform:uppercase;color:var(--ash);margin-bottom:10px}
+  .qtext{font-size:clamp(20px,4.5vw,27px);font-weight:900;line-height:1.2;margin-bottom:20px}
+  .options{display:grid;gap:12px}
+  .opt{
+    text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--bone);
+    padding:16px 16px;border-radius:13px;font-family:inherit;font-size:16px;cursor:pointer;
+    display:flex;gap:14px;align-items:center;transition:border-color .12s, background .12s, transform .12s;
+  }
+  .opt:hover{border-color:var(--blood);background:#241f25;transform:translateX(3px)}
+  .opt .key{flex:0 0 30px;height:30px;border-radius:8px;background:var(--void);display:grid;place-items:center;font-weight:800;color:var(--blood-bright);border:1px solid var(--line)}
+  .backlink{display:inline-block;margin-top:18px;color:var(--ash);font-size:13px;cursor:pointer;background:none;border:none}
+  .backlink:hover{color:var(--bone)}
+
+  /* result */
+  #result{display:none}
+  .verdict{text-align:center}
+  .verdict .emoji{font-size:64px;line-height:1;filter:drop-shadow(0 6px 18px rgba(193,20,20,.5))}
+  .verdict .youare{font-size:13px;letter-spacing:.3em;text-transform:uppercase;color:var(--ash);margin:14px 0 2px}
+  .verdict h2{font-family:'Creepster',cursive;font-weight:400;font-size:clamp(34px,8vw,58px);color:var(--blood-bright);text-shadow:0 0 20px rgba(193,20,20,.5);line-height:1}
+  .verdict .role{font-size:16px;font-weight:800;color:var(--bone);margin-top:4px}
+  .verdict .blurb{color:#cfc9d3;font-size:15.5px;line-height:1.6;margin:16px auto 0;max-width:480px}
+  .traits{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:18px 0 4px}
+  .trait{font-size:12.5px;background:var(--void);border:1px solid var(--line);padding:7px 12px;border-radius:999px;color:var(--bone)}
+  .divider{height:1px;background:var(--line);margin:24px 0}
+  canvas{display:none}
+  .preview{width:100%;border-radius:16px;border:1px solid var(--line);margin:8px 0 4px;display:block}
+  .sharehead{font-size:13px;letter-spacing:.26em;text-transform:uppercase;color:var(--ash);margin-bottom:12px;text-align:center}
+  .photo-row{display:flex;gap:12px;align-items:center;margin:6px 0 14px}
+  .photo-row .btn{flex:0 0 auto;padding:11px 16px;font-size:14px}
+  .steps{font-size:13px;color:var(--ash);line-height:1.7;margin-top:14px;text-align:left;background:var(--void);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .steps b{color:var(--bone)}
+  .footer{text-align:center;color:var(--ash);font-size:12px;margin-top:26px;line-height:1.7}
+  .footer a{color:var(--blood-bright);text-decoration:none}
+  .hide{display:none!important}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:#000;border:1px solid var(--blood);color:#fff;padding:12px 18px;border-radius:10px;font-size:14px;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:1}
+
+  /* scan */
+  .scan-eye{font-size:70px;animation:pulse 1s infinite alternate;filter:drop-shadow(0 0 22px rgba(193,20,20,.7))}
+  @keyframes pulse{from{transform:scale(.92);opacity:.7}to{transform:scale(1.06);opacity:1}}
+  .scan-title{font-family:'Creepster',cursive;font-weight:400;font-size:clamp(28px,6vw,42px);color:var(--blood-bright);margin-top:2px;text-shadow:0 0 16px rgba(193,20,20,.5)}
+  .scan-log{font-family:ui-monospace,Menlo,monospace;font-size:13px;color:var(--green);text-align:left;min-height:120px;background:var(--void);border:1px solid var(--line);border-radius:10px;padding:14px;white-space:pre-line;line-height:1.7}
+
+  /* rarity */
+  .rarity{display:inline-block;margin:12px auto 0;font-size:13px;font-weight:800;letter-spacing:.04em;color:var(--gold);background:rgba(232,185,35,.08);border:1px solid rgba(232,185,35,.35);padding:8px 16px;border-radius:999px}
+
+  /* stat bars */
+  .stats{max-width:420px;margin:22px auto 0;display:grid;gap:11px}
+  .stat{display:grid;grid-template-columns:84px 1fr 30px;align-items:center;gap:10px}
+  .stat .lbl{font-size:12.5px;color:var(--ash);text-align:left;letter-spacing:.04em}
+  .stat .track{height:10px;background:var(--void);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .stat .track > i{display:block;height:100%;background:linear-gradient(90deg,var(--blood),var(--blood-bright));width:0;transition:width .8s ease}
+  .stat .num{font-size:12.5px;color:var(--bone);font-weight:800;text-align:right}
+
+  /* nemesis */
+  .nemesis{margin-top:22px;font-size:14px;color:var(--ash)}
+  .nemesis b{color:var(--blood-bright)}
+</style>
+</head>
+<body class="grain">
+<div class="wrap">
+
+  <!-- ============== INTRO ============== -->
+  <section id="intro">
+    <div class="brand">
+      <div class="tag">@mememaxxers presents</div>
+      <h1 class="title">Horror Timeline<br/><span class="red">Monster Quiz</span></h1>
+      <p class="sub">Every timeline is haunted. 15 cursed questions reveal which classic &amp; modern horror archetype <em>you</em> really are. ~60 seconds. No wrong answers, only victims.</p>
+    </div>
+
+    <div class="card" style="margin-top:26px">
+      <div class="field">
+        <label for="handle">Your @handle <span style="color:var(--ash)">(for your share card — optional)</span></label>
+        <input class="input" id="handle" placeholder="@yourhandle" autocomplete="off" />
+        <div class="hint">We never store anything. This is just printed on your result card.</div>
+      </div>
+      <button class="btn btn-primary btn-block" style="margin-top:18px" onclick="startQuiz()">Enter the timeline →</button>
+      <div class="meta" style="margin-top:18px"><span><b>15</b> questions</span><span><b>20</b> monsters</span><span><b>~60</b> seconds</span></div>
+    </div>
+  </section>
+
+  <!-- ============== QUIZ ============== -->
+  <section id="quiz" class="hide">
+    <div class="progress"><i id="bar"></i></div>
+    <div class="card">
+      <div class="qcount" id="qcount"></div>
+      <div class="qtext" id="qtext"></div>
+      <div class="options" id="options"></div>
+      <button class="backlink" id="backbtn" onclick="goBack()">← back</button>
+    </div>
+  </section>
+
+  <!-- ============== SCAN (suspense) ============== -->
+  <section id="scan" class="hide">
+    <div class="card" style="text-align:center">
+      <div class="scan-eye">👁️</div>
+      <div class="qcount" style="margin-top:14px">Reading your timeline</div>
+      <h2 class="scan-title" id="scanTitle">SCANNING FOR MONSTERS…</h2>
+      <div class="progress" style="margin:18px 0"><i id="scanBar" style="background:linear-gradient(90deg,var(--green),var(--blood-bright))"></i></div>
+      <div class="scan-log" id="scanLog"></div>
+    </div>
+  </section>
+
+  <!-- ============== RESULT ============== -->
+  <section id="result">
+    <div class="card">
+      <div class="verdict">
+        <div class="emoji" id="rEmoji"></div>
+        <div class="youare">Your timeline is haunted by</div>
+        <h2 id="rName"></h2>
+        <div class="role" id="rRole"></div>
+        <div class="rarity" id="rRarity"></div>
+        <div class="traits" id="rTraits"></div>
+        <p class="blurb" id="rBlurb"></p>
+        <div class="stats" id="rStats"></div>
+        <div class="nemesis" id="rNemesis"></div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="sharehead">📸 your shareable card</div>
+      <div class="photo-row">
+        <button class="btn btn-ghost" onclick="document.getElementById('photo').click()">Add your photo</button>
+        <span class="hint" id="photoName">optional — drops into the card</span>
+        <input type="file" id="photo" accept="image/*" class="hide" onchange="loadPhoto(event)" />
+      </div>
+      <img id="preview" class="preview" alt="your horror result card" />
+      <canvas id="canvas" width="1080" height="1350"></canvas>
+
+      <div class="row" style="margin-top:16px">
+        <button class="btn btn-primary" onclick="downloadCard()">⬇ Download card</button>
+        <a class="btn btn-x" id="xbtn" target="_blank" rel="noopener">𝕏 Post my result</a>
+      </div>
+      <button class="btn btn-ghost btn-block" style="margin-top:12px" onclick="copyText()">Copy caption</button>
+
+      <div class="steps">
+        <b>To post with your face on it:</b><br/>
+        1. Tap <b>Add your photo</b> → <b>Download card</b><br/>
+        2. Tap <b>𝕏 Post my result</b> (caption + tag pre-filled)<br/>
+        3. Attach the downloaded card &amp; tag <b>@mememaxxers</b> 🔪
+      </div>
+
+      <button class="btn btn-ghost btn-block" style="margin-top:16px" onclick="restart()">↺ Retake the quiz</button>
+    </div>
+    <div class="footer">
+      Built for the mememaxxers · powered by <b>proofofreal</b><br/>
+      <a href="#" id="shareTagLink">#HorrorTimeline</a> · prove you're real, or prove you're a monster.
+    </div>
+  </section>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const CONFIG = {
+  siteUrl: "https://proofofreal.app/social/horrorvillainquiz",  // live quiz URL
+  quoteTweetUrl: "",                          // optional: paste a @mememaxxers tweet URL to QUOTE-TWEET instead of plain link
+  handle: "@mememaxxers",
+  hashtag: "#HorrorTimeline"
+};
+
+/* ============================================================
+   ARCHETYPES  (id -> data)
+   ============================================================ */
+const A = {
+  jason:{name:"Jason",emoji:"🔪",role:"The Silent Survivor",blurb:"Diamond hands of posting. You rarely speak, you never die, and you outlast every cycle. While the timeline gets liquidated around you, you're still standing in the same mask you wore three bear markets ago.",traits:["Rarely posts","Always survives","Unkillable conviction"]},
+  michael:{name:"Michael Myers",emoji:"🔪",role:"The Lurker",blurb:"Pure silence. You've seen every reply and liked none of them. No bio, no posts — just the cold stare of an account that watches the whole timeline from the dark and says nothing.",traits:["Total lurker","Sees everything","Says nothing"]},
+  freddy:{name:"Freddy",emoji:"😴",role:"The Reply-Guy Nightmare",blurb:"You live in the mentions. Close the app and you're still there, haunting timelines in everyone's dreams. Ragebait is your dreamscape — and you're always, always awake.",traits:["Lives in mentions","Always online","Essay-length QTs"]},
+  ghostface:{name:"Ghostface",emoji:"👻",role:"The Anon",blurb:"Faceless, nameless, untraceable. You could be anyone — probably the one in the replies asking the question nobody wanted asked. Nobody knows who's under the mask. That's the point.",traits:["Fully anon","Asks the questions","Could be anyone"]},
+  jigsaw:{name:"Jigsaw",emoji:"🧩",role:"The Thread Architect",blurb:"You don't post — you build elaborate traps. 30-slide threads with a twist at the end. By the time people are engaging, they're already playing your game. Do you want to play?",traits:["Complicated threads","Twist endings","Engagement traps"]},
+  vecna:{name:"Vecna",emoji:"🧠",role:"The Mind-Controller",blurb:"Infofi prophet. You crawl into people's timelines and quietly rewrite what they believe. One thread and a thousand minds are yours. They think it's their idea. It was always yours.",traits:["Infofi brain","Mind-control threads","Narrative architect"]},
+  pennywise:{name:"Pennywise",emoji:"🤡",role:"The Shiller",blurb:"You float — and so do your bags. Every reply is a pitch. You smell a liquidity event from miles away and you'll be in the comments before the chart even moves. They all shill down here.",traits:["Eternal shiller","Bags float","Always pitching"]},
+  art:{name:"Art the Clown",emoji:"🤡",role:"The Chaos Goblin",blurb:"Pure random. No agenda, no mercy, just cursed memes and silent menace. Nobody knows what you'll post next — including you. The timeline is your playground and everyone's the victim.",traits:["Total chaos","Cursed memes","Zero agenda"]},
+  chucky:{name:"Chucky",emoji:"🪆",role:"The Small Account",blurb:"Tiny, underestimated, completely unhinged. Sub-1k followers and 100% audacity. The size of the account does not equal the size of the threat — and you will absolutely throw hands in the QTs.",traits:["Small but deadly","Punches up","Unhinged energy"]},
+  m3gan:{name:"M3GAN",emoji:"💅",role:"The Girl Account",blurb:"Polished, viral, and a little too aware of the algorithm. Cute pfp, dead-eyed precision, and a dance when she wins. You don't farm engagement — engagement farms itself around you.",traits:["Algorithm-aware","Goes viral","Eerily precise"]},
+  clark:{name:"Captain Clark",emoji:"🕵️",role:"The Backrooms Boss",blurb:"You operate from the shadows behind the influencers. You know their wallets, their alts, their group chats. While they perform for the timeline, you're pulling strings from the backrooms.",traits:["Stalks KOLs","On-chain detective","Shadow operator"]},
+  ironlung:{name:"Iron Lung Monster",emoji:"🫥",role:"The Impersonator",blurb:"You pretend to be someone you're not. Borrowed name, borrowed pfp, borrowed clout. Nobody's totally sure if you're real — and honestly, neither are you anymore.",traits:["Borrowed identity","Fake pfp","Are you even real?"]},
+  thing:{name:"The Thing",emoji:"🧬",role:"The Shapeshifter",blurb:"You blend in perfectly — until it's too late. Any account on the timeline could secretly be you. You assimilate the vibe, the slang, the bag, and nobody notices the swap. Trust no profile.",traits:["Blends in","Shapeshifter","Trust no one"]},
+  annabelle:{name:"Annabelle",emoji:"🎀",role:"The Cursed Cutie",blurb:"Looks harmless. Sits quietly. Radiates dread. A small, cute account with deeply ominous energy — the kind of profile you can't quite explain why it unsettles you. It just does.",traits:["Cute but cursed","Quietly ominous","Do not engage"]},
+  leatherface:{name:"Leatherface",emoji:"🪚",role:"The Raw Aggressor",blurb:"No filter, no chill, maximum noise. You QT with a chainsaw and ask questions never. When chaos breaks out you're not watching it — you started it, and you're revving up for round two.",traits:["No filter","Starts the chaos","Chainsaw QTs"]},
+  carrie:{name:"Carrie",emoji:"🩸",role:"The Meltdown Poster",blurb:"Quiet and sweet… until the bucket drops. Then it's an emotional thread heard 'round the timeline. You feel everything publicly, and when you snap, the whole feed catches fire.",traits:["Bottles it up","Public meltdowns","Then it's over"]},
+  babadook:{name:"Babadook",emoji:"📕",role:"The Doomposter",blurb:"Can't be ignored, won't be deleted. The more they ignore you, the louder you get. Persistent dread in long-form — you will be heard, even if you have to post through it for nine straight hours.",traits:["Doomposts","Can't be ignored","Posts through it"]},
+  dracula:{name:"Dracula",emoji:"🦇",role:"The OG",blurb:"Been here since the genesis block. Old account, old money, refined taste, drinks liquidity. You don't chase trends — you've simply seen them all before, and you'll still be here long after they're gone.",traits:["OG account","Refined taste","Timeless"]},
+  psycho:{name:"Norman Bates",emoji:"🔪",role:"The Split Personality",blurb:"You and your alt. One sweet, one… not. You post about 'mother,' you switch voices mid-thread, and we really don't talk about the basement account. Two personalities, one timeline, infinite confusion.",traits:["Main + alt","Two personalities","Don't ask about the basement"]},
+  freaky:{name:"Freaky Nicky",emoji:"😵‍💫",role:"The Obsessor",blurb:"Obsession incarnate. You re-read replies that aren't yours and refresh a profile forty times a night. Down bad and locked in — when you fixate on a person, a project, or a bag, there is no off switch.",traits:["Down bad","Locked in","Refreshes 40x"]}
+};
+
+/* rarity % (how common the result is), nemesis (your opposite), and 4 stats /10 */
+const META={
+  jason:{rarity:4,nemesis:"freddy",stats:{Chaos:3,Stealth:7,Menace:9,Clout:6}},
+  michael:{rarity:4,nemesis:"babadook",stats:{Chaos:2,Stealth:10,Menace:8,Clout:4}},
+  freddy:{rarity:4,nemesis:"jason",stats:{Chaos:8,Stealth:2,Menace:7,Clout:7}},
+  ghostface:{rarity:5,nemesis:"dracula",stats:{Chaos:5,Stealth:10,Menace:7,Clout:3}},
+  jigsaw:{rarity:4,nemesis:"chucky",stats:{Chaos:6,Stealth:6,Menace:8,Clout:7}},
+  vecna:{rarity:5,nemesis:"art",stats:{Chaos:5,Stealth:7,Menace:8,Clout:9}},
+  pennywise:{rarity:5,nemesis:"jason",stats:{Chaos:7,Stealth:4,Menace:7,Clout:8}},
+  art:{rarity:3,nemesis:"vecna",stats:{Chaos:10,Stealth:5,Menace:8,Clout:6}},
+  chucky:{rarity:5,nemesis:"dracula",stats:{Chaos:9,Stealth:4,Menace:6,Clout:3}},
+  m3gan:{rarity:3,nemesis:"ghostface",stats:{Chaos:6,Stealth:5,Menace:6,Clout:10}},
+  clark:{rarity:4,nemesis:"ghostface",stats:{Chaos:4,Stealth:9,Menace:6,Clout:7}},
+  ironlung:{rarity:4,nemesis:"dracula",stats:{Chaos:5,Stealth:8,Menace:5,Clout:4}},
+  thing:{rarity:4,nemesis:"jason",stats:{Chaos:6,Stealth:10,Menace:7,Clout:5}},
+  annabelle:{rarity:5,nemesis:"leatherface",stats:{Chaos:4,Stealth:7,Menace:7,Clout:3}},
+  leatherface:{rarity:5,nemesis:"michael",stats:{Chaos:10,Stealth:2,Menace:9,Clout:4}},
+  carrie:{rarity:5,nemesis:"jason",stats:{Chaos:8,Stealth:3,Menace:7,Clout:5}},
+  babadook:{rarity:3,nemesis:"michael",stats:{Chaos:7,Stealth:3,Menace:6,Clout:4}},
+  dracula:{rarity:4,nemesis:"chucky",stats:{Chaos:4,Stealth:6,Menace:7,Clout:10}},
+  psycho:{rarity:16,nemesis:"m3gan",stats:{Chaos:7,Stealth:6,Menace:8,Clout:4}},
+  freaky:{rarity:6,nemesis:"ghostface",stats:{Chaos:7,Stealth:6,Menace:6,Clout:3}}
+};
+
+/* ============================================================
+   QUESTIONS  (option -> archetype ids it scores)
+   ============================================================ */
+const Q = [
+ {q:"It's 3am. You're…",o:[
+   {t:"Stalking replies",s:["freaky","babadook"]},
+   {t:"Researching KOLs",s:["clark"]},
+   {t:"Writing a thread",s:["vecna","jigsaw"]},
+   {t:"Making a cursed meme",s:["art","chucky"]}]},
+ {q:"Pick a cursed color.",o:[
+   {t:"Blood red",s:["jason","dracula"]},
+   {t:"Void black",s:["ghostface","michael"]},
+   {t:"Neon green",s:["m3gan","vecna"]},
+   {t:"Gold",s:["pennywise","dracula"]}]},
+ {q:"What's in your bio?",o:[
+   {t:"Empty / one emoji",s:["ghostface","michael"]},
+   {t:"“Building.”",s:["vecna","jigsaw"]},
+   {t:"Tickers + links",s:["pennywise","dracula"]},
+   {t:"Fake name / fake PFP",s:["ironlung","thing"]}]},
+ {q:"Pick your weapon.",o:[
+   {t:"Machete",s:["jason","leatherface"]},
+   {t:"Bare hands",s:["michael","dracula"]},
+   {t:"Voodoo doll",s:["annabelle","chucky"]},
+   {t:"Gun",s:["clark","ghostface"]}]},
+ {q:"Why are you really here?",o:[
+   {t:"The money",s:["pennywise","dracula"]},
+   {t:"The community",s:["m3gan","chucky"]},
+   {t:"To watch chaos",s:["art","leatherface"]},
+   {t:"To survive",s:["jason","michael"]}]},
+ {q:"Your timeline is mostly…",o:[
+   {t:"Alpha threads",s:["vecna","jigsaw"]},
+   {t:"Memes",s:["art","chucky"]},
+   {t:"KOL drama",s:["clark","freaky"]},
+   {t:"Silence",s:["jason","michael"]}]},
+ {q:"Pick your toxic trait.",o:[
+   {t:"Drama",s:["freddy","carrie"]},
+   {t:"Bagholding",s:["jason","babadook"]},
+   {t:"Shilling",s:["pennywise","dracula"]},
+   {t:"Overthinking",s:["vecna","jigsaw"]}]},
+ {q:"You get rugged. First move?",o:[
+   {t:"Say nothing",s:["jason","michael"]},
+   {t:"Emotional thread",s:["carrie","babadook"]},
+   {t:"Investigate wallets",s:["clark","vecna"]},
+   {t:"Make a meme",s:["art","chucky"]}]},
+ {q:"What's your PFP?",o:[
+   {t:"Anon NFT",s:["ghostface","michael"]},
+   {t:"Cute / anime",s:["m3gan","chucky","annabelle"]},
+   {t:"IRL picture",s:["dracula","m3gan","clark"]},
+   {t:"Cursed image",s:["art","ironlung","thing"]}]},
+ {q:"Pick your villain lair.",o:[
+   {t:"Cabin in the woods",s:["jason","michael"]},
+   {t:"Haunted house",s:["annabelle","babadook"]},
+   {t:"Abandoned mall",s:["art","chucky"]},
+   {t:"Secret basement",s:["jigsaw","ghostface"]}]},
+ {q:"Pick a cursed snack.",o:[
+   {t:"Gas station jerky",s:["jason","leatherface"]},
+   {t:"Energy drink",s:["freddy","chucky"]},
+   {t:"Cold pizza",s:["ghostface","michael"]},
+   {t:"Mystery meat",s:["art","ironlung"]}]},
+ {q:"Your camera roll is mostly…",o:[
+   {t:"Memes",s:["art","chucky"]},
+   {t:"Horror victims",s:["jason","ghostface"]},
+   {t:"Your mom",s:["psycho","babadook"]},
+   {t:"Vacation pics",s:["dracula","m3gan"]}]},
+ {q:"Your victim says, “Please spare me.” You…",o:[
+   {t:"Let them run",s:["jason","michael"]},
+   {t:"Recruit them",s:["m3gan","clark"]},
+   {t:"Torture them",s:["jigsaw","vecna"]},
+   {t:"Kill them anyway",s:["art","leatherface"]}]},
+ {q:"Which social media do you mostly use?",o:[
+   {t:"Discord / Telegram",s:["clark","ghostface"]},
+   {t:"Facebook / Instagram",s:["dracula","m3gan"]},
+   {t:"Reddit / Twitter",s:["vecna","freddy"]},
+   {t:"YouTube / TikTok",s:["pennywise","art"]}]},
+ {q:"Someone says your horror movie is overrated. You…",o:[
+   {t:"Say nothing and scroll on",s:["jason","michael"]},
+   {t:"Get ragebaited, reply with an essay",s:["freddy","vecna"]},
+   {t:"Report them",s:["ghostface","jigsaw"]},
+   {t:"Troll them with a GIF",s:["art","chucky"]}]}
+];
+
+/* ============================================================
+   STATE + FLOW
+   ============================================================ */
+let step=0;
+const answers=new Array(Q.length).fill(null);
+let resultId=null;
+let userPhoto=null;
+const KEYS=["A","B","C","D"];
+
+function startQuiz(){
+  document.getElementById("intro").classList.add("hide");
+  document.getElementById("quiz").classList.remove("hide");
+  step=0; render();
+}
+function render(){
+  const qq=Q[step];
+  document.getElementById("bar").style.width=((step)/Q.length*100)+"%";
+  document.getElementById("qcount").textContent="Question "+(step+1)+" / "+Q.length;
+  document.getElementById("qtext").textContent=qq.q;
+  const box=document.getElementById("options"); box.innerHTML="";
+  qq.o.forEach((opt,i)=>{
+    const b=document.createElement("button");
+    b.className="opt";
+    b.innerHTML='<span class="key">'+KEYS[i]+'</span><span>'+opt.t+'</span>';
+    b.onclick=()=>choose(i);
+    box.appendChild(b);
+  });
+  document.getElementById("backbtn").style.visibility = step===0 ? "hidden":"visible";
+}
+function choose(i){
+  answers[step]=i;
+  if(step<Q.length-1){ step++; render(); }
+  else finish();
+}
+function goBack(){ if(step>0){ step--; render(); } }
+
+// rarity weighting: monsters that appear in few options score more per hit,
+// so all 20 stay winnable instead of the common ones always dominating.
+const APP={}; Object.keys(A).forEach(k=>APP[k]=0);
+Q.forEach(q=>q.o.forEach(o=>o.s.forEach(id=>{APP[id]=(APP[id]||0)+1;})));
+const W={}; Object.keys(APP).forEach(k=>W[k]=Math.pow(APP[k],-0.75));
+
+function finish(){
+  document.getElementById("bar").style.width="100%";
+  const score={};
+  answers.forEach((ai,qi)=>{
+    if(ai===null) return;
+    Q[qi].o[ai].s.forEach(id=>{ score[id]=(score[id]||0)+W[id]; });
+  });
+  let best=null,bestVal=-1;
+  Object.keys(score).forEach(id=>{
+    if(score[id]>bestVal+1e-9){bestVal=score[id];best=id;}
+  });
+  resultId=best||"art";
+  runScan();
+}
+
+function runScan(){
+  document.getElementById("quiz").classList.add("hide");
+  const sc=document.getElementById("scan"); sc.classList.remove("hide");
+  window.scrollTo({top:0,behavior:"smooth"});
+  const h=getHandle();
+  const lines=[
+    "> connecting to "+(h||"@anon")+" …",
+    "> parsing 666 posts …",
+    "> measuring reply-guy energy …",
+    "> scanning bio for red flags …",
+    "> cross-referencing the trenches …",
+    "> detecting cursed aura …",
+    "> MATCH FOUND."
+  ];
+  const log=document.getElementById("scanLog"); log.textContent="";
+  const bar=document.getElementById("scanBar"); bar.style.width="0%";
+  let i=0;
+  const total=lines.length;
+  const tick=()=>{
+    if(i<total){
+      log.textContent+=(i?"\n":"")+lines[i];
+      bar.style.width=Math.round(((i+1)/total)*100)+"%";
+      if(i===total-1) document.getElementById("scanTitle").textContent="MONSTER IDENTIFIED";
+      i++;
+      setTimeout(tick, i===total ? 650 : 300);
+    } else {
+      sc.classList.add("hide");
+      showResult();
+    }
+  };
+  setTimeout(tick,250);
+}
+
+function showResult(){
+  const a=A[resultId];
+  document.getElementById("quiz").classList.add("hide");
+  document.getElementById("intro").classList.add("hide");
+  document.getElementById("result").style.display="block";
+  document.getElementById("rEmoji").textContent=a.emoji;
+  document.getElementById("rName").textContent=a.name;
+  document.getElementById("rRole").textContent=a.role;
+  document.getElementById("rBlurb").textContent=a.blurb;
+  const tb=document.getElementById("rTraits"); tb.innerHTML="";
+  a.traits.forEach(t=>{const s=document.createElement("span");s.className="trait";s.textContent=t;tb.appendChild(s);});
+  // rarity
+  const m=META[resultId];
+  document.getElementById("rRarity").textContent="🩸 Only ~"+m.rarity+"% of the timeline shares your fate";
+  // stat bars (animate after paint)
+  const sb=document.getElementById("rStats"); sb.innerHTML="";
+  Object.entries(m.stats).forEach(([k,v])=>{
+    const row=document.createElement("div"); row.className="stat";
+    row.innerHTML='<span class="lbl">'+k+'</span><span class="track"><i></i></span><span class="num">'+v+'</span>';
+    sb.appendChild(row);
+    requestAnimationFrame(()=>{setTimeout(()=>{row.querySelector("i").style.width=(v*10)+"%";},60);});
+  });
+  // nemesis
+  const nem=A[m.nemesis];
+  document.getElementById("rNemesis").innerHTML="⚔️ Your nemesis: <b>"+nem.name+" "+nem.emoji+"</b> — screenshot this and find out who on your TL is "+a.name+".";
+  buildXLink();
+  drawCard();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+/* ----- caption + X intent (plain post OR quote-tweet) ----- */
+function caption(){
+  const a=A[resultId];
+  const m=META[resultId];
+  const nem=A[m.nemesis];
+  const h=getHandle();
+  return (h?h+" — ":"")+"I'm "+a.name+" "+a.emoji+", "+a.role+".\n\n"+
+    "🩸 Only ~"+m.rarity+"% of the timeline shares my fate.\n"+
+    "⚔️ My nemesis: "+nem.name+" "+nem.emoji+"\n\n"+
+    "Which Horror Timeline Monster are you? Take the quiz "+CONFIG.handle+" 👇\n"+
+    "Tag 3 mutuals you KNOW are "+a.name+" 🔪\n"+CONFIG.hashtag;
+}
+function buildXLink(){
+  const text=encodeURIComponent(caption());
+  // if quoteTweetUrl set -> renders as a quote tweet; else attach site link
+  const linkUrl=CONFIG.quoteTweetUrl||CONFIG.siteUrl;
+  const href="https://twitter.com/intent/tweet?text="+text+"&url="+encodeURIComponent(linkUrl);
+  document.getElementById("xbtn").href=href;
+}
+function getHandle(){
+  let h=(document.getElementById("handle").value||"").trim();
+  if(h && !h.startsWith("@")) h="@"+h;
+  return h.replace(/\s+/g,"");
+}
+
+/* ----- photo upload ----- */
+function loadPhoto(e){
+  const f=e.target.files[0]; if(!f) return;
+  document.getElementById("photoName").textContent=f.name;
+  const r=new FileReader();
+  r.onload=ev=>{const img=new Image();img.onload=()=>{userPhoto=img;drawCard();};img.src=ev.target.result;};
+  r.readAsDataURL(f);
+}
+
+/* ----- canvas share card ----- */
+function rr(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function wrapText(ctx,text,x,y,maxW,lh){
+  const words=text.split(" ");let line="",yy=y;
+  for(let n=0;n<words.length;n++){
+    const test=line+words[n]+" ";
+    if(ctx.measureText(test).width>maxW && n>0){ctx.fillText(line.trim(),x,yy);line=words[n]+" ";yy+=lh;}
+    else line=test;
+  }
+  ctx.fillText(line.trim(),x,yy);return yy;
+}
+function drawCard(){
+  const a=A[resultId];
+  const c=document.getElementById("canvas"),ctx=c.getContext("2d");
+  const W=c.width,H=c.height;
+  // bg
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,"#16111a");g.addColorStop(1,"#070708");
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  // red glow top
+  const rg=ctx.createRadialGradient(W/2,-40,40,W/2,200,700);
+  rg.addColorStop(0,"rgba(193,20,20,.45)");rg.addColorStop(1,"rgba(193,20,20,0)");
+  ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
+  // border
+  ctx.strokeStyle="rgba(255,255,255,.08)";ctx.lineWidth=2;rr(ctx,24,24,W-48,H-48,28);ctx.stroke();
+
+  ctx.textAlign="center";
+  // top label
+  ctx.fillStyle="#8b8693";ctx.font="600 26px Inter, sans-serif";
+  ctx.fillText("@MEMEMAXXERS · HORROR TIMELINE QUIZ",W/2,96);
+
+  // photo circle (if any) else big emoji
+  const cx=W/2, cy=320, R=140;
+  if(userPhoto){
+    ctx.save();ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.closePath();ctx.clip();
+    const s=Math.max((2*R)/userPhoto.width,(2*R)/userPhoto.height);
+    const dw=userPhoto.width*s,dh=userPhoto.height*s;
+    ctx.drawImage(userPhoto,cx-dw/2,cy-dh/2,dw,dh);ctx.restore();
+    ctx.lineWidth=6;ctx.strokeStyle="#c11414";ctx.beginPath();ctx.arc(cx,cy,R,0,Math.PI*2);ctx.stroke();
+    ctx.font="90px serif";ctx.fillText(a.emoji,cx+R-10,cy-R+40);
+  } else {
+    ctx.font="170px serif";ctx.fillText(a.emoji,cx,cy+55);
+  }
+
+  // "you are"
+  ctx.fillStyle="#8b8693";ctx.font="600 26px Inter, sans-serif";
+  ctx.fillText("YOUR TIMELINE IS HAUNTED BY",W/2,cy+R+70);
+
+  // name
+  ctx.fillStyle="#ff2424";ctx.font="120px Creepster, cursive";
+  ctx.shadowColor="rgba(193,20,20,.6)";ctx.shadowBlur=30;
+  ctx.fillText(a.name.toUpperCase(),W/2,cy+R+200);
+  ctx.shadowBlur=0;
+  // role
+  ctx.fillStyle="#e9e4da";ctx.font="800 40px Inter, sans-serif";
+  ctx.fillText(a.role,W/2,cy+R+260);
+
+  // rarity
+  ctx.fillStyle="#e8b923";ctx.font="700 30px Inter, sans-serif";
+  ctx.fillText("only ~"+META[resultId].rarity+"% of the timeline shares this fate",W/2,cy+R+312);
+
+  // blurb
+  ctx.fillStyle="#cfc9d3";ctx.font="400 32px Inter, sans-serif";
+  const endY=wrapText(ctx,a.blurb,W/2,cy+R+340,W-180,46);
+
+  // traits pills
+  ctx.font="600 28px Inter, sans-serif";
+  let py=Math.min(endY+90,H-220);
+  const pills=a.traits;
+  const padX=26,gap=18,ph=64;
+  let widths=pills.map(t=>ctx.measureText(t).width+padX*2);
+  let totalW=widths.reduce((x,y)=>x+y,0)+gap*(pills.length-1);
+  let px=(W-totalW)/2;
+  pills.forEach((t,i)=>{
+    ctx.fillStyle="rgba(255,255,255,.05)";ctx.strokeStyle="rgba(255,255,255,.12)";ctx.lineWidth=2;
+    rr(ctx,px,py-ph/2,widths[i],ph,ph/2);ctx.fill();ctx.stroke();
+    ctx.fillStyle="#e9e4da";ctx.textAlign="center";ctx.fillText(t,px+widths[i]/2,py+9);
+    px+=widths[i]+gap;
+  });
+
+  // stats line
+  ctx.fillStyle="#8b8693";ctx.font="700 26px Inter, sans-serif";ctx.textAlign="center";
+  const statStr=Object.entries(META[resultId].stats).map(([k,v])=>k+" "+v).join("   ·   ");
+  ctx.fillText(statStr,W/2,H-172);
+
+  // handle
+  const h=getHandle();
+  ctx.textAlign="center";
+  if(h){ctx.fillStyle="#ff2424";ctx.font="800 38px Inter, sans-serif";ctx.fillText(h,W/2,H-120);}
+  // footer
+  ctx.fillStyle="#8b8693";ctx.font="600 26px Inter, sans-serif";
+  ctx.fillText("take the quiz · proofofreal · #HorrorTimeline",W/2,H-64);
+
+  // preview
+  document.getElementById("preview").src=c.toDataURL("image/png");
+}
+
+function downloadCard(){
+  drawCard();
+  const c=document.getElementById("canvas");
+  const a=A[resultId];
+  const link=document.createElement("a");
+  link.download="horror-timeline-"+a.name.toLowerCase().replace(/[^a-z0-9]+/g,"-")+".png";
+  link.href=c.toDataURL("image/png");
+  link.click();
+  toast("Card downloaded — attach it to your post 🔪");
+}
+function copyText(){
+  navigator.clipboard.writeText(caption()).then(()=>toast("Caption copied!"),()=>toast("Press & hold to copy"));
+}
+function restart(){
+  document.getElementById("result").style.display="none";
+  document.getElementById("intro").classList.remove("hide");
+  answers.fill(null);userPhoto=null;resultId=null;
+  document.getElementById("photoName").textContent="optional — drops into the card";
+  document.getElementById("preview").src="";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+let toastTimer;
+function toast(msg){
+  const t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2200);
+}
+document.getElementById("handle").addEventListener("keydown",e=>{if(e.key==="Enter")startQuiz();});
+</script>
+</body>
+</html>
