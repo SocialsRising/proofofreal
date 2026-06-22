@@ -526,13 +526,10 @@ function showResult(){
 function caption(){
   const a=A[resultId];
   const m=META[resultId];
-  const nem=A[m.nemesis];
-  const h=getHandle();
-  return (h?h+" — ":"")+"I'm "+a.name+" "+a.emoji+", "+a.role+".\n\n"+
-    "🩸 Only ~"+m.rarity+"% of the timeline shares my fate.\n"+
-    "⚔️ My nemesis: "+nem.name+" "+nem.emoji+"\n\n"+
-    "Which Horror Timeline Monster are you? Take the quiz "+CONFIG.handle+" 👇\n"+
-    "Tag 3 mutuals you KNOW are "+a.name+" 🔪\n"+CONFIG.hashtag;
+  return "Which Horror Villain Are You? 🔪\n\n"+
+    "I'm "+a.name+" "+a.emoji+" — "+a.role+".\n\n"+
+    "🩸 Only ~"+m.rarity+"% share my result.\n\n"+
+    "Take the "+CONFIG.handle+" quiz 👇";
 }
 function buildXLink(){
   const text=encodeURIComponent(caption());
