@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>JPEG JOKERS — PFP Remixer · Meme Maxxers</title>
+<meta name="description" content="Turn your PFP into a JPEG JOKERS Genesis card. Add your name, hit Remix til it looks fire, then share it. Tag @mememaxxers." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="proofofreal" />
+<meta property="og:title" content="JPEG JOKERS — PFP Remixer 🃏" />
+<meta property="og:description" content="Drop your image, add your name, hit Remix til it looks fire, share your JOKER. Tag @mememaxxers." />
+<meta property="og:url" content="https://proofofreal.app/social/pfpremixer" />
+<meta property="og:image" content="https://proofofreal.app/social/pfpremixer/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@mememaxxers" />
+<meta name="twitter:title" content="JPEG JOKERS — PFP Remixer 🃏" />
+<meta name="twitter:description" content="Mint your face into a JOKER. Add your name, hit Remix, share. Tag @mememaxxers." />
+<meta name="twitter:image" content="https://proofofreal.app/social/pfpremixer/og-image.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600;700&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root{ --bg:#06070a; --bg2:#0c0e14; --panel:#11141c; --ink:#e9ecf3; --ash:#8b91a3; --line:rgba(255,255,255,.10); --neon:#7b5bff; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);min-height:100%;
+    background:radial-gradient(1100px 620px at 50% -10%, rgba(123,91,255,.18), transparent 60%),
+               radial-gradient(900px 500px at 88% 112%, rgba(0,212,255,.08), transparent 55%), var(--bg);
+    -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .wrap{max-width:470px;margin:0 auto;padding:26px 18px 80px;display:flex;flex-direction:column;align-items:center;gap:16px}
+  .head{text-align:center}
+  .kick{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--ash)}
+  h1{font-family:'Oswald',sans-serif;font-weight:700;font-size:clamp(30px,7vw,46px);letter-spacing:.05em;line-height:1;margin:5px 0 0;
+     background:linear-gradient(180deg,#fff,#a9b2cc);-webkit-background-clip:text;background-clip:text;color:transparent}
+  h1 .clr{-webkit-text-fill-color:initial;color:#9b7bff}
+  .sub{color:var(--ash);font-size:13.5px;margin:8px auto 0;line-height:1.5;max-width:420px}
+
+  .cardwrap{position:relative;width:100%;max-width:400px;border-radius:20px;overflow:hidden;background:#000;box-shadow:0 40px 90px rgba(0,0,0,.6)}
+  .cardwrap:before{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;mix-blend-mode:overlay;opacity:0;
+    background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.65) 48%,transparent 66%)}
+  .cardwrap.holo:before{opacity:.5;animation:sheen 3.4s linear infinite}
+  @keyframes sheen{0%{transform:translateX(-60%)}100%{transform:translateX(60%)}}
+  .cardwrap.flash{animation:flash .45s ease}
+  @keyframes flash{0%{filter:brightness(1.9) saturate(1.3)}100%{filter:brightness(1)}}
+  #card{display:block;width:100%;height:auto}
+
+  .dropzone{aspect-ratio:5/7;width:100%;max-width:400px;border:2px dashed rgba(255,255,255,.2);border-radius:20px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;cursor:pointer;
+    background:linear-gradient(180deg,var(--panel),var(--bg2));color:var(--ash);transition:.15s;padding:26px}
+  .dropzone:hover,.dropzone.drag{border-color:#9b7bff;background:#120f22;color:var(--ink)}
+  .dropzone .big{font-size:46px}
+  .dropzone b{color:var(--ink)}
+  .dropzone .kbd{font-family:ui-monospace,monospace;background:#0a0c10;border:1px solid var(--line);border-radius:6px;padding:2px 7px;font-size:12px}
+
+  .namewrap{width:100%;max-width:400px}
+  .namelabel{font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--ash);margin-bottom:7px;text-align:center}
+  .name{width:100%;background:#0a0c11;border:1.5px solid var(--line);color:#fff;text-align:center;
+    font-family:'Oswald',sans-serif;font-weight:700;letter-spacing:.06em;font-size:26px;padding:16px 14px;border-radius:14px;text-transform:uppercase}
+  .name::placeholder{color:#4d5366;letter-spacing:.04em}
+  .name:focus{outline:none;border-color:#9b7bff;box-shadow:0 0 0 3px rgba(123,91,255,.18)}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:10px;font-family:inherit;font-weight:800;cursor:pointer;border:none;
+    border-radius:14px;transition:transform .12s,filter .12s;text-decoration:none;width:100%;max-width:400px}
+  .btn:active{transform:translateY(1px)}
+  .btn-remix{background:linear-gradient(180deg,#8b6bff,#5a37e6);color:#fff;box-shadow:0 14px 34px rgba(123,91,255,.45);
+    font-family:'Oswald',sans-serif;font-size:24px;letter-spacing:.08em;padding:19px;text-transform:uppercase}
+  .btn-remix:hover{filter:brightness(1.08)}
+  .btn-x{background:#000;color:#fff;border:1px solid #2a2a2a;font-size:16px;padding:15px}
+  .btn-ghost{background:transparent;color:var(--ash);border:1px solid var(--line);font-size:13px;padding:11px}
+  .hide{display:none!important}
+  .footer{text-align:center;color:var(--ash);font-size:12px;margin-top:6px;line-height:1.7}
+  .footer b{color:var(--ink)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000;border:1px solid #9b7bff;color:#fff;
+    padding:13px 20px;border-radius:11px;font-size:15px;font-weight:700;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="head">
+    <div class="kick">Meme Maxxers</div>
+    <h1>JPEG <span class="clr">JOKERS</span></h1>
+    <p class="sub">Drop your image, type your name, and hit <b>REMIX</b> til your card looks fire. Then share your JOKER.</p>
+  </div>
+
+  <div class="dropzone" id="drop">
+    <div class="big">🃏</div>
+    <div><b>Click to upload</b>, drag an image in, or <span class="kbd">Ctrl/⌘ + V</span> to paste</div>
+    <div style="font-size:12px">your PFP never leaves your browser</div>
+  </div>
+
+  <div class="cardwrap hide" id="cardwrap"><canvas id="card" width="900" height="1260"></canvas></div>
+
+  <div class="namewrap hide" id="nameBox">
+    <div class="namelabel">Your name on the card</div>
+    <input class="name" id="name" maxlength="20" placeholder="YOUR NAME" autocomplete="off" />
+  </div>
+
+  <button class="btn btn-remix hide" id="remixBtn" onclick="remix()">🎲 Remix Me</button>
+  <a class="btn btn-x hide" id="xbtn" target="_blank" rel="noopener" onclick="prepShare()">𝕏 Share my JOKER</a>
+  <button class="btn btn-ghost hide" id="changeBtn" onclick="document.getElementById('file').click()">↻ change image · ⬇ <span onclick="event.stopPropagation();downloadCard()" style="text-decoration:underline">download</span></button>
+  <input type="file" id="file" accept="image/*" class="hide" />
+
+  <div class="footer">powered by <b>proofofreal</b> · JPEG JOKERS Genesis · share &amp; tag <b>@mememaxxers</b><br/>your image is processed locally, never uploaded.</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIG
+   ============================================================ */
+const CONFIG = {
+  siteUrl: "https://proofofreal.app/social/pfpremixer",
+  handle: "@mememaxxers"
+};
+
+/* ============================================================
+   BACKEND POOLS — add as many as you want here (20+ each)
+   FRAME = metal rail palette [highlight, mid, shadow]
+   ============================================================ */
+const FRAMES = [
+  {label:"Chrome",   a:"#eef0f6",b:"#9aa0ad",c:"#565b66"},
+  {label:"Gold",     a:"#fceeb0",b:"#cfa63f",c:"#7a5c12"},
+  {label:"Obsidian", a:"#3a3d45",b:"#16181d",c:"#050507"},
+  {label:"Platinum", a:"#ffffff",b:"#d6dae3",c:"#9aa0ad"},
+  {label:"Rose Gold",a:"#ffd9cf",b:"#e08a82",c:"#9c5a52"},
+  {label:"Bronze",   a:"#f0c89a",b:"#b07b3e",c:"#6b4a1f"},
+  {label:"Gunmetal", a:"#7a808a",b:"#3a3e46",c:"#1c1e24"},
+  {label:"Holo",     a:"#ffd0f0",b:"#bcd0ff",c:"#c8ffe0"},
+  {label:"Emerald",  a:"#bff0d0",b:"#2fae6a",c:"#13633a"},
+  {label:"Sapphire", a:"#bcd4ff",b:"#3a6bd0",c:"#1a3a7a"},
+  {label:"Ruby",     a:"#ffc6d2",b:"#d03a5a",c:"#7a1a30"},
+  {label:"Cyber",    a:"#2a2e3a",b:"#0c0d13",c:"#000000"},
+  {label:"Copper",   a:"#f6c9a0",b:"#c1693a",c:"#6e3416"},
+  {label:"Amethyst", a:"#e6cfff",b:"#9a5cff",c:"#4a2a8a"},
+  {label:"Jade",     a:"#cfeede",b:"#3fae8a",c:"#155c46"},
+  {label:"Pearl",    a:"#fbfbff",b:"#e4e0ee",c:"#b8b2cc"},
+  {label:"Titanium", a:"#cfd6dd",b:"#8a93a0",c:"#4a525c"},
+  {label:"Frost",    a:"#dff3ff",b:"#8fd0ff",c:"#3a78b0"},
+  {label:"Inferno",  a:"#ffd6a0",b:"#ff6a2d",c:"#9c2a10"},
+  {label:"Toxic",    a:"#d8ffb0",b:"#7ad13a",c:"#2a5c14"},
+  {label:"Royal",    a:"#ffe9a3",b:"#7b4fd0",c:"#3a2a7a"},
+  {label:"Onyx",     a:"#4a4d55",b:"#222329",c:"#0a0b0e"}
+];
+/* THEME = accent / glow color */
+const THEMES = [
+  "#39ff6a","#2d7bff","#a366ff","#ff2d4b","#ffc62e","#ff4fa3","#00e5ff","#ff8a2d",
+  "#e9ecf3","#1fd8c0","#ff3df0","#c6ff3d","#ff5e5e","#5ad1ff","#b46bff","#ffd24d",
+  "#5effc0","#ff7a5e","#6a7bff","#ff9ec7","#46e0d0","#aaff3d","#ff5ed0","#c8d0e0"
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+let img=null, frameIdx=0, themeIdx=0, serial=rollSerial(), name="";
+const cv=document.getElementById("card"), ctx=cv.getContext("2d");
+const W=cv.width, H=cv.height;
+function rollSerial(){return Math.floor(Math.random()*5000)+1;}
+// static sparkle field (stable across remixes)
+const DOTS=[]; (function(){let s=99173;for(let i=0;i<46;i++){s=(s*1103515245+12345)>>>0;const x=70+(s>>8)%(W-140);s=(s*1103515245+12345)>>>0;const y=70+(s>>8)%(H-140);s=(s*1103515245+12345)>>>0;DOTS.push({x,y,r:0.6+(s%10)/8});}})();
+
+/* ---------- image loading ---------- */
+function loadFromSrc(src){
+  const im=new Image();
+  im.onload=()=>{
+    img=im;
+    frameIdx=Math.floor(Math.random()*FRAMES.length);
+    themeIdx=Math.floor(Math.random()*THEMES.length);
+    document.getElementById("drop").classList.add("hide");
+    ["cardwrap","nameBox","remixBtn","xbtn","changeBtn"].forEach(id=>document.getElementById(id).classList.remove("hide"));
+    document.getElementById("cardwrap").classList.add("holo");
+    drawCard();
+  };
+  im.onerror=()=>toast("Couldn't read that image — try a PNG or JPG.");
+  im.src=src;
+}
+function loadBlob(b){ if(!b)return; const r=new FileReader(); r.onload=e=>loadFromSrc(e.target.result); r.readAsDataURL(b); }
+document.getElementById("file").addEventListener("change",e=>{ if(e.target.files[0]) loadBlob(e.target.files[0]); });
+document.getElementById("drop").addEventListener("click",()=>document.getElementById("file").click());
+const dz=document.getElementById("drop");
+["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("drag");}));
+["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("drag");}));
+dz.addEventListener("drop",e=>{ const f=e.dataTransfer.files[0]; if(f) loadBlob(f); });
+window.addEventListener("paste",e=>{const items=(e.clipboardData||{}).items||[];for(const it of items){if(it.type&&it.type.indexOf("image")===0){loadBlob(it.getAsFile());return;}}});
+document.getElementById("name").addEventListener("input",e=>{ name=e.target.value; drawCard(); });
+
+/* ---------- REMIX ---------- */
+function remix(){
+  if(!img){toast("Drop an image first 🖼️");return;}
+  let nf=frameIdx,nt=themeIdx;
+  while(nf===frameIdx) nf=Math.floor(Math.random()*FRAMES.length);
+  while(nt===themeIdx) nt=Math.floor(Math.random()*THEMES.length);
+  frameIdx=nf;themeIdx=nt;serial=rollSerial();
+  drawCard();
+  const w=document.getElementById("cardwrap");w.classList.remove("flash");void w.offsetWidth;w.classList.add("flash");
+}
+
+/* ---------- canvas helpers ---------- */
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function metalGrad(f){const g=ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,f.a);g.addColorStop(.16,f.b);g.addColorStop(.34,f.a);g.addColorStop(.5,f.c);
+  g.addColorStop(.66,f.a);g.addColorStop(.84,f.b);g.addColorStop(1,f.a);return g;}
+function rainbow(){const g=ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,"#ff2d6b");g.addColorStop(.22,"#ffd23f");g.addColorStop(.44,"#39ff6a");
+  g.addColorStop(.66,"#00d4ff");g.addColorStop(.85,"#b86bff");g.addColorStop(1,"#ff2d6b");return g;}
+function glowText(t,x,y,px,color,glow,blur){
+  ctx.save();ctx.font="700 "+px+"px Oswald, sans-serif";ctx.textAlign="center";
+  ctx.shadowColor="rgba(0,0,0,.75)";ctx.shadowBlur=5;ctx.shadowOffsetY=2;
+  ctx.fillStyle=color;
+  if(glow){ctx.shadowColor=glow;ctx.shadowBlur=blur||16;ctx.shadowOffsetY=0;ctx.fillText(t,x,y);}
+  ctx.shadowColor="rgba(0,0,0,.6)";ctx.shadowBlur=4;ctx.shadowOffsetY=1;ctx.fillText(t,x,y);
+  ctx.restore();
+}
+function fit(t,maxW,start){let px=start;ctx.font="700 "+px+"px Oswald, sans-serif";while(ctx.measureText(t).width>maxW&&px>20){px-=2;ctx.font="700 "+px+"px Oswald, sans-serif";}return px;}
+
+/* ---------- render ---------- */
+function drawCard(){
+  if(!img) return;
+  const f=FRAMES[frameIdx], TH=THEMES[themeIdx];
+  ctx.clearRect(0,0,W,H);ctx.fillStyle="#000";ctx.fillRect(0,0,W,H);
+
+  // 1) metal rail
+  ctx.fillStyle=metalGrad(f);rr(0,0,W,H,44);ctx.fill();
+  ctx.save();ctx.globalCompositeOperation="overlay";
+  for(let i=0;i<5;i++){ctx.fillStyle="rgba(255,255,255,"+(0.12-i*0.02)+")";ctx.fillRect(-220+i*240,-60,60,H+120);}
+  ctx.restore();
+  // holo foil sheen on rail
+  ctx.save();ctx.globalCompositeOperation="overlay";ctx.globalAlpha=.3;ctx.fillStyle=rainbow();rr(0,0,W,H,44);ctx.fill();ctx.restore();
+  // corner screws
+  [[80,80],[W-80,80],[80,H-80],[W-80,H-80]].forEach(p=>{
+    const g=ctx.createRadialGradient(p[0]-3,p[1]-3,1,p[0],p[1],12);g.addColorStop(0,"#fff");g.addColorStop(1,"#3a3e47");
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(p[0],p[1],11,0,7);ctx.fill();
+    ctx.strokeStyle="rgba(0,0,0,.5)";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(p[0]-6,p[1]);ctx.lineTo(p[0]+6,p[1]);ctx.stroke();
+  });
+
+  // 2) dark interior face
+  const ix=46,iy=46,iw=W-92,ih=H-92;
+  const ig=ctx.createLinearGradient(0,iy,0,iy+ih);ig.addColorStop(0,"#0e1118");ig.addColorStop(1,"#05060a");
+  ctx.fillStyle=ig;rr(ix,iy,iw,ih,30);ctx.fill();
+  // inner theme hairline
+  ctx.lineWidth=2;ctx.strokeStyle=hexA(TH,.5);rr(ix+8,iy+8,iw-16,ih-16,24);ctx.stroke();
+  // top theme glow
+  ctx.save();rr(ix,iy,iw,ih,30);ctx.clip();
+  const tg=ctx.createRadialGradient(W/2,150,20,W/2,150,360);tg.addColorStop(0,hexA(TH,.22));tg.addColorStop(1,hexA(TH,0));
+  ctx.fillStyle=tg;ctx.fillRect(ix,iy,iw,ih);
+  // sparkles
+  DOTS.forEach(d=>{ctx.globalAlpha=.5;ctx.fillStyle=TH;ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,7);ctx.fill();});
+  ctx.globalAlpha=1;ctx.restore();
+
+  // 3) title
+  glowText("JPEG JOKERS",W/2,150,62,"#f4f6fb",hexA(TH,.55),20);
+  glowText("♣  GENESIS EDITION  ♣",W/2,186,22,"#c2c8d6",null,0);
+  ctx.fillStyle=hexA(TH,.7);ctx.fillRect(W/2-150,200,300,2);
+
+  // 4) photo window
+  const wx=98,wy=232,ww=W-196,wh=590;
+  ctx.save();rr(wx,wy,ww,wh,16);ctx.clip();
+  ctx.fillStyle="#000";ctx.fillRect(wx,wy,ww,wh);
+  const s=Math.max(ww/img.width,wh/img.height);
+  const dw=img.width*s,dh=img.height*s,dx=wx+(ww-dw)/2,dy=wy+(wh-dh)/2;
+  ctx.drawImage(img,dx,dy,dw,dh);
+  ctx.globalAlpha=.5;ctx.shadowColor=TH;ctx.shadowBlur=50;ctx.lineWidth=16;ctx.strokeStyle=TH;rr(wx+8,wy+8,ww-16,wh-16,12);ctx.stroke();
+  ctx.restore();
+  // bevel + theme frame around window
+  ctx.lineWidth=5;ctx.strokeStyle="rgba(0,0,0,.55)";rr(wx,wy,ww,wh,16);ctx.stroke();
+  ctx.lineWidth=3;ctx.strokeStyle=TH;rr(wx-4,wy-4,ww+8,wh+8,18);ctx.stroke();
+  ctx.lineWidth=2;ctx.strokeStyle="rgba(255,255,255,.35)";rr(wx-8,wy-8,ww+16,wh+16,20);ctx.stroke();
+  // corner brackets
+  drawBrackets(wx-8,wy-8,ww+16,wh+16,"#eef0f6");
+
+  // 5) NAME plate (hero)
+  const plateY=856, plateH=96;
+  ctx.save();
+  ctx.fillStyle="rgba(0,0,0,.4)";rr(120,plateY,W-240,plateH,16);ctx.fill();
+  ctx.lineWidth=2;ctx.strokeStyle=hexA(TH,.8);rr(120,plateY,W-240,plateH,16);ctx.stroke();
+  ctx.restore();
+  ctx.fillStyle=hexA(TH,.9);ctx.fillRect(W/2-60,plateY+12,120,3);
+  const nm=(name.trim()||"JPEG JOKER").toUpperCase();
+  const npx=fit(nm,W-300,58);
+  glowText(nm,W/2,plateY+plateH/2+npx*0.34,npx,"#ffffff",hexA(TH,.85),22);
+  ctx.fillStyle="#aeb4c4";ctx.font="600 15px Inter, sans-serif";ctx.textAlign="center";
+  ctx.fillText("GENESIS EDITION  ·  1 OF 5000",W/2,plateY+plateH+26);
+
+  // 6) bottom branding + furniture
+  glowText("MEME MAXXERS",W/2,1036,32,"#f4f6fb",hexA(TH,.4),14);
+  ctx.fillStyle=hexA(TH,.5);ctx.fillRect(W/2-170,1056,340,2);
+  // signature
+  ctx.strokeStyle="#dfe3ee";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(W/2-95,1100);
+  for(let i=0;i<=95;i++){const x=W/2-95+i*2;const y=1100+Math.sin(i*0.5)*7*(i%14<7?1:-1);ctx.lineTo(x,y);}
+  ctx.stroke();
+  ctx.fillStyle="#7f8696";ctx.font="600 12px Inter";ctx.textAlign="center";ctx.fillText("authenticated",W/2,1120);
+  // serial + est + qr
+  ctx.textAlign="left";ctx.fillStyle="#eef1f8";ctx.font="700 26px Oswald, sans-serif";ctx.fillText("#"+serial+" / 5000",104,1182);
+  ctx.textAlign="center";ctx.fillStyle="#9aa0b0";ctx.font="700 20px Oswald, sans-serif";ctx.fillText("EST. 2024",W/2,1182);
+  drawQR(W-196,1108,86,TH);
+
+  buildXLink();
+}
+function drawBrackets(x,y,w,h,color){
+  const L=34;ctx.strokeStyle=color;ctx.lineWidth=5;
+  const seg=(ax,ay,bx,by,cx,cy)=>{ctx.beginPath();ctx.moveTo(ax,ay);ctx.lineTo(bx,by);ctx.lineTo(cx,cy);ctx.stroke();};
+  seg(x,y+L,x,y,x+L,y); seg(x+w-L,y,x+w,y,x+w,y+L);
+  seg(x,y+h-L,x,y+h,x+L,y+h); seg(x+w-L,y+h,x+w,y+h,x+w,y+h-L);
+}
+function drawQR(x,y,sz,th){
+  ctx.fillStyle="#fff";ctx.fillRect(x,y,sz,sz);
+  const n=9,cell=sz/n;ctx.fillStyle="#0a0b0e";let seed=(serial*2654435761)>>>0;
+  for(let r=0;r<n;r++)for(let c=0;c<n;c++){seed=(seed*1103515245+12345)>>>0;if((seed>>16&1))ctx.fillRect(x+c*cell,y+r*cell,cell,cell);}
+  function fnd(fx,fy){ctx.fillStyle="#0a0b0e";ctx.fillRect(fx,fy,cell*3,cell*3);ctx.fillStyle="#fff";ctx.fillRect(fx+cell*0.6,fy+cell*0.6,cell*1.8,cell*1.8);ctx.fillStyle="#0a0b0e";ctx.fillRect(fx+cell,fy+cell,cell,cell);}
+  fnd(x,y);fnd(x+sz-cell*3,y);fnd(x,y+sz-cell*3);
+}
+function hexA(hex,a){const n=parseInt(hex.slice(1),16);return "rgba("+(n>>16&255)+","+(n>>8&255)+","+(n&255)+","+a+")";}
+
+/* ---------- share ---------- */
+function caption(){
+  const nm=name.trim();
+  return "I turned my PFP into a JPEG JOKER 🃏\n\n"+
+    (nm?nm+" · ":"")+FRAMES[frameIdx].label+" edition · #"+serial+"/5000\n\n"+
+    "Remix yours "+CONFIG.handle+" 👇\n\n";
+}
+function buildXLink(){const a=document.getElementById("xbtn");if(a)a.href="https://twitter.com/intent/tweet?text="+encodeURIComponent(caption())+"&url="+encodeURIComponent(CONFIG.siteUrl);}
+function prepShare(){ if(img) downloadCard(); }
+function downloadCard(){
+  if(!img){toast("Drop an image first 🖼️");return;}
+  drawCard();
+  const link=document.createElement("a");
+  link.download="jpeg-joker-"+(name.trim()||"card").toLowerCase().replace(/[^a-z0-9]+/g,"-")+"-"+serial+".png";
+  link.href=cv.toDataURL("image/png");link.click();
+  toast("Card saved — attach it to your post & tag @mememaxxers 🃏");
+}
+let toastTimer;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2600);}
+</script>
+</body>
+</html>
