@@ -4,19 +4,19 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Handsome Analyzer — can your aura compete with Ansem?</title>
-<meta name="description" content="The official Handsome Analyzer. Upload your PFP, get scanned by Robinhood AI, and find out your Handsome Index. Spoiler: Ansem is still 104%. Tag @mememaxxers." />
+<meta name="description" content="The Handsome AI Scanner. Upload your PFP, get scanned, and find out your Handsome Index. Spoiler: Ansem is too handsome. For @ansemishandsome." />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="proofofreal" />
 <meta property="og:title" content="🤫 Handsome Analyzer — can your aura compete with Ansem?" />
-<meta property="og:description" content="Get scanned by Robinhood AI. Aura, jawline, drip, mog coefficient & Handsome Index. Post your card & tag @mememaxxers." />
+<meta property="og:description" content="Get scanned by the Handsome AI Scanner. Aura, jawline, drip, mog coefficient & Handsome Index. For @ansemishandsome." />
 <meta property="og:url" content="https://proofofreal.app/social/handsomescanner" />
 <meta property="og:image" content="https://proofofreal.app/social/handsomescanner/og-image.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta name="twitter:card" content="summary_large_image" />
-<meta name="twitter:site" content="@mememaxxers" />
+<meta name="twitter:site" content="@ansemishandsome" />
 <meta name="twitter:title" content="🤫 Handsome Analyzer" />
-<meta name="twitter:description" content="Can your aura compete with Ansem? Get scanned & tag @mememaxxers." />
+<meta name="twitter:description" content="Can your aura compete with Ansem? Get scanned for a @ansemishandsome free mint WL." />
 <meta name="twitter:image" content="https://proofofreal.app/social/handsomescanner/og-image.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -32,10 +32,9 @@
     -webkit-font-smoothing:antialiased;overflow-x:hidden}
   .wrap{max-width:520px;margin:0 auto;padding:26px 18px 80px;display:flex;flex-direction:column;align-items:center;gap:16px}
   .head{text-align:center}
-  .kick{font-size:11px;letter-spacing:.34em;text-transform:uppercase;color:var(--green)}
-  h1{font-family:'Oswald',sans-serif;font-weight:700;font-size:clamp(30px,7vw,50px);letter-spacing:.02em;line-height:1;margin:6px 0 0;color:#fff;
+  h1{font-family:'Oswald',sans-serif;font-weight:700;font-size:clamp(30px,7vw,50px);letter-spacing:.02em;line-height:1;margin:0;color:#fff;
      text-shadow:0 0 22px rgba(0,230,118,.5)}
-  .sub{color:var(--ash);font-size:14px;margin:10px auto 0;line-height:1.5;max-width:420px}
+  .sub{color:var(--ash);font-size:14px;margin:12px auto 0;line-height:1.5;max-width:420px}
   .sub b{color:var(--ink)}
 
   .card{width:100%;max-width:440px;background:linear-gradient(180deg,var(--panel),var(--bg2));
@@ -65,7 +64,6 @@
   .row{display:flex;gap:10px;width:100%}
   .row .btn{flex:1 1 auto}
 
-  /* loading */
   #loading{display:none;text-align:center;width:100%;max-width:440px}
   .scanwrap{position:relative;width:200px;height:200px;margin:6px auto 18px}
   .scanwrap img{width:100%;height:100%;object-fit:cover;border-radius:18px;filter:grayscale(.3) contrast(1.05)}
@@ -77,8 +75,7 @@
   .lbar{height:8px;background:#07110b;border:1px solid var(--line);border-radius:99px;overflow:hidden;margin:16px auto 0;max-width:340px}
   .lbar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--green),var(--green2));transition:width .3s}
 
-  /* results */
-  #results{display:none;width:100%;max-width:460px;display:none}
+  #results{display:none;width:100%;max-width:460px}
   .metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
   .metric{background:#07110b;border:1px solid var(--line);border-radius:13px;padding:13px 14px}
   .metric .k{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ash)}
@@ -86,8 +83,6 @@
   .metric .val.g{color:var(--green2)}
   .metric.big{grid-column:1/3;text-align:center;background:linear-gradient(180deg,#0a1912,#07110b);border-color:rgba(0,230,118,.35)}
   .metric.big .val{font-size:64px;color:var(--green2);text-shadow:0 0 26px rgba(0,230,118,.5)}
-  .bar{height:9px;background:#0a1912;border-radius:99px;overflow:hidden;margin-top:8px}
-  .bar>i{display:block;height:100%;width:0;transition:width .9s ease}
   .traits{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:16px 0 2px}
   .trait{font-size:12.5px;font-weight:700;background:rgba(0,230,118,.1);border:1px solid rgba(0,230,118,.4);color:var(--green2);padding:7px 13px;border-radius:99px}
   .verdict{text-align:center;margin-top:16px;background:#07110b;border:1px solid var(--line);border-radius:14px;padding:18px}
@@ -96,12 +91,16 @@
   .verdict .v2 b{color:#fff}
   .vs{margin-top:16px}
   .vs .lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--ash);margin-bottom:4px}
+  .bar{height:9px;background:#0a1912;border-radius:99px;overflow:hidden;margin-top:2px}
+  .bar>i{display:block;height:100%;width:0;transition:width .9s ease}
   .cardwrap{position:relative;width:100%;border-radius:16px;overflow:hidden;margin-top:18px;background:#000;border:1px solid var(--line)}
   #card{display:block;width:100%;height:auto}
   .sec{font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ash);text-align:center;margin:20px 0 8px}
+  .steps{font-size:12px;color:var(--ash);text-align:center;margin-top:12px;line-height:1.7;background:#07110b;border:1px solid var(--line);border-radius:11px;padding:12px 14px}
+  .steps b{color:var(--ink)}
 
   .hide{display:none!important}
-  .footer{text-align:center;color:var(--ash);font-size:11.5px;margin-top:24px;line-height:1.7}
+  .footer{text-align:center;color:var(--ash);font-size:12px;margin-top:24px}
   .footer b{color:var(--ink)}
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000;border:1px solid var(--green2);color:#fff;
     padding:13px 20px;border-radius:11px;font-size:15px;font-weight:700;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%}
@@ -112,9 +111,8 @@
 <div class="wrap">
 
   <div class="head">
-    <div class="kick">🤫 Handsome Analyzer v1.0</div>
     <h1>CAN YOUR AURA<br/>COMPETE WITH ANSEM?</h1>
-    <p class="sub">Upload your X profile picture and let <b>Robinhood AI</b> calculate your Handsome Index. Not financial — or facial — advice.</p>
+    <p class="sub">Upload your X profile picture and let the <b>Handsome AI Scanner</b> calculate your Handsome Index. Not financial — or facial — advice.</p>
   </div>
 
   <!-- INTRO -->
@@ -131,7 +129,7 @@
   <!-- LOADING -->
   <div id="loading">
     <div class="scanwrap"><img id="scanImg" alt="" /><div class="scanline"></div></div>
-    <div class="lmsg" id="lmsg">Initializing Robinhood AI...</div>
+    <div class="lmsg" id="lmsg">Initializing Handsome AI Scanner...</div>
     <div class="lbar"><i id="lbar"></i></div>
   </div>
 
@@ -148,49 +146,52 @@
     </div>
 
     <div class="vs">
-      <div class="lbl"><span>You</span><span id="youPct">92%</span></div>
+      <div class="lbl"><span>You</span><span id="youPct">0%</span></div>
       <div class="bar"><i id="youBar" style="background:linear-gradient(90deg,#00b85a,#05ff8b)"></i></div>
-      <div class="lbl" style="margin-top:8px"><span>Ansem 🥵</span><span>104%</span></div>
+      <div class="lbl" style="margin-top:10px"><span>Ansem 🥵</span><span>100%</span></div>
       <div class="bar"><i style="width:100%;background:linear-gradient(90deg,#caa23c,#ffd24d)"></i></div>
     </div>
 
     <div class="sec">Your share card</div>
     <div class="cardwrap"><canvas id="card" width="1200" height="675"></canvas></div>
+
     <div class="row" style="margin-top:14px">
-      <a class="btn btn-x" id="xbtn" target="_blank" rel="noopener" onclick="prepShare()">𝕏 Share my result</a>
+      <button class="btn btn-x" onclick="copyCaption()">📋 Copy caption</button>
+      <a class="btn btn-x" id="xbtn" target="_blank" rel="noopener" onclick="shareOpen()">𝕏 Open X</a>
     </div>
     <div class="row" style="margin-top:10px">
-      <button class="btn btn-ghost" onclick="downloadCard()">⬇ Download card</button>
-      <button class="btn btn-ghost" onclick="analyzeAgain()">🎲 Analyze again</button>
-      <button class="btn btn-ghost" onclick="resetAll()">↻ New photo</button>
+      <button class="btn btn-ghost" onclick="downloadCard()">⬇ Save card</button>
+      <button class="btn btn-ghost" onclick="analyzeAgain()">🎲 Again</button>
+      <button class="btn btn-ghost" onclick="resetAll()">↻ New</button>
     </div>
+    <div class="steps">1. <b>Copy caption</b> &nbsp;→&nbsp; 2. <b>Save card</b> &nbsp;→&nbsp; 3. <b>Open X</b>, paste &amp; attach your card 🥵</div>
   </div>
 
-  <div class="footer">powered by <b>proofofreal</b> · handsome ansem · share &amp; tag <b>@mememaxxers</b><br/>parody entertainment · your image is processed locally, never uploaded.</div>
+  <div class="footer">powered by <b>Meme Maxxers</b></div>
 </div>
 <div class="toast" id="toast"></div>
 
 <script>
 /* ============================================================ CONFIG */
-const CONFIG = { siteUrl:"https://proofofreal.app/social/handsomescanner", handle:"@mememaxxers", ansem:"@blknoiz06" };
+const CONFIG = { siteUrl:"https://proofofreal.app/social/handsomescanner", handle:"@ansemishandsome", ansem:"@blknoiz06" };
 const LOADING_MSGS = [
-  "Initializing Robinhood AI...","Scanning jawline...","Checking aura...","Consulting the Council of Glazers...",
+  "Initializing Handsome AI Scanner...","Scanning jawline...","Checking aura...","Consulting the Council of Glazers...",
   "Measuring mog coefficient...","Comparing against @blknoiz06...","Calculating Handsome Index...","Generating verdict..."
 ];
-const GRADES = ["A","A+","S","S","S+","SS","SS","SSS","GIGA"];
-const GLAZE  = ["Elite","Legendary","Mythic","Ascended","Godlike","Otherworldly"];
-const MOG    = ["High","Extreme","Unfair","Illegal","Nuclear","Criminal"];
+const GRADES = ["C","B","B+","A","A+","S","S","S+","SS","SS","SSS","GIGA"];
+const GLAZE  = ["Mid","Solid","Elite","Legendary","Mythic","Ascended","Godlike","Otherworldly"];
+const MOG    = ["Low","Medium","High","Extreme","Unfair","Illegal","Nuclear","Criminal"];
 const TRAITS = ["Certified Mogger","Professional Glazer","Diamond Jawline","Canthal Tilt Chad","Hunter Eyes",
   "Mewing Champion","Bone-Smasher","Aura Farmer","Gigachad-adjacent","Looksmaxxed to Valhalla","Undefeated Glazer",
   "Zygomatic Menace","Face Card Never Declines","Framemaxxed","Sigma Face Card","Mogs On Sight","Glaze Lord",
-  "Ascended Looksmaxxer","Robinhood-Coded","Positive Canthal Tilt","NPC Repellent","Built Different","Jawmaxxed","Aura Reactor"];
+  "Ascended Looksmaxxer","Handsome On The Inside","Positive Canthal Tilt","Recovering NPC","Built Different","Jawmaxxed","Aura Reactor"];
 
 /* ============================================================ STATE */
-let img=null, imgSrc="", tainted=false, nonce=0, R=null;
+let img=null, imgSrc="", nonce=0, R=null, result=null;
 const cv=document.getElementById("card"), ctx=cv.getContext("2d");
 const W=cv.width, H=cv.height;
 
-/* ---- PRNG seeded from the image (deterministic per photo) ---- */
+/* PRNG seeded from the image (deterministic per photo) */
 function hashStr(s){let h=2166136261>>>0;for(let i=0;i<s.length;i+=7){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function pick(arr){return arr[Math.floor(R()*arr.length)];}
@@ -198,9 +199,8 @@ function ri(min,max){return min+Math.floor(R()*(max-min+1));}
 
 /* ============================================================ IMAGE INPUT */
 function showImg(src){
-  const im=new Image();
-  im.crossOrigin="anonymous";
-  im.onload=()=>{ img=im; imgSrc=src; tainted=false;
+  const im=new Image(); im.crossOrigin="anonymous";
+  im.onload=()=>{ img=im; imgSrc=src;
     const dz=document.getElementById("drop"); dz.classList.add("has"); dz.innerHTML=""; const el=new Image(); el.src=src; dz.appendChild(el);
     document.getElementById("goBtn").disabled=false;
   };
@@ -208,9 +208,9 @@ function showImg(src){
   im.src=src;
 }
 function loadBlob(b){ if(!b)return; const r=new FileReader(); r.onload=e=>showImg(e.target.result); r.readAsDataURL(b); }
-document.getElementById("drop").addEventListener("click",()=>document.getElementById("file")?document.getElementById("file").click():pickFile());
 function pickFile(){const i=document.createElement("input");i.type="file";i.accept="image/*";i.onchange=e=>{if(e.target.files[0])loadBlob(e.target.files[0]);};i.click();}
 const dz=document.getElementById("drop");
+dz.addEventListener("click",pickFile);
 ["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("drag");}));
 ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("drag");}));
 dz.addEventListener("drop",e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f)loadBlob(f);});
@@ -219,25 +219,22 @@ document.getElementById("url").addEventListener("change",e=>{const v=e.target.va
 document.getElementById("url").addEventListener("keydown",e=>{if(e.key==="Enter"){const v=e.target.value.trim();if(v)showImg(v);}});
 
 /* ============================================================ ANALYZE FLOW */
-let result=null;
 function startAnalyze(){
   if(!img){toast("Add a photo first 🤳");return;}
   document.getElementById("intro").classList.add("hide");
-  document.getElementById("head")&&0;
-  const ld=document.getElementById("loading"); ld.style.display="block";
+  document.getElementById("loading").style.display="block";
   document.getElementById("scanImg").src=imgSrc;
-  compute();
-  runLoader();
+  compute(); runLoader();
 }
 function compute(){
   R=mulberry32(hashStr(imgSrc)^(nonce*2654435761>>>0));
-  const overall=ri(85,99);
+  const overall=ri(0,99);
   result={
-    overall, robinhood:ri(88,99),
+    overall, robinhood:ri(0,99),
     aura:pick(GRADES), jawline:pick(GRADES), drip:pick(GRADES),
     glaze:pick(GLAZE), mog:pick(MOG),
     traits:[...TRAITS].sort(()=>R()-0.5).slice(0, R()<0.5?1:2),
-    mogged:ri(78,97)
+    mogged:ri(1,99)
   };
 }
 function runLoader(){
@@ -252,12 +249,10 @@ function runLoader(){
   };
   step();
 }
-
 function showResults(){
   document.getElementById("loading").style.display="none";
   document.getElementById("results").style.display="block";
   const r=result;
-  // metrics grid
   const m=document.getElementById("metrics");
   m.innerHTML=
     metricBig("Overall Handsomeness", r.overall+"%")+
@@ -265,26 +260,23 @@ function showResults(){
     metric("Jawline", r.jawline, true)+
     metric("Drip", r.drip, true)+
     metric("Robinhood Energy", r.robinhood+"%", true)+
-    metric("Glaze Potential", r.glaze, true)+
+    metric("Glazability", r.glaze, true)+
     metric("Mogging Ability", r.mog, true);
-  // traits
   const tb=document.getElementById("traits"); tb.innerHTML="";
   r.traits.forEach(t=>{const s=document.createElement("span");s.className="trait";s.textContent=t;tb.appendChild(s);});
-  // verdict
-  const band = r.overall>=96?"dangerously":r.overall>=92?"exceptionally":r.overall>=88?"certifiably":"undeniably";
-  document.getElementById("verdictMain").textContent="You are "+band+" handsome.";
-  document.getElementById("verdictAnsem").innerHTML="Unfortunately, <b>Ansem</b> remains <b>104%</b> handsome.";
-  // vs bar
+  const o=r.overall;
+  const band = o>=90?"dangerously handsome." : o>=70?"exceptionally handsome." : o>=50?"certifiably handsome."
+    : o>=30?"situationally handsome." : o>=10?"handsome in the right lighting." : "handsome on the inside. 💚";
+  document.getElementById("verdictMain").textContent="You are "+band;
+  document.getElementById("verdictAnsem").innerHTML="Unfortunately, <b>Ansem</b> is <b>too handsome</b>.";
   document.getElementById("youPct").textContent=r.overall+"%";
   document.getElementById("youBar").style.width="0%";
-  setTimeout(()=>{document.getElementById("youBar").style.width=(r.overall*100/104)+"%";},60);
-  drawCard();
-  buildXLink();
+  setTimeout(()=>{document.getElementById("youBar").style.width=r.overall+"%";},60);
+  drawCard(); buildXLink();
   window.scrollTo({top:0,behavior:"smooth"});
 }
 function metric(k,v,g){return '<div class="metric"><div class="k">'+k+'</div><div class="val'+(g?" g":"")+'">'+v+'</div></div>';}
 function metricBig(k,v){return '<div class="metric big"><div class="k">'+k+'</div><div class="val">'+v+'</div></div>';}
-
 function analyzeAgain(){ nonce=Math.floor(Math.random()*1e9)+1; compute(); showResults(); toast("Re-scanning aura... 🤫"); }
 function resetAll(){
   document.getElementById("results").style.display="none";
@@ -295,7 +287,7 @@ function resetAll(){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
-/* ============================================================ SHARE CARD (canvas) */
+/* ============================================================ SHARE CARD */
 function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
 function drawCard(){
   const r=result; if(!r) return;
@@ -304,24 +296,20 @@ function drawCard(){
   const rg=ctx.createRadialGradient(300,200,40,300,200,700);rg.addColorStop(0,"rgba(0,230,118,.22)");rg.addColorStop(1,"rgba(0,230,118,0)");ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
   ctx.strokeStyle="rgba(0,230,118,.4)";ctx.lineWidth=2;rr(18,18,W-36,H-36,22);ctx.stroke();
 
-  // left: PFP
   const px=52,py=88,ps=500;
   ctx.save();rr(px,py,ps,ps,26);ctx.clip();
   ctx.fillStyle="#000";ctx.fillRect(px,py,ps,ps);
   if(img){const s=Math.max(ps/img.width,ps/img.height);const dw=img.width*s,dh=img.height*s;ctx.drawImage(img,px+(ps-dw)/2,py+(ps-dh)/2,dw,dh);}
   ctx.restore();
   ctx.lineWidth=5;ctx.strokeStyle="#05ff8b";ctx.shadowColor="#05ff8b";ctx.shadowBlur=24;rr(px,py,ps,ps,26);ctx.stroke();ctx.shadowBlur=0;
-  // seal
   drawSeal(px+ps-8, py+8);
 
-  // right column
   const rx=610;
   ctx.textAlign="left";
   ctx.fillStyle="#05ff8b";ctx.font="700 30px Oswald, sans-serif";ctx.fillText("🤫 HANDSOME ANALYZER",rx,92);
   ctx.fillStyle="#7fa38c";ctx.font="600 18px Inter, sans-serif";ctx.fillText("HANDSOME INDEX",rx,150);
   ctx.fillStyle="#fff";ctx.font="700 128px Oswald, sans-serif";ctx.shadowColor="rgba(0,230,118,.55)";ctx.shadowBlur=30;
   ctx.fillText(r.overall+"%",rx,262);ctx.shadowBlur=0;
-  // metric pills
   const pills=[["AURA",r.aura],["JAWLINE",r.jawline],["DRIP",r.drip],["GLAZE",r.glaze]];
   let mx=rx, my=300;
   pills.forEach(p=>{
@@ -331,13 +319,11 @@ function drawCard(){
     ctx.fillStyle="#eafff0";ctx.textAlign="left";ctx.fillText(label,mx+17,my+34);
     mx+=w+12;
   });
-  // verdict
   ctx.textAlign="left";ctx.fillStyle="#fff";ctx.font="800 30px Inter, sans-serif";
   ctx.fillText("Still not as handsome",rx,my+120);
   ctx.fillStyle="#ffd24d";ctx.fillText("as Ansem. 🥵",rx,my+160);
-  // footer
-  ctx.fillStyle="#7fa38c";ctx.font="600 20px Inter, sans-serif";
-  ctx.fillText("handsome ansem  ·  "+CONFIG.handle+"  ·  proofofreal",rx,H-46);
+  ctx.fillStyle="#7fa38c";ctx.font="700 24px Oswald, sans-serif";
+  ctx.fillText("@ansemishandsome",rx,H-46);
 
   showCardPreview();
 }
@@ -350,24 +336,28 @@ function drawSeal(cx,cy){
   ctx.fillText("COUNCIL OF",0,-6);ctx.fillText("GLAZERS",0,10);ctx.font="700 10px Oswald, sans-serif";ctx.fillText("★ CERTIFIED ★",0,26);
   ctx.restore();
 }
-function showCardPreview(){ /* canvas is shown directly; nothing needed */ }
+function showCardPreview(){}
 
-/* ============================================================ SHARE */
+/* ============================================================ SHARE (copy/paste, no auto-download) */
 function caption(){
   const r=result;
   return "The Handsome Analyzer rated me "+r.overall+"% handsome 🥵\n\n"+
-    "Aura "+r.aura+" · Jawline "+r.jawline+" · Glaze "+r.glaze+"\n\n"+
-    "Unfortunately Ansem is still 104%.\n\n"+
-    "Get scanned "+CONFIG.handle+" 👇\ndrop your wallet below for WL 🤫\n\n";
+    "Aura "+r.aura+" · Jawline "+r.jawline+" · Glazability "+r.glaze+"\n\n"+
+    "Unfortunately, Ansem is Too Handsome.\n\n"+
+    "Get scanned for a "+CONFIG.handle+" free mint WL 👇\n\n";
 }
 function buildXLink(){const a=document.getElementById("xbtn");if(a)a.href="https://twitter.com/intent/tweet?text="+encodeURIComponent(caption())+"&url="+encodeURIComponent(CONFIG.siteUrl);}
-function prepShare(){ downloadCard(true); }
-function downloadCard(silent){
+function copyCaption(){
+  navigator.clipboard.writeText(caption()+CONFIG.siteUrl).then(
+    ()=>toast("Caption copied! 📋 paste it into your post"),
+    ()=>toast("Press & hold to copy the caption"));
+}
+function shareOpen(){ toast("Attach your saved card to the post 🥵"); }
+function downloadCard(){
   try{
     const url=cv.toDataURL("image/png");
     const link=document.createElement("a");link.download="handsome-analysis-"+result.overall+".png";link.href=url;link.click();
-    if(!silent) toast("Card saved — attach it to your post 🥵");
-    else toast("Card saved — attach it & drop your wallet for WL 🤫");
+    toast("Card saved to your device 🥵");
   }catch(err){
     toast("URL images can't be exported — upload the pic to save the card.");
   }
