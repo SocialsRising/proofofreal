@@ -42,12 +42,12 @@ const ZONES=[ {t:0,name:"FEDLAND",a:"#0b1020",b:"#1b2540"},
               {t:36,name:"ALT SEASON",a:"#1a0b2e",b:"#3a1560"},
               {t:52,name:"VALHALLA GATE",a:"#2a1e05",b:"#5c4410"} ];
 const NAMES=["degen_dave","0xChad","gm_frog","pepe420","laserRayge","ngmi_ned","exitLiquidity","diamondhandz",
-  "rugsurvivor","cryptoKaren","wojak_sad","gigabrain","fomo_fred","moonboi","bagholder99","ser_pumpalot","liquid8ed","topblasted","vitalik_fan","0xWhale"];
+  "rugsurvivor","cryptoKaren","wojak_sad","gigabrain","fomo_fred","moonboi","bagholder99","ser_pumpalot","liquid8ed","topblasted","vitalik_fan","0xWhale","blknoiz06","ansemishandsome"];
 const CHAT=["gm","few understand","wife changing money","probably nothing","wagmi","up only 🐂","valhalla or nothing",
   "buy the dip","diamond hands 💎🙌","number go up","zoom out","this is the way","he's cooking 🔥","ansem said so"];
 const TROLL=["noob 😹","get rugged","ngmi fr","exit liquidity spotted","down bad","skill issue","he's gonna get liquidated",
   "paper hands detected","my grandma climbs faster","imagine getting hit","0 buckets andy","couldn't be me","ratio'd by bears","sell everything"];
-const HYPE=["POGGERS","LETS GOOO","W","sheesh 🔥","KEKW","clip it 📎","gigachad","cracked","+2 gifted subs","no way 😳","GG","actual demon","W bull","he's HIM"];
+const HYPE=["POGGERS","LETS GOOO","W","sheesh 🔥","KEKW","clip it 📎","gigachad","cracked","+2 gifted subs","no way 😳","GG","actual demon","W bull","he's HIM","ansem is watching 👀","handle the BBC 🥵"];
 const MIX=[...CHAT,...HYPE,...TROLL,...TROLL];
 
 const canvas=document.getElementById('c'), ctx=canvas.getContext('2d');
@@ -118,6 +118,7 @@ let state='title', result='', last=0, elapsed=0;
 let camY, tideY, tideSpd, netWorth, bonusCash, bestClimb, kingT, invT, shake, goldFlash, hitFlash;
 let player, candles, items, bears, particles, chat, chatT, genY, spawnBearT, cameoT, cameoTxt;
 let combo, bestCombo, flash, flashT, flashDur, crownIdx, lastDiff, kingWarned, newBest, bestSaved;
+let storedBest=0; try{ storedBest=+(localStorage.getItem('bbc_best')||0); }catch(e){}   // personal best target on the title
 
 function reset(){
   elapsed=0; result='';
@@ -162,14 +163,14 @@ function showFlash(key,label,color,dur){ flash={img:IMG[key],label,color}; flash
 function zoneNow(){ let z=ZONES[0]; for(const zz of ZONES){ if(elapsed>=zz.t) z=zz; } return z; }
 function diffLevel(){ return elapsed<15?0:elapsed<30?1:elapsed<45?2:3; }   // easy→moderate→hard→brutal in 15s tiers
 function endGame(r){ result=r; state='over'; shake=0; Sound.stopMusic();
-  newBest=false; try{ const prev=+(localStorage.getItem('bbc_best')||0); bestSaved=Math.max(prev,netWorth); if(netWorth>prev){ newBest=true; localStorage.setItem('bbc_best',netWorth); } }catch(e){ bestSaved=netWorth; }
+  newBest=false; try{ const prev=+(localStorage.getItem('bbc_best')||0); bestSaved=Math.max(prev,netWorth); if(netWorth>prev){ newBest=true; localStorage.setItem('bbc_best',netWorth); } }catch(e){ bestSaved=netWorth; } storedBest=bestSaved;
   if(r==='win') Sound.win(); else Sound.lose(); }
 
 function shareText(){ const url=CONFIG.SITE_URL;
   if(result==='win'){
-    return `The BBC was 2 Easy 4 Me 🐂\n\nFinal bag: $${fmt(netWorth)} · best combo x${bestCombo}\n\nCan you handle the BBC?\n\nPlay for a @ansemishandsome free mint WL\n\n${url}`;
+    return `The BBC was 2 Easy 4 Me 🐂\n\nFinal bag: $${fmt(netWorth)} · best combo x${bestCombo}\n\nCan you handle the @blknoiz06 BBC? 🥵\n\nPlay for a @ansemishandsome free mint WL 👇\n\n${url}`;
   }
-  return `The BBC was too much for me 😢\n\nPeak bag: $${fmt(netWorth)} · best combo x${bestCombo}\n\nCan you handle the BBC?\n\nPlay for a @ansemishandsome free mint WL\n\n${url}`; }
+  return `The BBC was too much for me 😢\n\nPeak bag: $${fmt(netWorth)} · best combo x${bestCombo}\n\nCan you handle the @blknoiz06 BBC? 🥵\n\nPlay for a @ansemishandsome free mint WL 👇\n\n${url}`; }
 function shareURL(){ return 'https://twitter.com/intent/tweet?text='+encodeURIComponent(shareText()); }
 function shareNow(){ const webUrl=shareURL();
   if(isTouch){ const appUrl='twitter://post?message='+encodeURIComponent(shareText());
@@ -346,6 +347,8 @@ function drawTitle(){ drawBg(); ctx.textAlign='center';
   ctx.fillText('Grab 👑 KING MODE · outrun liquidation · 60s',VW/2,VH*0.59);
   ctx.fillStyle=`rgba(249,200,14,${0.5+0.5*Math.sin(performance.now()/300)})`; ctx.font='bold 23px Courier New';
   ctx.fillText(isTouch?'TAP TO START':'PRESS ANY KEY / TAP TO START',VW/2,VH*0.72);
+  if(storedBest>0){ ctx.fillStyle='#f9c80e'; ctx.font='bold 16px Courier New'; ctx.fillText('🏆 your best: $'+fmt(storedBest)+' — beat it',VW/2,VH*0.80); }
+  ctx.fillStyle='#6b7a8c'; ctx.font='14px Courier New'; ctx.fillText('play for a @ansemishandsome free mint WL',VW/2,VH*0.86);
   ctx.restore(); }
 function drawOver(){ drawBg(); ctx.textAlign='center'; ctx.fillStyle='rgba(5,6,15,0.72)'; ctx.fillRect(0,0,VW,VH);
   if(result==='win'){ const cc=['#16c784','#f9c80e','#05d9e8','#8b5cf6','#ff2a6d']; const tt=performance.now()/1000;
