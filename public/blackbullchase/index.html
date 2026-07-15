@@ -31,7 +31,7 @@ const CONFIG = {
   KING_TIME: 4.2, KING_RISE: 430, ROCKET: 1650,
   START_CASH: 1000, CLIMB_TO_CASH: 7,
   MUSIC_FILE: "way2sexy.mp3",
-  SITE_URL: "https://proofofreal.app/games/ansem-bull-run",
+  SITE_URL: "https://proofofreal.app/blackbullchase",
 };
 const VW=540, VH=960;
 const PH=54, PW=58, PH2=27;
@@ -100,7 +100,7 @@ document.getElementById('mute').addEventListener('click',e=>{ const m=!Sound.isM
   e.target.textContent='SOUND: '+(m?'OFF':'ON'); e.target.style.color=m?'#666':'var(--green)'; e.target.style.borderColor=m?'#666':'var(--green)'; });
 
 /* ---------------- Input (smoothed steering) ---------------- */
-let moveKey=0, touchX=null, ptrDown=false;   // touchX = where your finger is; bull steers toward it
+let moveKey=0, moveTouch=0, ptrDown=false;   // moveTouch: -1 while holding LEFT side, +1 while holding RIGHT side
 addEventListener('keydown',e=>{ if(e.code==='ArrowLeft'||e.code==='KeyA'){ moveKey=-1; e.preventDefault(); }
   else if(e.code==='ArrowRight'||e.code==='KeyD'){ moveKey=1; e.preventDefault(); } });
 addEventListener('keyup',e=>{ if(['ArrowLeft','KeyA','ArrowRight','KeyD'].includes(e.code)){ moveKey=0; e.preventDefault(); } });
@@ -108,16 +108,16 @@ function cpoint(e){ const r=canvas.getBoundingClientRect(); return {x:(e.clientX
 canvas.addEventListener('pointerdown',e=>{ Sound.resume();
   if(state==='title'){ startGame(); return; }
   if(state==='over'){ const p=cpoint(e); handleEndClick(p.x,p.y); return; }
-  ptrDown=true; touchX=cpoint(e).x; });
-canvas.addEventListener('pointermove',e=>{ if(state==='play'&&ptrDown) touchX=cpoint(e).x; });
-addEventListener('pointerup',()=>{ ptrDown=false; touchX=null; });
-addEventListener('pointercancel',()=>{ ptrDown=false; touchX=null; });
+  ptrDown=true; moveTouch=cpoint(e).x<VW/2?-1:1; });   // hold a side to steer
+canvas.addEventListener('pointermove',e=>{ if(state==='play'&&ptrDown) moveTouch=cpoint(e).x<VW/2?-1:1; });
+addEventListener('pointerup',()=>{ ptrDown=false; moveTouch=0; });
+addEventListener('pointercancel',()=>{ ptrDown=false; moveTouch=0; });
 
 /* ---------------- State ---------------- */
 let state='title', result='', last=0, elapsed=0;
 let camY, tideY, tideSpd, netWorth, bonusCash, bestClimb, kingT, invT, shake, goldFlash, hitFlash;
 let player, candles, items, bears, particles, chat, chatT, genY, spawnBearT, cameoT, cameoTxt;
-let combo, bestCombo, flash, flashT, flashDur, crownIdx, lastDiff, kingWarned;
+let combo, bestCombo, flash, flashT, flashDur, crownIdx, lastDiff, kingWarned, newBest, bestSaved;
 
 function reset(){
   elapsed=0; result='';
@@ -126,7 +126,7 @@ function reset(){
   netWorth=CONFIG.START_CASH; bonusCash=0; bestClimb=0;
   kingT=0; invT=0; shake=0; goldFlash=0; hitFlash=0;
   candles=[]; items=[]; bears=[]; particles=[]; chat=[]; chatT=0.5; spawnBearT=2.4; cameoT=0; cameoTxt='';
-  combo=0; bestCombo=0; flash=null; flashT=0; flashDur=1.4; crownIdx=0; lastDiff=0; kingWarned=false;
+  combo=0; bestCombo=0; flash=null; flashT=0; flashDur=1.4; crownIdx=0; lastDiff=0; kingWarned=false; newBest=false;
   genY=110; candles.push({x:VW/2, y:110, type:'green', vx:0});
   ensureCandles();
 }
@@ -161,13 +161,15 @@ function cameo(txt){ cameoTxt=txt; cameoT=1.4; }
 function showFlash(key,label,color,dur){ flash={img:IMG[key],label,color}; flashDur=dur||1.4; flashT=flashDur; }
 function zoneNow(){ let z=ZONES[0]; for(const zz of ZONES){ if(elapsed>=zz.t) z=zz; } return z; }
 function diffLevel(){ return elapsed<15?0:elapsed<30?1:elapsed<45?2:3; }   // easy→moderate→hard→brutal in 15s tiers
-function endGame(r){ result=r; state='over'; shake=0; Sound.stopMusic(); if(r==='win') Sound.win(); else Sound.lose(); }
+function endGame(r){ result=r; state='over'; shake=0; Sound.stopMusic();
+  newBest=false; try{ const prev=+(localStorage.getItem('bbc_best')||0); bestSaved=Math.max(prev,netWorth); if(netWorth>prev){ newBest=true; localStorage.setItem('bbc_best',netWorth); } }catch(e){ bestSaved=netWorth; }
+  if(r==='win') Sound.win(); else Sound.lose(); }
 
 function shareText(){ const url=CONFIG.SITE_URL;
   if(result==='win'){
-    return `Rode the Black Bull to VALHALLA. 🐂🏛️\n\nFinal bag: $${fmt(netWorth)} · best combo x${bestCombo} · UP ONLY\n\nThink you can out-climb me @HandsomeAnsems? 🃏\n\n${url}`;
+    return `The BBC was 2 Easy 4 Me 🐂\n\nFinal bag: $${fmt(netWorth)} · best combo x${bestCombo}\n\nCan you handle the BBC?\n\nPlay for a @ansemishandsome free mint WL\n\n${url}`;
   }
-  return `Got liquidated chasing Valhalla... 📉🐻\n\nPeak bag: $${fmt(netWorth)} · best combo x${bestCombo}\n\nSave me from the bears @HandsomeAnsems 🃏\n\n${url}`; }
+  return `The BBC was too much for me 😢\n\nPeak bag: $${fmt(netWorth)} · best combo x${bestCombo}\n\nCan you handle the BBC?\n\nPlay for a @ansemishandsome free mint WL\n\n${url}`; }
 function shareURL(){ return 'https://twitter.com/intent/tweet?text='+encodeURIComponent(shareText()); }
 function shareNow(){ const webUrl=shareURL();
   if(isTouch){ const appUrl='twitter://post?message='+encodeURIComponent(shareText());
@@ -191,11 +193,11 @@ function update(dt){
 
   // smoothed horizontal steering (works fully in King Mode too)
   const maxS=CONFIG.MOVE_SPEED*(kingT>0?CONFIG.KING_MOVE_BONUS:1);
-  let targetVx = touchX!=null ? Math.max(-maxS,Math.min(maxS,(touchX-player.x)*9)) : moveKey*maxS;   // follow finger / keys
-  if(Math.abs(targetVx)>2) player.dir = targetVx<0?-1:1;
-  player.vx += (targetVx-player.vx)*Math.min(1,dt*26);   // snappy, smooth ease
+  const dir=moveTouch||moveKey; if(dir) player.dir=dir;   // hold a screen side (or arrow keys)
+  const targetVx=dir*maxS;
+  player.vx += (targetVx-player.vx)*Math.min(1,dt*24);   // smooth ease
   player.x += player.vx*dt;
-  player.x=Math.max(PW/2, Math.min(VW-PW/2, player.x));   // clamp (no disorienting wrap)
+  player.x=Math.max(PW/2, Math.min(VW-PW/2, player.x));   // clamp to screen
 
   player.py=player.y;
   if(kingT>0) player.vy=-CONFIG.KING_RISE; else player.vy += CONFIG.GRAVITY*dt;
@@ -306,6 +308,10 @@ function drawFlash(){ if(flashT<=0||!flash) return; const w=150,h=150,cx=VW/2-w/
   ctx.fillStyle=flash.color; ctx.fillRect(cx-5,cy+h+5,w+10,26); ctx.fillStyle='#fff'; ctx.font='bold 18px Courier New'; ctx.textAlign='center'; ctx.fillText(flash.label,VW/2,cy+h+23);
   ctx.restore(); }
 function drawHUD(){
+  if(isTouch){   // clear side-steer feedback: the held half glows
+    if(moveTouch<0){ ctx.fillStyle='rgba(22,199,132,0.10)'; ctx.fillRect(0,0,VW/2,VH); }
+    else if(moveTouch>0){ ctx.fillStyle='rgba(22,199,132,0.10)'; ctx.fillRect(VW/2,0,VW/2,VH); }
+    if(elapsed<5){ ctx.save(); ctx.globalAlpha=Math.max(0,1-elapsed/5); ctx.textAlign='center'; ctx.fillStyle='#fff'; ctx.font='bold 20px Courier New'; ctx.fillText('◀ HOLD A SIDE TO STEER ▶',VW/2,VH*0.66); ctx.restore(); } }
   const pct=Math.floor(bestClimb/22);
   ctx.textAlign='left'; ctx.font='bold 16px Courier New'; ctx.fillStyle='#16c784'; ctx.fillText(`$ANSEM ▲ +${pct}%`,12,26);
   ctx.textAlign='center'; ctx.fillStyle='#fff'; ctx.font='bold 40px Courier New'; ctx.fillText('$'+fmt(netWorth),VW/2,50);
@@ -335,7 +341,7 @@ function drawTitle(){ drawBg(); ctx.textAlign='center';
   ctx.save(); ctx.textAlign='center'; ctx.shadowColor='rgba(0,0,0,0.9)'; ctx.shadowBlur=8;
   ctx.fillStyle='#fff'; ctx.font='bold 18px Courier New'; ctx.fillText('Ride the Black Bull to Valhalla.',VW/2,VH*0.46);
   ctx.fillStyle='#9fb3c8'; ctx.font='16px Courier New';
-  ctx.fillText(isTouch?'Slide your thumb to steer the bull':'← / → or A / D to steer',VW/2,VH*0.51);
+  ctx.fillText(isTouch?'Hold the LEFT / RIGHT side to steer':'← / → or A / D to steer',VW/2,VH*0.51);
   ctx.fillText('Bounce green candles · dodge bears + FUD',VW/2,VH*0.55);
   ctx.fillText('Grab 👑 KING MODE · outrun liquidation · 60s',VW/2,VH*0.59);
   ctx.fillStyle=`rgba(249,200,14,${0.5+0.5*Math.sin(performance.now()/300)})`; ctx.font='bold 23px Courier New';
@@ -350,8 +356,10 @@ function drawOver(){ drawBg(); ctx.textAlign='center'; ctx.fillStyle='rgba(5,6,1
   else { ctx.fillStyle='#ea3943'; ctx.font='bold 46px Courier New'; ctx.fillText('LIQUIDATED 📉',VW/2,VH*0.34); ctx.fillStyle='#fff'; ctx.font='bold 20px Courier New'; ctx.fillText('the bears got you...',VW/2,VH*0.34+42); }
   ctx.fillStyle='#fff'; ctx.font='bold 34px Courier New'; ctx.fillText('$'+fmt(netWorth),VW/2,VH*0.48);
   ctx.fillStyle='#9fb3c8'; ctx.font='17px Courier New'; ctx.fillText('final bag · best combo x'+bestCombo,VW/2,VH*0.48+26);
+  ctx.fillStyle=newBest?'#f9c80e':'#6b7a8c'; ctx.font='bold 16px Courier New'; ctx.fillText(newBest?'🔥 NEW PERSONAL BEST!':'your best: $'+fmt(bestSaved),VW/2,VH*0.48+50);
   ctx.restore();
-  endBtns.share={x:VW/2-130,y:VH*0.58,w:260,h:56}; endBtns.again={x:VW/2-130,y:VH*0.58+70,w:260,h:56};
+  endBtns.share={x:VW/2-130,y:VH*0.59,w:260,h:56}; endBtns.again={x:VW/2-130,y:VH*0.59+70,w:260,h:56};
+  ctx.fillStyle='#f9c80e'; ctx.font='bold 14px Courier New'; ctx.textAlign='center'; ctx.fillText('↓ share for a @ansemishandsome mint WL',VW/2,endBtns.share.y-12);
   ctx.fillStyle='#1da1f2'; ctx.fillRect(endBtns.share.x,endBtns.share.y,260,56); ctx.fillStyle='#fff'; ctx.font='bold 22px Courier New'; ctx.textAlign='center'; ctx.fillText('SHARE ON X',VW/2,endBtns.share.y+36);
   ctx.fillStyle='#16c784'; ctx.fillRect(endBtns.again.x,endBtns.again.y,260,56); ctx.fillStyle='#05060f'; ctx.fillText('RUN IT BACK',VW/2,endBtns.again.y+36); }
 function handleEndClick(x,y){ const inside=b=>x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b.y+b.h;
