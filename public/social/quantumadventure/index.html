@@ -171,7 +171,6 @@
         <div class="emblem" id="rEmblem">🌌</div>
         <div class="youare">Your Quantum Role is</div>
         <div class="rname" id="rName"></div>
-        <div><span class="hybrid" id="rHybrid"></span></div>
         <div class="explorer-no" id="rNo"></div>
         <p class="quote" id="rQuote"></p>
       </div>
@@ -210,8 +209,8 @@
       <div class="mint">👑 Quantum Queens mint incoming</div>
       <div class="link-stack">
         <a href="https://x.com/mememaxxers" target="_blank" rel="noopener">𝕏  Follow @mememaxxers</a>
-        <a href="https://opensea.io/collection/jpeg-jokers" target="_blank" rel="noopener">🌊  JPEG Jokers (Max Mints)</a>
-        <a href="https://discord.gg/krVPuyksQy" target="_blank" rel="noopener">💬  Join our Community</a>
+        <a href="https://opensea.io/collection/jpeg-jokers" target="_blank" rel="noopener">🌊  JPEG Jokers (Max Free Mints)</a>
+        <a href="https://discord.gg/krVPuyksQy" target="_blank" rel="noopener">💬  Join our Discord Community</a>
       </div>
       <button class="btn btn-ghost" onclick="restart()">↻ Replay</button>
     </div>
@@ -385,7 +384,6 @@ function showResult(){
   const P=ROLES[primary];
   document.getElementById("rEmblem").textContent=P.emoji;
   document.getElementById("rName").textContent=P.name;
-  document.getElementById("rHybrid").innerHTML=HYBRID_ADJ[secondary]+' <span class="rarity">· '+rarity+'</span>';
   document.getElementById("rNo").textContent="🧩 Explorer #"+serial+" of the frontier";
   document.getElementById("rQuote").textContent="“"+P.quote+"”";
   const sb=document.getElementById("stats");sb.innerHTML="";
@@ -436,7 +434,7 @@ function drawCard(){
   ctx.fillStyle="#9d92c4";ctx.font="600 20px Inter, sans-serif";ctx.fillText("YOUR ROLE",rx,140);
   let np=64;ctx.font="800 "+np+"px Orbitron, sans-serif";while(ctx.measureText(P.name.toUpperCase()).width>W-rx-60&&np>34){np-=2;ctx.font="800 "+np+"px Orbitron, sans-serif";}
   ctx.fillStyle="#fff";ctx.shadowColor="rgba(255,94,203,.5)";ctx.shadowBlur=24;ctx.fillText(P.name.toUpperCase(),rx,140+np);ctx.shadowBlur=0;
-  ctx.fillStyle="#c9b6ff";ctx.font="700 22px Inter, sans-serif";ctx.fillText(HYBRID_ADJ[secondary]+" · "+rarity,rx,140+np+34);
+  ctx.fillStyle="#c9b6ff";ctx.font="700 22px Inter, sans-serif";ctx.fillText("EXPLORER #"+serial,rx,140+np+34);
   let syTop=140+np+78;
   P.stats.forEach((st,i)=>{const col=i%2,rowi=(i/2)|0;const sx=rx+col*300,sy=syTop+rowi*92;
     ctx.fillStyle="rgba(163,102,255,.12)";ctx.strokeStyle="rgba(163,102,255,.4)";ctx.lineWidth=2;rr(sx,sy,282,76,14);ctx.fill();ctx.stroke();
@@ -452,9 +450,9 @@ function showPreview(){const im=document.getElementById("cardImg");try{im.src=cv
 
 /* ---------- share ---------- */
 function caption(){const P=ROLES[primary];
-  return "I entered the Quantum Frontier and became a "+P.name+" 🌌\n\n"+
-    HYBRID_ADJ[secondary]+" · "+rarity+"\nIdeal partner: a "+P.best[0]+".\n\n"+
-    "What role are YOU? 👇 "+CONFIG.tag+"\n👑 Quantum Queens mint incoming\n\n";}
+  return "I went on an adventure and became a "+P.name+" "+P.emoji+"\n\n"+
+    "Ideal partner: "+P.best[0]+" 👋\n\n"+
+    "Find out which @mememaxxers Quantum Explorer you are 👇\n\n";}
 function buildXLink(){const a=document.getElementById("xbtn");if(a)a.href="https://twitter.com/intent/tweet?text="+encodeURIComponent(caption())+"&url="+encodeURIComponent(CONFIG.siteUrl);}
 function shareOpen(){toast("Attach your saved card to the post 🌌");}
 let toastTimer;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2800);}
