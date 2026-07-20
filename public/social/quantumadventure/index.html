@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Quantum Adventure — Which Quantum Role are you?</title>
+<meta name="description" content="Enter the Quantum Frontier. Make choices across an interdimensional adventure and discover your Quantum Role. Quantum Queens." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="proofofreal" />
+<meta property="og:title" content="🌌 Quantum Adventure — Which Quantum Role are you?" />
+<meta property="og:description" content="Journey through portals, alien markets & rogue AI. 8 roles await. Get your card, challenge a friend, find your match." />
+<meta property="og:url" content="https://proofofreal.app/social/quantumadventure" />
+<meta property="og:image" content="https://proofofreal.app/social/quantumadventure/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@abstractchain" />
+<meta name="twitter:title" content="🌌 Quantum Adventure" />
+<meta name="twitter:description" content="Which Quantum Role are you? Take the adventure & find your match." />
+<meta name="twitter:image" content="https://proofofreal.app/social/quantumadventure/og-image.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet" />
+<style>
+  :root{ --bg:#0a0618; --bg2:#120a2a; --panel:#170f30; --panel2:#1e1440;
+    --ink:#f2ecff; --ash:#9d92c4; --line:rgba(160,120,255,.18);
+    --blue:#4d7cff; --pink:#ff5ecb; --purple:#a366ff; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{font-family:'Inter',system-ui,sans-serif;color:var(--ink);min-height:100%;
+    background:radial-gradient(1200px 700px at 50% -8%, rgba(163,102,255,.25), transparent 60%),
+      radial-gradient(900px 600px at 88% 108%, rgba(255,94,203,.12), transparent 55%),
+      radial-gradient(700px 500px at 10% 90%, rgba(77,124,255,.14), transparent 55%), var(--bg);
+    -webkit-font-smoothing:antialiased;overflow-x:hidden}
+  .stars{position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.5}
+  .wrap{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:30px 18px 40px;display:flex;flex-direction:column;align-items:center;gap:16px}
+  .kick{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--pink);text-align:center}
+  h1{font-family:'Orbitron',sans-serif;font-weight:800;font-size:clamp(28px,7vw,44px);line-height:1.05;text-align:center;margin:10px 0 0;
+    background:linear-gradient(180deg,#fff,#b9a9ff);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 24px rgba(163,102,255,.4))}
+  .lede{color:var(--ash);font-size:15px;line-height:1.6;text-align:center;max-width:400px;margin:16px auto 0}
+
+  .card{width:100%;background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:20px;
+    padding:22px;box-shadow:0 30px 70px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.05)}
+
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:inherit;font-weight:800;cursor:pointer;border:none;
+    border-radius:14px;transition:transform .12s,filter .12s;text-decoration:none;width:100%}
+  .btn:active{transform:translateY(1px)}
+  .btn-go{background:linear-gradient(120deg,var(--purple),var(--pink));color:#fff;box-shadow:0 14px 34px rgba(163,102,255,.45);
+    font-family:'Orbitron',sans-serif;font-size:19px;letter-spacing:.06em;padding:18px;text-transform:uppercase}
+  .btn-go:hover{filter:brightness(1.08)}
+  .btn-x{background:#000;color:#fff;border:1px solid #2a2a3a;font-family:'Orbitron',sans-serif;font-size:20px;letter-spacing:.04em;padding:19px;margin-top:10px}
+  .btn-save{background:linear-gradient(120deg,var(--blue),var(--purple));color:#fff;font-size:15px;padding:14px}
+  .btn-ghost{background:transparent;color:var(--ash);border:1px solid var(--line);font-size:14px;padding:14px}
+  .row{display:flex;gap:10px;width:100%}
+  .row .btn{flex:1 1 auto}
+
+  /* challenger banner */
+  .chal{width:100%;background:linear-gradient(120deg,rgba(255,94,203,.14),rgba(163,102,255,.1));border:1px solid rgba(255,94,203,.4);
+    border-radius:14px;padding:14px 16px;text-align:center;font-size:14px;line-height:1.5}
+  .chal b{color:#fff}
+
+  /* quiz */
+  #quiz{display:none;width:100%}
+  .prog{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .prog .scene{font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--pink)}
+  .prog .count{font-size:12px;color:var(--ash)}
+  .pbar{height:6px;background:#0c0820;border:1px solid var(--line);border-radius:99px;overflow:hidden;margin-bottom:18px}
+  .pbar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--pink));transition:width .4s}
+  .qtext{font-size:19px;line-height:1.45;font-weight:700;margin-bottom:18px;color:#efeaff}
+  .opts{display:grid;gap:11px}
+  .opt{display:flex;gap:12px;align-items:center;text-align:left;background:var(--panel2);border:1px solid var(--line);color:var(--ink);
+    padding:16px 15px;border-radius:14px;font-family:inherit;font-size:16px;cursor:pointer;transition:.12s;line-height:1.35}
+  .opt:hover{border-color:var(--pink);background:#241748;transform:translateX(3px)}
+  .opt .key{flex:0 0 28px;height:28px;border-radius:8px;background:#0c0820;display:grid;place-items:center;font-weight:800;color:var(--pink);border:1px solid var(--line)}
+  .back{background:none;border:none;color:var(--ash);font-size:13px;cursor:pointer;margin-top:16px}
+
+  /* calculating */
+  #calc{display:none;text-align:center;padding:40px 0}
+  .ring{width:110px;height:110px;margin:0 auto 22px;border-radius:50%;border:4px solid rgba(163,102,255,.25);border-top-color:var(--pink);
+    border-right-color:var(--purple);animation:spin 1s linear infinite;box-shadow:0 0 40px rgba(163,102,255,.5)}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .calcmsg{font-family:'Orbitron',sans-serif;font-size:16px;color:#e7dcff;min-height:24px;letter-spacing:.02em}
+  .calcsub{color:var(--ash);font-size:13px;margin-top:8px}
+
+  /* result */
+  #result{display:none;width:100%}
+  .reveal{text-align:center}
+  .emblem{font-size:70px;line-height:1;filter:drop-shadow(0 0 26px rgba(163,102,255,.6))}
+  .youare{font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:.34em;text-transform:uppercase;color:var(--ash);margin:10px 0 4px}
+  .rname{font-family:'Orbitron',sans-serif;font-weight:800;font-size:clamp(28px,7vw,44px);line-height:1;
+    background:linear-gradient(120deg,#fff,#c9b6ff,#ff9edb);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 20px rgba(255,94,203,.35))}
+  .hybrid{margin-top:10px;display:inline-block;font-weight:800;font-size:13px;color:#fff;background:rgba(163,102,255,.16);
+    border:1px solid rgba(163,102,255,.5);padding:7px 14px;border-radius:99px}
+  .rarity{color:var(--pink)}
+  .quote{color:#d8ceff;font-size:15px;line-height:1.55;margin:14px auto 0;max-width:440px;font-style:italic}
+
+  .cardwrap{position:relative;width:100%;border-radius:16px;overflow:hidden;margin-top:16px;background:#000;border:1px solid var(--line)}
+  #card,#cardImg{display:block;width:100%;height:auto}
+  .savehint{font-size:12px;color:var(--ash);text-align:center;margin-top:8px}
+  .personalize{display:flex;gap:8px;margin-top:12px}
+  .personalize .input{flex:1 1 auto;background:#0c0820;border:1px solid var(--line);color:#fff;text-align:center;padding:12px;border-radius:11px;font-family:inherit;font-size:15px}
+  .personalize .input:focus{outline:none;border-color:var(--pink)}
+  .personalize .pfp{flex:0 0 auto;background:var(--panel2);border:1px solid var(--line);color:var(--ash);border-radius:11px;padding:0 16px;cursor:pointer;font-size:13px;display:flex;align-items:center}
+  .personalize .pfp:hover{border-color:var(--pink);color:#fff}
+
+  .match-card{width:100%;background:linear-gradient(120deg,rgba(77,124,255,.14),rgba(255,94,203,.12));border:1px solid rgba(255,94,203,.45);
+    border-radius:16px;padding:18px;text-align:center;margin-top:4px}
+  .match-card .big{font-family:'Orbitron',sans-serif;font-size:38px;color:#fff;filter:drop-shadow(0 0 16px rgba(255,94,203,.5))}
+  .match-card .tier{color:var(--pink);font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:13px;margin-top:2px}
+  .match-card .who{color:#d8ceff;font-size:14px;margin-top:8px}
+  .match-card .line{color:var(--ash);font-size:13px;margin-top:8px;line-height:1.5}
+
+  .details{margin-top:22px}
+  .stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stat{background:#0c0820;border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+  .stat .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ash)}
+  .stat .v{font-family:'Orbitron',sans-serif;font-weight:800;font-size:22px;color:#fff;margin-top:2px}
+  .stat .bar{height:6px;background:#160e33;border-radius:99px;overflow:hidden;margin-top:7px}
+  .stat .bar>i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--blue),var(--pink));transition:width .8s}
+  .block{background:#0c0820;border:1px solid var(--line);border-radius:14px;padding:16px;margin-top:12px;text-align:left}
+  .block h3{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--pink);margin-bottom:8px}
+  .block p{font-size:14px;line-height:1.6;color:#ded5ff}
+  .aw{display:flex;gap:10px;flex-wrap:wrap}
+  .aw .pill{flex:1 1 45%;background:var(--panel2);border:1px solid var(--line);border-radius:11px;padding:11px}
+  .aw .pill .t{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ash)}
+  .aw .pill .d{font-size:13.5px;color:#fff;font-weight:700;margin-top:3px}
+  .sec{font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--ash);text-align:center;margin:22px 0 8px}
+
+  .links{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+  .links a{font-size:13px;font-weight:700;color:var(--ink);text-decoration:none;background:var(--panel2);border:1px solid var(--line);padding:10px 14px;border-radius:11px;transition:.12s}
+  .links a:hover{border-color:var(--pink);color:#fff}
+  .mint{font-family:'Orbitron',sans-serif;font-size:12px;letter-spacing:.08em;color:var(--pink);text-align:center;margin-top:14px}
+  .quest{margin-top:14px;background:linear-gradient(120deg,rgba(255,94,203,.1),rgba(163,102,255,.08));border:1px dashed rgba(255,94,203,.5);
+    border-radius:13px;padding:14px 16px;font-size:13px;line-height:1.6;color:#e7dcff;text-align:center}
+  .quest b{color:#fff}
+  .hide{display:none!important}
+  .footer{text-align:center;color:var(--ash);font-size:12px;margin-top:16px}
+  .footer b{color:var(--ink)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000;border:1px solid var(--pink);color:#fff;
+    padding:13px 20px;border-radius:11px;font-size:14px;font-weight:700;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none;max-width:90%}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<canvas class="stars" id="stars"></canvas>
+<div class="wrap">
+
+  <!-- INTRO -->
+  <div id="intro" style="display:flex;flex-direction:column;align-items:center;width:100%">
+    <h1>WHICH QUANTUM EXPLORER ARE YOU?</h1>
+    <p class="lede">A gateway has opened at the edge of the universe. Your choices decide who you become. Enter and find your role.</p>
+    <div id="chalBanner" class="chal hide" style="margin-top:16px"></div>
+    <div style="height:18px"></div>
+    <button class="btn btn-go" onclick="startQuiz()">Begin →</button>
+    <div class="mint">👑 Quantum Queens mint incoming on @abstractchain</div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz">
+    <div class="prog"><span class="scene" id="scene"></span><span class="count" id="count"></span></div>
+    <div class="pbar"><i id="pbar"></i></div>
+    <div class="card">
+      <div class="qtext" id="qtext"></div>
+      <div class="opts" id="opts"></div>
+      <button class="back" id="backBtn" onclick="goBack()">← back</button>
+    </div>
+  </div>
+
+  <!-- CALCULATING -->
+  <div id="calc">
+    <div class="ring"></div>
+    <div class="calcmsg" id="calcmsg">Scanning your choices…</div>
+    <div class="calcsub">Calculating your Quantum Role</div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="result">
+    <div class="card">
+      <div class="reveal">
+        <div class="emblem" id="rEmblem">🌌</div>
+        <div class="youare">Your Quantum Role is</div>
+        <div class="rname" id="rName"></div>
+        <div><span class="hybrid" id="rHybrid"></span></div>
+        <p class="quote" id="rQuote"></p>
+      </div>
+
+      <!-- match card (only if opened via a challenge link) -->
+      <div id="matchCard" class="match-card hide" style="margin-top:16px">
+        <div class="big" id="mcPct">92%</div>
+        <div class="tier" id="mcTier">Quantum Entangled</div>
+        <div class="who" id="mcWho"></div>
+        <div class="line" id="mcLine"></div>
+        <a class="btn btn-x" id="mcShare" target="_blank" rel="noopener" style="margin-top:12px;font-size:15px;padding:13px">𝕏 Share our match</a>
+      </div>
+
+      <div class="cardwrap">
+        <canvas id="card" width="1200" height="675" class="hide"></canvas>
+        <img id="cardImg" alt="your Quantum Adventure card" />
+      </div>
+      <div class="savehint">📱 On mobile, press &amp; hold the card to save it</div>
+
+      <div class="personalize">
+        <input class="input" id="handle" maxlength="20" placeholder="@yourhandle (optional)" autocomplete="off" />
+        <div class="pfp" id="drop">📷 add PFP</div>
+      </div>
+
+      <a class="btn btn-x" id="xbtn" target="_blank" rel="noopener" onclick="shareOpen()">𝕏 Share on X</a>
+      <div class="row" style="margin-top:10px">
+        <button class="btn btn-save" onclick="downloadCard()">⬇ Save card</button>
+        <button class="btn btn-ghost" onclick="challengeFriend()">⚔️ Challenge a friend</button>
+      </div>
+
+      <div class="quest">🔒 <b>Secret Quest</b> — reply to a friend's result with <b>your</b> role to earn hidden XP. The most entangled duos get spotted by the Queens 👀<br/>🧩 bonus quest: collect all 8 Explorers</div>
+
+      <!-- details below -->
+      <div class="details">
+        <div class="stats" id="stats"></div>
+        <div class="block"><h3>Journey Recap</h3><p id="recap"></p></div>
+        <div class="block">
+          <h3>Ability &amp; Weakness</h3>
+          <div class="aw">
+            <div class="pill"><div class="t">Ability</div><div class="d" id="ability"></div></div>
+            <div class="pill"><div class="t">Weakness</div><div class="d" id="weakness"></div></div>
+          </div>
+        </div>
+        <div class="block"><h3>Best Expedition Partner</h3><p id="matchLine"></p></div>
+      </div>
+
+      <div class="mint">👑 Quantum Queens mint incoming</div>
+      <div class="links">
+        <a href="https://x.com/mememaxxers" target="_blank" rel="noopener">𝕏 @mememaxxers</a>
+        <a href="https://opensea.io/collection/jpeg-jokers" target="_blank" rel="noopener">🌊 OpenSea</a>
+        <a href="https://discord.gg/krVPuyksQy" target="_blank" rel="noopener">💬 Discord</a>
+      </div>
+      <button class="btn btn-ghost" style="margin-top:14px" onclick="restart()">↻ Replay</button>
+    </div>
+  </div>
+
+  <div class="footer">powered by <b>Meme Maxxers</b></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================ CONFIG */
+const CONFIG = { siteUrl:"https://proofofreal.app/social/quantumadventure", tag:"@abstractchain" };
+
+/* ============================================================ ROLES */
+const ROLES = {
+  builder:{name:"Quantum Builder",emoji:"🛠️",quote:"You don't just explore new worlds — you create the reason others stay.",
+    meme:"Found an empty planet and immediately started building.",
+    ability:"Reality Architect",weakness:"Keeps building after everyone else left.",
+    best:["AI Navigator","Cosmic Diplomat","Quantum Visionary"],chaos:"Quantum Trader",
+    stats:[["Builder Energy","vision"],["Courage","courage"],["Strategy","intel"],["Stability","stability"]],
+    tail:"You turn uncertainty into something others can build on."},
+  trader:{name:"Quantum Trader",emoji:"💹",quote:"Every timeline has an opening — you feel it before anyone else.",
+    meme:"Met an alien civilization and asked what their token trades at.",
+    ability:"Timeline Arbitrage",weakness:"Sometimes trades away the map before reaching the treasure.",
+    best:["Quantum Scout","AI Navigator","Cosmic Strategist"],chaos:"Quantum Guardian",
+    stats:[["Alpha Detection","risk"],["Adaptability","courage"],["Instinct","risk"],["Strategy","intel"]],
+    tail:"You read the frontier like a market and move first."},
+  scout:{name:"Quantum Scout",emoji:"🛰️",quote:"You are always first through the portal.",
+    meme:"The sign said 'unexplored.' You read it as an invitation.",
+    ability:"Alpha Detection",weakness:"Sometimes finds out why nobody went first.",
+    best:["Quantum Builder","Cosmic Strategist","Quantum Guardian"],chaos:"Cosmic Strategist",
+    stats:[["Courage","courage"],["Alpha Detection","risk"],["Curiosity","risk"],["Stability","stability"]],
+    tail:"You make the trails everyone else follows later."},
+  strategist:{name:"Cosmic Strategist",emoji:"♟️",quote:"When you move, you already saw a thousand outcomes.",
+    meme:"Explored 14 million timelines and entered at support.",
+    ability:"Probability Mapping",weakness:"May still be planning after the portal closes.",
+    best:["Quantum Trader","Quantum Builder","Cosmic Diplomat"],chaos:"Quantum Scout",
+    stats:[["Strategy","intel"],["Planning","intel"],["Patience","stability"],["Vision","vision"]],
+    tail:"You wait, you plan, then you strike with precision."},
+  visionary:{name:"Quantum Visionary",emoji:"🔮",quote:"You see what the frontier could become before anyone believes it.",
+    meme:"Everyone saw an empty planet. You saw a future capital.",
+    ability:"Future Sight",weakness:"May stay loyal to a timeline that already ended.",
+    best:["Quantum Builder","Quantum Guardian","AI Navigator"],chaos:"Quantum Trader",
+    stats:[["Vision","vision"],["Conviction","vision"],["Curiosity","risk"],["Community","social"]],
+    tail:"You hold the future in view while others chase the moment."},
+  ai:{name:"AI Navigator",emoji:"🤖",quote:"You don't fly alone — your AI sees what others miss.",
+    meme:"Asked the ship's AI for advice and gave it control by accident.",
+    ability:"Machine Foresight",weakness:"Trusts the model even when it's clearly wrong.",
+    best:["Quantum Builder","Cosmic Strategist","Quantum Trader"],chaos:"Quantum Guardian",
+    stats:[["AI Affinity","intel"],["Foresight","intel"],["Efficiency","stability"],["Curiosity","risk"]],
+    tail:"You let the machines chart the impossible and steer through it."},
+  diplomat:{name:"Cosmic Diplomat",emoji:"🤝",quote:"You survive by turning strangers into a team.",
+    meme:"Entered a war zone, left with three partnerships and a group chat.",
+    ability:"Quantum Entanglement",weakness:"Joins every alliance and ends up in 74 group chats.",
+    best:["Quantum Builder","Quantum Guardian","Quantum Visionary"],chaos:"Cosmic Strategist",
+    stats:[["Connection","social"],["Persuasion","social"],["Alliances","social"],["Courage","courage"]],
+    tail:"You connect worlds that were never meant to meet."},
+  guardian:{name:"Quantum Guardian",emoji:"🛡️",quote:"Every expedition needs someone who keeps it alive.",
+    meme:"Everyone wanted to ape the portal. You checked for insurance.",
+    ability:"Timeline Shield",weakness:"Protects the treasury so well nothing gets used.",
+    best:["Quantum Scout","Quantum Visionary","Cosmic Diplomat"],chaos:"Quantum Trader",
+    stats:[["Stability","stability"],["Risk Sense","stability"],["Loyalty","social"],["Resilience","stability"]],
+    tail:"You make sure there's still a crew standing after the chaos."}
+};
+const HYBRID_ADJ = {builder:"Architect",trader:"Trading",scout:"Rogue",strategist:"Tactical",visionary:"Visionary",ai:"AI-Powered",diplomat:"Social",guardian:"Guardian"};
+const RARITIES = [["Common",34],["Uncommon",26],["Rare",20],["Epic",12],["Legendary",6],["Quantum Anomaly",2]];
+const NAME2KEY={}; Object.keys(ROLES).forEach(k=>NAME2KEY[ROLES[k].name]=k);
+
+/* ============================================================ QUESTIONS (simple English) */
+const Q = [
+ {scene:"Signal Detected",q:"A strange signal comes from deep space. No ship ever came back from it. What do you do?",o:[
+   {t:"Chase it now, before anyone else",r:["scout","trader"],f:"chased a signal no one returned from"},
+   {t:"Study it and find a safe route",r:["strategist","guardian"],f:"found the safe route"},
+   {t:"Gather a team first",r:["diplomat","builder"],f:"gathered a crew"},
+   {t:"Build a scanner to read it",r:["builder","ai"],f:"built a scanner to read the unknown"}]},
+ {scene:"Prepare the Ship",q:"You can add one upgrade before you leave. Pick one.",o:[
+   {t:"A super-fast engine",r:["scout","trader"],f:"took a super-fast engine"},
+   {t:"An AI that knows every star map",r:["ai","strategist"],f:"trusted an AI to navigate"},
+   {t:"Strong shields and life support",r:["guardian","diplomat"],f:"reinforced the ship"},
+   {t:"A machine that can build anything",r:["builder","visionary"],f:"packed a machine that builds anything"}]},
+ {scene:"Gateway Entered",q:"The gateway splits into 4 paths. Which one?",o:[
+   {t:"The bright, unknown one",r:["visionary","scout"],f:"took the bright unknown path"},
+   {t:"The slow but safe one",r:["guardian","strategist"],f:"took the slow, safe path"},
+   {t:"The one the AI picks",r:["ai","strategist"],f:"followed the AI's path"},
+   {t:"The one others already used",r:["diplomat","trader"],f:"followed the crowd's path"}]},
+ {scene:"Planet Discovered",q:"You land on an empty planet. Old machines still run below. What do you do first?",o:[
+   {t:"Grab valuable tech fast",r:["trader","scout"],f:"grabbed the valuable tech"},
+   {t:"Find out why everyone left",r:["strategist","visionary"],f:"learned why everyone left"},
+   {t:"Fix the machines",r:["builder","guardian"],f:"fixed the old machines"},
+   {t:"Invite other explorers to come",r:["diplomat","builder"],f:"invited more explorers"}]},
+ {scene:"The Alien Market",q:"A space market sells energy, tech, and pieces of the future. What do you want?",o:[
+   {t:"A rare item that could be worth a lot",r:["trader","visionary"],f:"bought a rare item"},
+   {t:"A hint about what comes next",r:["strategist","ai"],f:"traded for a hint of the future"},
+   {t:"Tech that helps the whole crew",r:["builder","guardian"],f:"got tech for the crew"},
+   {t:"A deal with the top trader",r:["diplomat","trader"],f:"made a deal with the top trader"}]},
+ {scene:"The Rogue AI",q:"Your ship's AI hid something. It says it did it to protect you. What do you do?",o:[
+   {t:"Let it explain, then check the facts",r:["ai","strategist"],f:"gave the AI a fair trial"},
+   {t:"Limit it, but keep using it",r:["guardian","strategist"],f:"kept the AI on a leash"},
+   {t:"Turn it off and fly yourself",r:["scout","guardian"],f:"flew the ship yourself"},
+   {t:"Reprogram it into an ally",r:["builder","ai"],f:"turned the AI into an ally"}]},
+ {scene:"Storm Approaching",q:"A storm is destroying timelines. You can save only ONE thing.",o:[
+   {t:"The crew",r:["diplomat","guardian"],f:"saved the crew"},
+   {t:"Your resources",r:["trader","guardian"],f:"saved your resources"},
+   {t:"The map of everything",r:["scout","strategist"],f:"saved the map of everything"},
+   {t:"Your unfinished invention",r:["builder","visionary"],f:"saved your invention"}]},
+ {scene:"The Quantum Core",q:"You reach the Quantum Core. You can change one rule of reality. Which?",o:[
+   {t:"Let everyone see the future",r:["visionary","strategist"],f:"gave everyone future-sight"},
+   {t:"Let people build worlds from ideas",r:["builder","visionary"],f:"let minds build worlds"},
+   {t:"Connect every mind across time",r:["diplomat","ai"],f:"connected every mind across time"},
+   {t:"Make exploring never end",r:["scout","trader"],f:"made exploring endless"}]}
+];
+
+/* ============================================================ STATE */
+let step=0, answers=new Array(Q.length).fill(null);
+let primary=null, secondary=null, dims=null, serial=0, rarity="", img=null, imgSrc="";
+let challenger=null; // {p,s,handle}
+const KEYS=["A","B","C","D"];
+const cv=document.getElementById("card"), ctx=cv.getContext("2d");
+const W=cv.width, H=cv.height;
+function hashStr(s){let h=2166136261>>>0;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;}
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+/* ---------- challenger link parsing ---------- */
+(function parseChallenger(){
+  const m=new URLSearchParams(location.search).get("c");
+  if(!m)return; const parts=m.split(".");
+  if(parts.length<2||!ROLES[parts[0]]||!ROLES[parts[1]])return;
+  challenger={p:parts[0],s:parts[1],handle:parts[2]?decodeURIComponent(parts[2]):""};
+  const b=document.getElementById("chalBanner");
+  b.classList.remove("hide");
+  b.innerHTML="⚔️ <b>"+(challenger.handle||"A friend")+"</b> is a <b>"+ROLES[challenger.p].name+"</b>.<br/>Take the quiz to see if your timelines match!";
+})();
+
+/* ---------- flow ---------- */
+function startQuiz(){document.getElementById("intro").style.display="none";document.getElementById("quiz").style.display="block";step=0;render();window.scrollTo({top:0});}
+function render(){
+  const qq=Q[step];
+  document.getElementById("scene").textContent=qq.scene;
+  document.getElementById("count").textContent=(step+1)+" / "+Q.length;
+  document.getElementById("pbar").style.width=(step/Q.length*100)+"%";
+  document.getElementById("qtext").textContent=qq.q;
+  const box=document.getElementById("opts");box.innerHTML="";
+  qq.o.forEach((opt,i)=>{const b=document.createElement("button");b.className="opt";
+    b.innerHTML='<span class="key">'+KEYS[i]+'</span><span>'+opt.t+'</span>';b.onclick=()=>choose(i);box.appendChild(b);});
+  document.getElementById("backBtn").style.visibility=step===0?"hidden":"visible";
+}
+function choose(i){answers[step]=i;if(step<Q.length-1){step++;render();window.scrollTo({top:0,behavior:"smooth"});}else runCalc();}
+function goBack(){if(step>0){step--;render();}}
+
+/* ---------- calculating screen ---------- */
+function runCalc(){
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("pbar").style.width="100%";
+  const c=document.getElementById("calc");c.style.display="block";window.scrollTo({top:0});
+  const msgs=["Scanning your choices…","Mapping your timeline…","Aligning the multiverse…","Revealing your Quantum Role…"];
+  let i=0;const el=document.getElementById("calcmsg");el.textContent=msgs[0];
+  const t=setInterval(()=>{i++;if(i<msgs.length){el.textContent=msgs[i];}},650);
+  compute();
+  setTimeout(()=>{clearInterval(t);c.style.display="none";showResult();},2700);
+}
+
+/* ---------- scoring ---------- */
+const ROLEKEYS=Object.keys(ROLES);
+function compute(){
+  const score={};ROLEKEYS.forEach(k=>score[k]=0);
+  answers.forEach((ai,qi)=>{if(ai==null)return;Q[qi].o[ai].r.forEach((id,idx)=>{score[id]+=(idx===0?3:1);});});
+  const app={};ROLEKEYS.forEach(k=>app[k]=0);
+  Q.forEach(q=>q.o.forEach(o=>o.r.forEach((id,idx)=>{app[id]+=(idx===0?3:1);})));
+  const ranked=ROLEKEYS.slice().sort((a,b)=>(score[b]-score[a])||(app[a]-app[b])||(a<b?-1:1));
+  primary=ranked[0];secondary=ranked[1];
+  const d={risk:score.scout+score.trader,vision:score.visionary+score.builder,intel:score.strategist+score.ai,
+    social:score.diplomat,stability:score.guardian,courage:score.scout+score.guardian};
+  const mx=Math.max(1,...Object.values(d));
+  dims={};Object.keys(d).forEach(k=>dims[k]=Math.min(99,Math.max(58,55+Math.round(d[k]/mx*44))));
+  const seed=hashStr(answers.join("")+primary+secondary);const rng=mulberry32(seed);
+  serial=1+Math.floor(rng()*4999);
+  let roll=rng()*100,acc=0;rarity=RARITIES[0][0];
+  for(const [name,w] of RARITIES){acc+=w;if(roll<acc){rarity=name;break;}}
+}
+
+/* ---------- compatibility ---------- */
+function compat(aKey,bKey){
+  const A=ROLES[aKey],B=ROLES[bKey];const rng=mulberry32(hashStr(aKey+"|"+bKey));
+  let pct,tier,line;
+  if(aKey===bKey){pct=86+((rng()*9)|0);tier="Mirror Match";line="Same role, double the chaos — you'd build a civilization before agreeing on the logo.";}
+  else if(A.best.includes(B.name)){pct=85+((rng()*12)|0);tier="Quantum Entangled";line="Your timelines lock together. Elite expedition energy.";}
+  else if(A.chaos===B.name){pct=52+((rng()*16)|0);tier="Chaos Match";line="One says send it, the other checks for insurance. Chaotic but iconic.";}
+  else{pct=68+((rng()*16)|0);tier="Stable Timeline";line="Different styles, one mission — you'd survive the frontier together.";}
+  return {pct,tier,line};
+}
+
+/* ---------- result ---------- */
+function showResult(){
+  document.getElementById("result").style.display="block";
+  const P=ROLES[primary];
+  document.getElementById("rEmblem").textContent=P.emoji;
+  document.getElementById("rName").textContent=P.name;
+  document.getElementById("rHybrid").innerHTML=HYBRID_ADJ[secondary]+' <span class="rarity">· '+rarity+'</span>';
+  document.getElementById("rQuote").textContent="“"+P.quote+"”";
+  // stats
+  const sb=document.getElementById("stats");sb.innerHTML="";
+  P.stats.forEach(([label,dim])=>{const v=dims[dim];const el=document.createElement("div");el.className="stat";
+    el.innerHTML='<div class="k">'+label+'</div><div class="v">'+v+'%</div><div class="bar"><i></i></div>';sb.appendChild(el);
+    requestAnimationFrame(()=>{setTimeout(()=>{el.querySelector("i").style.width=v+"%";},60);});});
+  // recap
+  const frags=[0,3,5,6].map(qi=>answers[qi]!=null?Q[qi].o[answers[qi]].f:null).filter(Boolean);
+  document.getElementById("recap").textContent="You "+frags.slice(0,-1).join(", ")+", and "+frags[frags.length-1]+". "+P.tail;
+  document.getElementById("ability").textContent=P.ability;
+  document.getElementById("weakness").textContent=P.weakness;
+  document.getElementById("matchLine").textContent="Your ideal expedition partner is a "+P.best[0]+". Tag one to lock your crew.";
+  // match card if challenger
+  if(challenger){
+    const c=compat(primary,challenger.p);
+    document.getElementById("matchCard").classList.remove("hide");
+    document.getElementById("mcPct").textContent=c.pct+"%";
+    document.getElementById("mcTier").textContent=c.tier;
+    document.getElementById("mcWho").innerHTML="You: <b>"+P.name+"</b> &nbsp;×&nbsp; "+(challenger.handle||"Friend")+": <b>"+ROLES[challenger.p].name+"</b>";
+    document.getElementById("mcLine").textContent=c.line;
+    const txt="Quantum match: "+P.name+" × "+ROLES[challenger.p].name+" = "+c.pct+"% "+c.tier+" 🌌\n\nFind your match 👇\n\n";
+    document.getElementById("mcShare").href="https://twitter.com/intent/tweet?text="+encodeURIComponent(txt)+"&url="+encodeURIComponent(CONFIG.siteUrl);
+  }
+  drawCard();buildXLink();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function restart(){document.getElementById("result").style.display="none";document.getElementById("intro").style.display="flex";
+  step=0;answers=new Array(Q.length).fill(null);img=null;imgSrc="";document.getElementById("cardImg").src="";document.getElementById("handle").value="";window.scrollTo({top:0});}
+
+/* ---------- image ---------- */
+function showImg(src){const im=new Image();im.crossOrigin="anonymous";im.onload=()=>{img=im;imgSrc=src;document.getElementById("drop").textContent="✓ PFP";drawCard();};im.onerror=()=>toast("Couldn't read that image.");im.src=src;}
+function loadBlob(b){if(!b)return;const r=new FileReader();r.onload=e=>showImg(e.target.result);r.readAsDataURL(b);}
+function pickFile(){const i=document.createElement("input");i.type="file";i.accept="image/*";i.onchange=e=>{if(e.target.files[0])loadBlob(e.target.files[0]);};i.click();}
+document.getElementById("drop").addEventListener("click",pickFile);
+window.addEventListener("paste",e=>{const items=(e.clipboardData||{}).items||[];for(const it of items){if(it.type&&it.type.indexOf("image")===0){loadBlob(it.getAsFile());return;}}});
+document.getElementById("handle").addEventListener("input",()=>{drawCard();buildXLink();});
+function getHandle(){let h=(document.getElementById("handle").value||"").trim();if(h&&!h.startsWith("@"))h="@"+h;return h.replace(/\s+/g,"");}
+
+/* ---------- share card ---------- */
+function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function drawCard(){
+  if(!primary)return;const P=ROLES[primary];
+  ctx.clearRect(0,0,W,H);
+  const g=ctx.createLinearGradient(0,0,W,H);g.addColorStop(0,"#160a33");g.addColorStop(.55,"#0d0722");g.addColorStop(1,"#0a0618");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  let rg=ctx.createRadialGradient(320,180,30,320,180,760);rg.addColorStop(0,"rgba(163,102,255,.35)");rg.addColorStop(1,"rgba(163,102,255,0)");ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
+  rg=ctx.createRadialGradient(1050,620,30,1050,620,640);rg.addColorStop(0,"rgba(255,94,203,.22)");rg.addColorStop(1,"rgba(255,94,203,0)");ctx.fillStyle=rg;ctx.fillRect(0,0,W,H);
+  let s=hashStr(primary+serial);for(let i=0;i<90;i++){s=(s*1103515245+12345)>>>0;const x=(s>>8)%W;s=(s*1103515245+12345)>>>0;const y=(s>>8)%H;ctx.globalAlpha=.3+((s%10)/20);ctx.fillStyle="#dfe0ff";ctx.fillRect(x,y,2,2);}
+  ctx.globalAlpha=1;ctx.strokeStyle="rgba(163,102,255,.5)";ctx.lineWidth=2;rr(18,18,W-36,H-36,22);ctx.stroke();
+  const px=52,py=100,ps=475;
+  ctx.save();rr(px,py,ps,ps,26);ctx.clip();
+  const bg=ctx.createLinearGradient(px,py,px+ps,py+ps);bg.addColorStop(0,"#1e1440");bg.addColorStop(1,"#0d0722");ctx.fillStyle=bg;ctx.fillRect(px,py,ps,ps);
+  if(img){const sc=Math.max(ps/img.width,ps/img.height);const dw=img.width*sc,dh=img.height*sc;ctx.drawImage(img,px+(ps-dw)/2,py+(ps-dh)/2,dw,dh);}
+  else{ctx.font="220px serif";ctx.textAlign="center";ctx.fillText(P.emoji,px+ps/2,py+ps/2+80);}
+  ctx.restore();
+  ctx.lineWidth=5;ctx.strokeStyle="#ff5ecb";ctx.shadowColor="#a366ff";ctx.shadowBlur=26;rr(px,py,ps,ps,26);ctx.stroke();ctx.shadowBlur=0;
+  const rx=575;ctx.textAlign="left";
+  ctx.fillStyle="#ff5ecb";ctx.font="800 26px Orbitron, sans-serif";ctx.fillText("QUANTUM ADVENTURE",rx,96);
+  const h=getHandle();
+  if(h){ctx.textAlign="center";ctx.fillStyle="#c9b6ff";ctx.font="700 30px Inter, sans-serif";ctx.fillText(h,px+ps/2,py+ps+46);ctx.textAlign="left";}
+  ctx.fillStyle="#9d92c4";ctx.font="600 20px Inter, sans-serif";ctx.fillText("YOUR ROLE",rx,140);
+  let np=64;ctx.font="800 "+np+"px Orbitron, sans-serif";while(ctx.measureText(P.name.toUpperCase()).width>W-rx-60&&np>34){np-=2;ctx.font="800 "+np+"px Orbitron, sans-serif";}
+  ctx.fillStyle="#fff";ctx.shadowColor="rgba(255,94,203,.5)";ctx.shadowBlur=24;ctx.fillText(P.name.toUpperCase(),rx,140+np);ctx.shadowBlur=0;
+  ctx.fillStyle="#c9b6ff";ctx.font="700 22px Inter, sans-serif";ctx.fillText(HYBRID_ADJ[secondary]+" · "+rarity,rx,140+np+34);
+  let syTop=140+np+78;
+  P.stats.forEach((st,i)=>{const col=i%2,rowi=(i/2)|0;const sx=rx+col*300,sy=syTop+rowi*92;
+    ctx.fillStyle="rgba(163,102,255,.12)";ctx.strokeStyle="rgba(163,102,255,.4)";ctx.lineWidth=2;rr(sx,sy,282,76,14);ctx.fill();ctx.stroke();
+    ctx.fillStyle="#9d92c4";ctx.font="600 15px Inter, sans-serif";ctx.fillText(st[0].toUpperCase(),sx+16,sy+28);
+    ctx.fillStyle="#fff";ctx.font="800 34px Orbitron, sans-serif";ctx.fillText(dims[st[1]]+"%",sx+16,sy+64);});
+  ctx.fillStyle="#d8ceff";ctx.font="italic 22px Inter, sans-serif";
+  wrap('"'+P.meme+'"',rx,syTop+92*2+40,W-rx-56,30);
+  ctx.fillStyle="#7f77a8";ctx.font="600 19px Inter, sans-serif";ctx.fillText("proofofreal.app/social/quantumadventure  ·  #"+serial,rx,H-46);
+  showPreview();
+}
+function wrap(t,x,y,maxW,lh){const words=t.split(" ");let line="",yy=y;for(let n=0;n<words.length;n++){const test=line+words[n]+" ";if(ctx.measureText(test).width>maxW&&n>0){ctx.fillText(line.trim(),x,yy);line=words[n]+" ";yy+=lh;}else line=test;}ctx.fillText(line.trim(),x,yy);}
+function showPreview(){const im=document.getElementById("cardImg");try{im.src=cv.toDataURL("image/png");im.style.display="block";cv.classList.add("hide");}catch(e){cv.classList.remove("hide");im.style.display="none";}}
+
+/* ---------- share ---------- */
+function caption(){const P=ROLES[primary];
+  return "I entered the Quantum Frontier and became a "+P.name+" 🌌\n\n"+
+    HYBRID_ADJ[secondary]+" · "+rarity+"\nIdeal partner: a "+P.best[0]+".\n\n"+
+    "What role are YOU? 👇 "+CONFIG.tag+"\n👑 Quantum Queens mint incoming\n\n";}
+function buildXLink(){const a=document.getElementById("xbtn");if(a)a.href="https://twitter.com/intent/tweet?text="+encodeURIComponent(caption())+"&url="+encodeURIComponent(CONFIG.siteUrl);}
+function shareOpen(){toast("Attach your saved card to the post 🌌");}
+function challengeFriend(){
+  const h=getHandle();
+  const url=CONFIG.siteUrl+"?c="+primary+"."+secondary+(h?"."+encodeURIComponent(h):"");
+  const txt="I'm a "+ROLES[primary].name+" in the Quantum Frontier 🌌\n\nAre our timelines compatible? Take it & compare with me 👇\n\n";
+  window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(txt)+"&url="+encodeURIComponent(url),"_blank");
+  toast("Challenge posted — friends who open it get matched with you ⚔️");
+}
+function downloadCard(){try{const url=cv.toDataURL("image/png");const link=document.createElement("a");link.download="quantum-"+primary+"-"+serial+".png";link.href=url;link.click();toast("Card saved 🌌");}catch(e){toast("URL images can't be saved — upload a PFP instead.");}}
+let toastTimer;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2800);}
+
+/* ---------- starfield ---------- */
+(function(){const c=document.getElementById("stars"),x=c.getContext("2d");function sz(){c.width=innerWidth;c.height=innerHeight;draw();}
+function draw(){x.clearRect(0,0,c.width,c.height);let s=12345;for(let i=0;i<140;i++){s=(s*1103515245+12345)>>>0;const px=(s>>8)%c.width;s=(s*1103515245+12345)>>>0;const py=(s>>8)%c.height;s=(s*1103515245+12345)>>>0;const r=(s%3)/2+.3;x.globalAlpha=.2+((s%10)/16);x.fillStyle=i%5===0?"#ff5ecb":"#cfc6ff";x.beginPath();x.arc(px,py,r,0,7);x.fill();}x.globalAlpha=1;}
+addEventListener("resize",sz);sz();})();
+</script>
+</body>
+</html>
