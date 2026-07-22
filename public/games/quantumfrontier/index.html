@@ -84,7 +84,7 @@ addEventListener('keydown',e=>{ if(e.code==='Space'||e.code==='ArrowUp'){ e.prev
 /* ---------------- State ---------------- */
 let state='title', last=0, elapsed=0;
 let ship, gates, parts, stars, planets, score, scroll, gateTimer, popup, popupT;
-let bills, bbQueue, nextBb, seen, discoveredN, allSeen;
+let bills, bbQueue, nextBb, seen, discoveredN, allSeen, nebulas, popupImg;
 let aliens, rocks, comets, bgPortals, alienT, rockT, cometT, portalT;
 let warpT=0, dying=false, deathT=0, boomX=0, boomY=0, lastTier=-1, zoneMsg='', zoneMsgT=0;
 let shake=0, flashT=0;
@@ -100,15 +100,16 @@ function reset(){
   alienT=2.5; rockT=1.4; cometT=6; portalT=8;
   stars=Array.from({length:70},()=>({x:Math.random()*VW,y:Math.random()*VH,z:0.3+Math.random()*0.9,s:Math.random()*1.6+0.4}));
   planets=Array.from({length:3},(_,i)=>({x:Math.random()*VW,y:80+Math.random()*(VH-160),r:30+Math.random()*46,c:['#3a2170','#123a4a','#4a1250'][i],z:0.15+Math.random()*0.15}));
+  nebulas=Array.from({length:3},(_,i)=>({x:Math.random()*VW,y:Math.random()*VH,r:170+Math.random()*150,c:['rgba(107,59,255,0.12)','rgba(77,225,255,0.09)','rgba(255,106,213,0.09)'][i],z:0.08+Math.random()*0.08}));
   score=0; scroll=CONFIG.TIER_SCROLL[0]; gateTimer=1.2; popup=''; popupT=0; allSeen=loadSeen();
-  bbQueue=[]; refillQueue(); nextBb=5; seen={}; discoveredN=0;
+  bbQueue=[]; refillQueue(); nextBb=5; seen={}; discoveredN=0; popupImg=-1;
   elapsed=0; warpT=1.1; dying=false; deathT=0; lastTier=-1; zoneMsg=''; zoneMsgT=0;
 }
 function startGame(){ reset(); state='play'; Sound.restartMusic(); Sound.warp(); }
 function flap(){ ship.vy=-CONFIG.FLAP; Sound.flap(); parts.push({x:CONFIG.SHIP_X-16,y:ship.y+8,vx:-120,vy:40,life:0.4,c:'#4de1ff'}); }
 function spawnBillboard(){ if(bbQueue.length===0) refillQueue(); const i=bbQueue.pop(); if(!seen[i]){ seen[i]=1; discoveredN++; }
   const top=Math.random()<0.5, yy=top? 50+Math.random()*70 : 268+Math.random()*64;   // top or lower band, clear of mid flight lane
-  bills.push({i, x:VW+150, y:yy, t:0}); popup='DISCOVERED: '+PARTNERS[i].n; popupT=1.8; Sound.discover(); }
+  bills.push({i, x:VW+150, y:yy, t:0}); popup='DISCOVERED: '+PARTNERS[i].n; popupImg=i; popupT=1.9; Sound.discover(); }
 
 /* ---------------- Crash / end ---------------- */
 function crash(){ if(dying) return; dying=true; deathT=1.2; boomX=CONFIG.SHIP_X; boomY=ship.y;
@@ -118,7 +119,7 @@ function finalizeOver(){ state='over'; Sound.stopMusic();
   const m=new Set(allSeen); for(const k in seen) m.add(+k); allSeen=[...m]; saveSeen(allSeen); }
 
 function shareText(){ const url=CONFIG.SITE_URL;
-  return `I flew the Quantum Frontier and scored ${score} 🚀\n\nDiscovered ${discoveredN}/${PARTNERS.length} Abstract partners along the way.\n\nHow far can you go? @mememaxxers @abstractchain\n\n${url}`; }
+  return `I flew the Quantum Frontier and scored ${score} 🚀\n\nDiscovered ${discoveredN}/${PARTNERS.length} @abstractchain partners along the way. 🧑‍🚀\n\nEnter the @mememaxxers Quantum Universe 👇\n\n${url}`; }
 function shareURL(){ return 'https://twitter.com/intent/tweet?text='+encodeURIComponent(shareText()); }
 function shareNow(){ const webUrl=shareURL();
   if(isTouch){ const appUrl='twitter://post?message='+encodeURIComponent(shareText()); let opened=false; const onHide=()=>{opened=true;};
@@ -139,13 +140,14 @@ function update(dt){
 
   ship.vy+=CONFIG.GRAVITY*dt; ship.y+=ship.vy*dt; ship.rot=Math.max(-0.5,Math.min(1.1,ship.vy/620));
   if(ship.y<16 || ship.y>VH-16){ crash(); return; }
+  parts.push({x:CONFIG.SHIP_X-16,y:ship.y+6,vx:-110-Math.random()*70,vy:(Math.random()-0.5)*30,life:0.35,c:Math.random()<0.5?'#4de1ff':'#ff8a3d'});   // engine trail
 
   // gates (the only obstacle)
   gateTimer-=dt;
   if(gateTimer<=0){ const g=CONFIG.TIER_GAP[ti], gy=70+Math.random()*(VH-140-g)+g/2;
     gates.push({x:VW+40,gy,gp:g,passed:false}); gateTimer=(CONFIG.GATE_EVERY*CONFIG.TIER_SPACE[ti])/scroll; }
   gates.forEach(g=>{ g.x-=scroll*dt;
-    if(!g.passed && g.x+CONFIG.GATE_W<CONFIG.SHIP_X){ g.passed=true; score+=1; Sound.gate(); }
+    if(!g.passed && g.x+CONFIG.GATE_W<CONFIG.SHIP_X){ g.passed=true; score+=1; Sound.gate(); for(let k=0;k<6;k++) parts.push({x:CONFIG.SHIP_X,y:g.gy+(Math.random()*g.gp-g.gp/2),vx:-70,vy:(Math.random()-0.5)*140,life:0.4,c:'#4de1ff'}); }
     const sx=CONFIG.SHIP_X, sr=15;
     if(sx+sr>g.x && sx-sr<g.x+CONFIG.GATE_W){ if(ship.y-sr<g.gy-g.gp/2 || ship.y+sr>g.gy+g.gp/2){ crash(); return; } } });
   gates=gates.filter(g=>g.x>-CONFIG.GATE_W-10);
@@ -167,6 +169,7 @@ function update(dt){
 
   stars.forEach(s=>{ s.x-=scroll*s.z*dt; if(s.x<0){ s.x=VW; s.y=Math.random()*VH; } });
   planets.forEach(p=>{ p.x-=scroll*p.z*dt; if(p.x<-p.r){ p.x=VW+p.r; p.y=80+Math.random()*(VH-160); } });
+  nebulas.forEach(n=>{ n.x-=scroll*n.z*dt; if(n.x<-n.r){ n.x=VW+n.r; n.y=Math.random()*VH; } });
   parts.forEach(p=>{ p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt; }); parts=parts.filter(p=>p.life>0);
 }
 
@@ -190,6 +193,7 @@ function drawBillboard(b){ const p=PARTNERS[b.i], im=PIMG[b.i], s=140, x=b.x, y=
 function drawBg(){
   const ti=tier(), z=ZONES[ti], nz=ZONES[Math.min(ti+1,3)], bnd=[0,15,30,45,60], t=Math.min(1,(elapsed-bnd[ti])/((bnd[ti+1]-bnd[ti])||1));
   const g=ctx.createLinearGradient(0,0,0,VH); g.addColorStop(0,lerpCol(z.a,nz.a,t)); g.addColorStop(1,lerpCol(z.b,nz.b,t)); ctx.fillStyle=g; ctx.fillRect(0,0,VW,VH);
+  nebulas.forEach(n=>{ const rg=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.r); rg.addColorStop(0,n.c); rg.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=rg; ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2); ctx.fill(); });
   bgPortals.forEach(p=>{ const a=Math.max(0,p.life/1.4); ctx.globalAlpha=a*0.5; ctx.strokeStyle=p.c; ctx.lineWidth=4; ctx.beginPath(); ctx.arc(p.x,p.y,p.mr*(1-p.life/1.4),0,Math.PI*2); ctx.stroke(); ctx.globalAlpha=1; });
   planets.forEach(p=>{ ctx.globalAlpha=0.45; ctx.fillStyle=p.c; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,7); ctx.fill(); ctx.globalAlpha=1; });
   const warp=warpT>0||elapsed>30; stars.forEach(s=>{ ctx.globalAlpha=0.4+s.z*0.5; ctx.fillStyle='#cfe8ff'; ctx.fillRect(s.x,s.y,warp?s.s*(3+s.z*7):s.s,s.s); }); ctx.globalAlpha=1;
@@ -212,7 +216,10 @@ function drawHUD(){
   ctx.fillStyle='#b06bff'; ctx.font='bold 14px Courier New'; ctx.fillText(ZONES[tier()].n,VW/2,74);
   ctx.textAlign='left'; ctx.fillStyle='#4de1ff'; ctx.font='bold 15px Courier New'; ctx.fillText('PARTNERS: '+discoveredN+'/'+PARTNERS.length,14,26);
   if(zoneMsgT>0){ ctx.textAlign='center'; ctx.fillStyle=`rgba(77,225,255,${Math.min(1,zoneMsgT)})`; ctx.font='bold 26px Courier New'; ctx.fillText(zoneMsg,VW/2,VH*0.22); }
-  if(popupT>0){ ctx.textAlign='center'; ctx.fillStyle=`rgba(249,200,14,${Math.min(1,popupT)})`; ctx.font='bold 24px Courier New'; ctx.fillText(popup,VW/2,VH*0.90); }
+  if(popupT>0){ const a=Math.min(1,popupT), ph=46, cy=VH*0.9; ctx.save(); ctx.globalAlpha=a; ctx.font='bold 22px Courier New'; ctx.textAlign='left';
+    const tw=ctx.measureText(popup).width, hasImg=popupImg>=0&&imgReady(PIMG[popupImg]), tot=(hasImg?ph+12:0)+tw, sx=VW/2-tot/2;
+    if(hasImg){ drawCover(PIMG[popupImg],sx,cy-ph/2,ph,ph); ctx.strokeStyle='#f9c80e'; ctx.lineWidth=2; ctx.strokeRect(sx,cy-ph/2,ph,ph); }
+    ctx.fillStyle='#f9c80e'; ctx.fillText(popup,sx+(hasImg?ph+12:0),cy+8); ctx.restore(); }
   if(warpT>0){ ctx.textAlign='center'; ctx.fillStyle='#4de1ff'; ctx.font='bold 30px Courier New'; ctx.fillText('WARPING IN...',VW/2,VH*0.5); }
 }
 
