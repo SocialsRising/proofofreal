@@ -84,13 +84,11 @@ addEventListener('keydown',e=>{ if(e.code==='Space'||e.code==='ArrowUp'){ e.prev
 /* ---------------- State ---------------- */
 let state='title', last=0, elapsed=0;
 let ship, gates, parts, stars, planets, score, scroll, gateTimer, popup, popupT;
-let bills, bbQueue, nextBb, seen, discoveredN, allSeen, nebulas, popupImg;
+let bills, bbQueue, nextBb, seen, discoveredN, nebulas, popupImg;
 let aliens, rocks, comets, bgPortals, alienT, rockT, cometT, portalT;
 let warpT=0, dying=false, deathT=0, boomX=0, boomY=0, lastTier=-1, zoneMsg='', zoneMsgT=0;
 let shake=0, flashT=0;
 
-function loadSeen(){ try{ return JSON.parse(localStorage.getItem('qf_seen')||'[]'); }catch(e){ return []; } }
-function saveSeen(arr){ try{ localStorage.setItem('qf_seen',JSON.stringify(arr)); }catch(e){} }
 function tier(){ return elapsed<15?0:elapsed<30?1:elapsed<45?2:3; }
 function refillQueue(){ bbQueue=[...Array(PARTNERS.length).keys()]; for(let i=bbQueue.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [bbQueue[i],bbQueue[j]]=[bbQueue[j],bbQueue[i]]; } }
 
@@ -101,7 +99,7 @@ function reset(){
   stars=Array.from({length:70},()=>({x:Math.random()*VW,y:Math.random()*VH,z:0.3+Math.random()*0.9,s:Math.random()*1.6+0.4}));
   planets=Array.from({length:3},(_,i)=>({x:Math.random()*VW,y:80+Math.random()*(VH-160),r:30+Math.random()*46,c:['#3a2170','#123a4a','#4a1250'][i],z:0.15+Math.random()*0.15}));
   nebulas=Array.from({length:3},(_,i)=>({x:Math.random()*VW,y:Math.random()*VH,r:170+Math.random()*150,c:['rgba(107,59,255,0.12)','rgba(77,225,255,0.09)','rgba(255,106,213,0.09)'][i],z:0.08+Math.random()*0.08}));
-  score=0; scroll=CONFIG.TIER_SCROLL[0]; gateTimer=1.2; popup=''; popupT=0; allSeen=loadSeen();
+  score=0; scroll=CONFIG.TIER_SCROLL[0]; gateTimer=1.2; popup=''; popupT=0;
   bbQueue=[]; refillQueue(); nextBb=5; seen={}; discoveredN=0; popupImg=-1;
   elapsed=0; warpT=1.1; dying=false; deathT=0; lastTier=-1; zoneMsg=''; zoneMsgT=0;
 }
@@ -115,8 +113,7 @@ function spawnBillboard(){ if(bbQueue.length===0) refillQueue(); const i=bbQueue
 function crash(){ if(dying) return; dying=true; deathT=1.2; boomX=CONFIG.SHIP_X; boomY=ship.y;
   Sound.boom(); setTimeout(()=>Sound.womp(),340); shake=20; flashT=0.5;
   for(let i=0;i<30;i++) parts.push({x:boomX,y:boomY,vx:(Math.random()-0.5)*460,vy:(Math.random()-0.5)*460,life:0.7+Math.random()*0.5,c:['#ff8a3d','#d7d9ff','#4de1ff','#ff2a6d'][i%4]}); }
-function finalizeOver(){ state='over'; Sound.stopMusic();
-  const m=new Set(allSeen); for(const k in seen) m.add(+k); allSeen=[...m]; saveSeen(allSeen); }
+function finalizeOver(){ state='over'; Sound.stopMusic(); }
 
 function shareText(){ const url=CONFIG.SITE_URL;
   return `I flew the Quantum Frontier and scored ${score} 🚀\n\nDiscovered ${discoveredN}/${PARTNERS.length} @abstractchain partners along the way. 🧑‍🚀\n\nEnter the @mememaxxers Quantum Universe 👇\n\n${url}`; }
@@ -228,11 +225,10 @@ function drawTitle(){ drawBg();
   ctx.textAlign='center'; ctx.save(); ctx.shadowColor='rgba(0,0,0,0.9)'; ctx.shadowBlur=8;
   ctx.fillStyle='#b06bff'; ctx.font='bold 60px Courier New'; ctx.fillText('QUANTUM',VW/2,VH*0.30);
   ctx.fillStyle='#4de1ff'; ctx.fillText('FRONTIER',VW/2,VH*0.30+56);
-  ctx.fillStyle='#fff'; ctx.font='bold 18px Courier New'; ctx.fillText('Fly deep · discover the Abstract partners · survive',VW/2,VH*0.58);
-  ctx.fillStyle='#9fb3c8'; ctx.font='16px Courier New'; ctx.fillText(isTouch?'TAP to flap · fly through the portals':'SPACE / CLICK to flap · fly through the portals',VW/2,VH*0.64);
-  ctx.fillStyle='#9fb3c8'; ctx.font='15px Courier New'; ctx.fillText('a new partner appears every 5s — clip your favorites 📸',VW/2,VH*0.70);
-  const col=loadSeen().length; ctx.fillStyle=col>=PARTNERS.length?'#16c784':'#f9c80e'; ctx.font='bold 15px Courier New'; ctx.fillText(col>=PARTNERS.length?'★ all '+PARTNERS.length+' partners discovered ★':'ecosystem discovered: '+col+'/'+PARTNERS.length,VW/2,VH*0.76);
-  ctx.fillStyle=`rgba(249,200,14,${0.5+0.5*Math.sin(performance.now()/300)})`; ctx.font='bold 24px Courier New'; ctx.fillText(isTouch?'TAP TO START':'PRESS SPACE / CLICK TO START',VW/2,VH*0.87);
+  ctx.fillStyle='#fff'; ctx.font='bold 18px Courier New'; ctx.fillText('Fly deep · discover the 12 Abstract partners · survive',VW/2,VH*0.58);
+  ctx.fillStyle='#9fb3c8'; ctx.font='16px Courier New'; ctx.fillText(isTouch?'TAP to flap · fly through the portals':'SPACE / CLICK to flap · fly through the portals',VW/2,VH*0.65);
+  ctx.fillStyle='#9fb3c8'; ctx.font='15px Courier New'; ctx.fillText('a new partner appears every 5s — clip your favorites 📸',VW/2,VH*0.71);
+  ctx.fillStyle=`rgba(249,200,14,${0.5+0.5*Math.sin(performance.now()/300)})`; ctx.font='bold 24px Courier New'; ctx.fillText(isTouch?'TAP TO START':'PRESS SPACE / CLICK TO START',VW/2,VH*0.85);
   ctx.restore();
   ship={x:VW*0.5,y:VH*0.42,vy:0,rot:0}; drawShip();
 }
@@ -242,11 +238,12 @@ function drawOver(){ drawBg(); ctx.fillStyle='rgba(5,3,15,0.8)'; ctx.fillRect(0,
   ctx.fillStyle='#fff'; ctx.font='bold 40px Courier New'; ctx.fillText('SCORE '+score,VW/2,98);
   ctx.restore();
   // partner gallery (nostalgia wall) — all-time discoveries; undiscovered stay a mystery
-  const allSet=new Set(allSeen), done=allSeen.length>=PARTNERS.length;
+  const done=discoveredN>=PARTNERS.length;
   if(done){ const cc=['#16c784','#f9c80e','#05d9e8','#b06bff','#ff6ad5']; const tt=performance.now()/1000; for(let i=0;i<40;i++){ const x=(i*97)%VW, y=((tt*130+i*61)%(VH+40))-20; ctx.save(); ctx.translate(x,y); ctx.rotate(tt*3+i); ctx.fillStyle=cc[i%5]; ctx.fillRect(-3,-3,6,6); ctx.restore(); } }
-  ctx.textAlign='center'; ctx.fillStyle=done?'#16c784':'#4de1ff'; ctx.font='bold 16px Courier New'; ctx.fillText(done?'★ ABSTRACT ECOSYSTEM COMPLETE — '+PARTNERS.length+'/'+PARTNERS.length+' ★':'PARTNERS DISCOVERED: '+allSeen.length+' / '+PARTNERS.length,VW/2,150);
-  const cols=6, tw=72, th=72, gapx=14, gxs=(VW-(cols*tw+(cols-1)*gapx))/2, gys=168;
-  PARTNERS.forEach((p,i)=>{ const col=i%cols, row=Math.floor(i/cols), x=gxs+col*(tw+gapx), y=gys+row*(th+26), has=allSet.has(i);
+  ctx.textAlign='center'; ctx.fillStyle=done?'#16c784':'#4de1ff'; ctx.font='bold 16px Courier New'; ctx.fillText(done?'★ ALL '+PARTNERS.length+' DISCOVERED! ★':'PARTNERS DISCOVERED: '+discoveredN+' / '+PARTNERS.length,VW/2,146);
+  if(!done){ ctx.fillStyle='#9fb3c8'; ctx.font='13px Courier New'; ctx.fillText('fly again to discover the rest 👀',VW/2,166); }
+  const cols=6, tw=72, th=72, gapx=14, gxs=(VW-(cols*tw+(cols-1)*gapx))/2, gys=182;
+  PARTNERS.forEach((p,i)=>{ const col=i%cols, row=Math.floor(i/cols), x=gxs+col*(tw+gapx), y=gys+row*(th+26), has=!!seen[i];
     if(has){ if(imgReady(PIMG[i])) drawCover(PIMG[i],x,y,tw,th); else { ctx.fillStyle='#141428'; ctx.fillRect(x,y,tw,th); } ctx.strokeStyle='#4de1ff'; }
     else { ctx.fillStyle='rgba(255,255,255,0.05)'; ctx.fillRect(x,y,tw,th); ctx.fillStyle='#3a3a55'; ctx.font='bold 26px Courier New'; ctx.textAlign='center'; ctx.fillText('?',x+tw/2,y+th/2+9); ctx.strokeStyle='#333'; }
     ctx.lineWidth=1; ctx.strokeRect(x,y,tw,th);
