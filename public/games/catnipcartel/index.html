@@ -69,7 +69,6 @@ const COPS=[
   {n:"Fellow Criminal",img:"fellowcrim",e:"👮",pay:0,pt:3.2,line:"we're both criminals here haha... right?",cop:true},
   {n:"Receipt Guy",img:"receiptguy",e:"🥸",pay:0,pt:3.2,line:"do you take card? for uh, evidence.",cop:true},
 ];
-const RANKS=[[0,"Alley Kitten 🐱"],[150,"Suspicious Tabby 😼"],[350,"Catnip Associate 💼"],[650,"Degen Distributor 💸"],[1100,"Leopard-Robe Kingpin 👑"],[1800,"Exit-Liquidity El Chapo 🐆"]];
 const CHARGES=["selling oregano without a license","possession of excessive hopium","running an unlicensed taco front","criminal misuse of anime branding","laundering cash through snacks","wearing Bitcoin glasses with intent to deceive","weaponized hopium distribution"];
 
 const VW=540, VH=960;
@@ -90,7 +89,9 @@ const Sound=(()=>{
   return {
     resume(){ ensure(); if(actx.state==='suspended') actx.resume(); },
     startMusic(){ ensureBgm(); bgm.muted=muted; const p=bgm.play(); if(p&&p.catch) p.catch(()=>{}); },
-    restartMusic(){ ensureBgm(); bgm.muted=muted; try{bgm.currentTime=0;}catch(e){} const p=bgm.play(); if(p&&p.catch) p.catch(()=>{}); },
+    restartMusic(){ ensureBgm(); bgm.muted=muted; try{ bgm.pause(); bgm.currentTime=0; }catch(e){}
+      const go=()=>{ try{bgm.currentTime=0;}catch(e){} const p=bgm.play(); if(p&&p.catch) p.catch(()=>{}); };
+      if(bgm.readyState>=2) go(); else bgm.addEventListener('canplay',go,{once:true}); go(); },
     stopMusic(){ if(bgm) bgm.pause(); },
     setMuted(m){ muted=m; if(bgm) bgm.muted=m; }, isMuted(){ return muted; },
     cash(){ tone(740,0.05,'square',0.4); setTimeout(()=>tone(1100,0.1,'square',0.35),50); setTimeout(()=>tone(520,0.12,'sine',0.25),120); },
@@ -124,19 +125,21 @@ addEventListener('keydown',e=>{ if(state==='title'){ if(e.code==='Space'){ Sound
 let state='title', last=0, elapsed=0, timeLeft=60;
 let money, heat, streak, served, copsFooled, bestStreak, highHeat;
 let cust, phase, mode, resultT, resultTxt, resultCol, gapT;
-let evt, evtT, evtName, floaters, spectators, busted, charge, endTitle, lastEvtT;
+let evt, evtT, evtName, floaters, spectators, busted, charge, lastEvtT;
 let shake=0, copScratch=0, warnT=0;
-let fbiActive=false, fb={}, phoneUsed=false, lastFbi=-99, bribesLeft=2;
-let jimSch=[], jimIdx=0, jimT=0, jimAmt=0;
+let fbiActive=false, fb={}, phoneUsed=false, fbiSch=[], fbiIdx=0;
+let jimSch=[], jimIdx=0, jimT=0, jimAmt=0, mimicSch=[], mimicIdx=0;
 let bt={}, mb={}, endBtns={}, titleBtns={};
 
 function reset(){
   elapsed=0; timeLeft=CONFIG.RUN_SECONDS; money=0; heat=0; streak=0; served=0; copsFooled=0; bestStreak=0; highHeat=0;
   cust=null; phase='gap'; mode='normal'; gapT=0.4; resultT=0; resultTxt=''; resultCol='#16c784';
-  evt=null; evtT=0; evtName=''; lastEvtT=6; floaters=[]; busted=false; charge=''; endTitle=''; warnT=0;
+  evt=null; evtT=0; evtName=''; lastEvtT=6; floaters=[]; busted=false; charge=''; warnT=0;
   spectators=Array.from({length:4},(_,i)=>({x:44+i*150,e:['🧍','🧎','🐀','🧍‍♂️'][i],ph:Math.random()*6}));
-  shake=0; copScratch=0; fbiActive=false; phoneUsed=false; lastFbi=-99; jimT=0; bribesLeft=2;
+  shake=0; copScratch=0; fbiActive=false; phoneUsed=false; jimT=0;
+  fbiSch=[12+Math.random()*14, 36+Math.random()*16]; fbiIdx=0;   // FBI raid pops up at most twice
   jimSch=[15+Math.random()*15, 30+Math.random()*15]; jimIdx=0;   // ~2 strikes, in 15-30s & 30-45s
+  mimicSch=[10+Math.random()*20]; if(Math.random()<0.6) mimicSch.push(40+Math.random()*20); mimicIdx=0;  // 1st mimic @10-30s, optional 2nd @40-60s
 }
 function startGame(){ reset(); state='play'; Sound.restartMusic(); }
 
@@ -145,12 +148,11 @@ function payMult(){ return evt==='bull'?1.8 : evt==='influencer'?1.5 : evt==='be
 function pushWin(){ return heat>=5?0.50 : heat>=4?0.65 : 0.80; }
 
 function pickCustomer(){ let tot=0; for(const c of CUSTOMERS) tot+=(c.w||1); let r=Math.random()*tot; for(const c of CUSTOMERS){ r-=(c.w||1); if(r<=0) return c; } return CUSTOMERS[0]; }
-function spawnEncounter(){
+function spawnEncounter(forceMimic){
   const copChance=0.10+heat*0.05;
-  const mimicChance=(heat>=2?0.10:0.03)+heat*0.02;
-  const r=Math.random(); let arch, mimic=false;
-  if(r<mimicChance){ arch=Object.assign({},pickCustomer()); mimic=true; }
-  else if(r<mimicChance+copChance){ arch=COPS[Math.floor(Math.random()*COPS.length)]; }
+  let arch, mimic=false;
+  if(forceMimic){ arch=Object.assign({},pickCustomer()); mimic=true; }
+  else if(Math.random()<copChance){ arch=COPS[Math.floor(Math.random()*COPS.length)]; }
   else arch=pickCustomer();
   const prod=PRODUCTS[Math.floor(Math.random()*PRODUCTS.length)];
   cust={arch,prod,pt:(arch.pt||3),maxpt:(arch.pt||3),x:VW+160,cop:!!arch.cop,mimic}; phase='wait'; mode=mimic?'mimic':'normal';
@@ -187,8 +189,8 @@ function pushIt(){ if(state!=='play'||fbiActive||phase!=='wait'||!arrived()||cus
   Sound.cash(); buzz(25); floaters.push({x:VW/2,y:VH*0.30,txt:'🎲 +$'+pay+'!',c:'#f9c80e',life:1.3});
   resolve('🔥 BIG DEAL PAID OFF! '+p.fx,'#f9c80e');
 }
-function mimicBribe(){ if(state!=='play'||fbiActive||phase!=='wait'||!arrived()||!cust.mimic||bribesLeft<=0) return;
-  bribesLeft--; const cost=Math.max(50,Math.round(money*0.25)); money=Math.max(0,money-cost); streak=0; heat=Math.max(0,heat-0.4);
+function mimicBribe(){ if(state!=='play'||fbiActive||phase!=='wait'||!arrived()||!cust.mimic) return;
+  const cost=Math.max(50,Math.round(money*0.25)); money=Math.max(0,money-cost); streak=0; heat=Math.max(0,heat-0.4);
   Sound.dodge(); floaters.push({x:VW/2,y:VH*0.34,txt:'-$'+cost+' 🤝',c:'#4de1ff',life:1.2});
   resolve('you slip them cash. they vanish. 🫡','#4de1ff');
 }
@@ -197,10 +199,10 @@ function mimicRisk(){ if(state!=='play'||fbiActive||phase!=='wait'||!arrived()||
     floaters.push({x:VW/2,y:VH*0.34,txt:'GOT AWAY +$'+bonus,c:'#16c784',life:1.2}); resolve('you called their bluff. 😎','#16c784'); }
   else { resolve('🚔 IT WAS A COP! BUSTED!','#ea3943'); floaters.push({x:VW/2,y:VH*0.34,txt:'🚨 STING',c:'#ea3943',life:1.1}); Sound.bust(); busted=true; setTimeout(()=>doBust(),500); }
 }
-function startFBI(){ fbiActive=true; lastFbi=elapsed; cust=null; phase='gap'; Sound.siren(); buzz([40,60,40]); shake=8; }
+function startFBI(){ fbiActive=true; cust=null; phase='gap'; Sound.siren(); buzz([40,60,40]); shake=8; }
 function endFBI(){ fbiActive=false; phase='gap'; gapT=0.5; }
 function fbiPhone(){ if(!fbiActive||phoneUsed) return; phoneUsed=true; heat=Math.max(0,heat-3); Sound.dodge(); floaters.push({x:VW/2,y:VH*0.5,txt:'📞 SAVED!',c:'#16c784',life:1.3}); resolve('a friend pulls up. you slip out back. 😤','#16c784'); endFBI(); }
-function fbiBribe(){ if(!fbiActive||bribesLeft<=0) return; bribesLeft--; const cost=Math.max(100,Math.round(money*0.30)); money=Math.max(0,money-cost); heat=Math.max(0,heat-2); Sound.dodge(); floaters.push({x:VW/2,y:VH*0.5,txt:'-$'+cost+' 💸',c:'#4de1ff',life:1.3}); resolve('you buy your way out. 🫡','#4de1ff'); endFBI(); }
+function fbiBribe(){ if(!fbiActive) return; const cost=Math.max(100,Math.round(money*0.30)); money=Math.max(0,money-cost); heat=Math.max(0,heat-2); Sound.dodge(); floaters.push({x:VW/2,y:VH*0.5,txt:'-$'+cost+' 💸',c:'#4de1ff',life:1.3}); resolve('you buy your way out. 🫡','#4de1ff'); endFBI(); }
 function fbiRun(){ if(!fbiActive) return; Sound.gamble(); if(Math.random()<0.5){ heat=Math.max(0,heat-3); streak=0; floaters.push({x:VW/2,y:VH*0.5,txt:'🏃 ESCAPED!',c:'#16c784',life:1.3}); resolve('you sprint down the alley. 😤','#16c784'); endFBI(); }
   else { fbiActive=false; resolve('🚔 THEY GOT YOU!','#ea3943'); Sound.bust(); busted=true; setTimeout(()=>doBust(),500); } }
 
@@ -209,13 +211,12 @@ function jimothyStrike(){ const steal=Math.max(10,Math.round(money*0.22)); money
 function resolve(txt,col){ resultTxt=txt; resultCol=col; phase='result'; resultT=0.95; if(cust) cust.leaving=true; highHeat=Math.max(highHeat,heat); }
 function customerTimeout(){ streak=0; Sound.nope(); resolve(cust.cop?'the cop wanders off... 🚶':(cust.mimic?'they got suspicious and left. 👀':'"is the cat frozen??" they bail. 💤'),'#9fb3c8'); }
 
-function rank(){ let r=RANKS[0][1]; for(const x of RANKS) if(money>=x[0]) r=x[1]; return r; }
 function doBust(){ busted=true; charge=CHARGES[Math.floor(Math.random()*CHARGES.length)]; state='over'; Sound.stopMusic(); }
 function doSurvive(){ busted=false; state='over'; Sound.stopMusic(); Sound.win(); }
 
 function shareText(){ const url=CONFIG.SITE_URL; const paws='🐾'.repeat(Math.max(1,Math.round(highHeat)));
-  if(busted) return `I ran the CATNIP CARTEL 🐱🚔\n\nBusted for ${charge} — moved $${money} of definitely-legal product first though 💨\nWanted level: ${paws}\nSlang that catnip 👇\n\n${url}`;
-  return `I ran the CATNIP CARTEL 🐱💰\n\nMoved $${money} of definitely-legal product to ${served} degens 💨\nWanted level: ${paws}\nSlang that catnip 👇\n\n${url}`; }
+  if(busted) return `I got caught by the police 😿\n\nBusted for $${money} of definitely legal product 💨\n\nWanted level: ${paws}\n\nSlang that catnip 👇\n\n${url}`;
+  return `I ran the CATNIP CARTEL 🐱💰\n\n$${money} of definitely-legal product to ${served} degens 💨\n\nWanted level: ${paws}\n\nSlang that catnip 👇\n\n${url}`; }
 function shareURL(){ return 'https://twitter.com/intent/tweet?text='+encodeURIComponent(shareText()); }
 function shareNow(){ const webUrl=shareURL();
   if(isTouch){ const appUrl='twitter://post?message='+encodeURIComponent(shareText()); let opened=false; const onHide=()=>{opened=true;};
@@ -246,7 +247,10 @@ function update(dt){
 
   if(phase==='wait' && cust){ if(cust.x>VW*0.5) cust.x+=(VW*0.5-cust.x)*Math.min(1,dt*6); else { cust.x=VW*0.5; cust.pt-=dt; if(cust.pt<=0) customerTimeout(); } }
   else if(phase==='result'){ resultT-=dt; if(cust) cust.x+=440*dt; if(resultT<=0 && !busted){ cust=null; phase='gap'; gapT=0.22; } }
-  else if(phase==='gap'){ gapT-=dt; if(gapT<=0){ if(elapsed>12 && elapsed-lastFbi>10 && Math.random()<(0.05+heat*0.012)) startFBI(); else spawnEncounter(); } }
+  else if(phase==='gap'){ gapT-=dt; if(gapT<=0){
+      if(fbiIdx<fbiSch.length && elapsed>=fbiSch[fbiIdx]){ fbiIdx++; startFBI(); }
+      else if(mimicIdx<mimicSch.length && elapsed>=mimicSch[mimicIdx]){ mimicIdx++; spawnEncounter(true); }
+      else spawnEncounter(false); } }
 }
 
 /* ---------------- Draw helpers ---------------- */
@@ -299,7 +303,6 @@ function drawHUD(){
   ctx.textAlign='center'; ctx.fillStyle='#16c784'; ctx.font='900 56px '+F; ctx.fillText('$'+money,VW/2,58);
   ctx.textAlign='right'; ctx.fillStyle='#fff'; ctx.font='900 34px '+F; ctx.fillText(Math.ceil(timeLeft)+'s',VW-16,42);
   ctx.textAlign='left'; ctx.font='900 15px '+F; ctx.fillStyle=phoneUsed?'#555':'#4de1ff'; ctx.fillText(phoneUsed?'📞 used':'📞 1 call',16,42);
-  ctx.fillStyle=bribesLeft>0?'#f9c80e':'#555'; ctx.fillText('💸 x'+bribesLeft,16,62);
   ctx.textAlign='center'; ctx.fillStyle='#ff6a6a'; ctx.font='900 16px '+F; ctx.fillText('🚨 WANTED 🚨',VW/2,92);
   const base=30, spd=200-heat*22, pulse=1+(heat/CONFIG.HEAT_MAX)*0.55*Math.abs(Math.sin(performance.now()/spd));
   for(let i=0;i<CONFIG.HEAT_MAX;i++){ const on=i<Math.ceil(heat); const sc=on?pulse:1; const sz=Math.round(base*sc);
@@ -308,7 +311,9 @@ function drawHUD(){
     ctx.fillText(big?'🚨 ALMOST BUSTED — LAY LOW! 🚨':'🚨 COPS CIRCLING — LAY LOW 🚬',VW/2,158); }
   if(streak>=2){ ctx.fillStyle='#f9c80e'; ctx.font='900 18px '+F; ctx.fillText('🔥 STREAK x'+streak+'  ·  '+streakMult().toFixed(1)+'x cash',VW/2,VH*0.28); }
   if(evt){ ctx.fillStyle='rgba(0,0,0,0.55)'; ctx.fillRect(0,VH*0.185,VW,34); ctx.fillStyle='#f9c80e'; ctx.font='900 18px '+F; ctx.fillText(evtName,VW/2,VH*0.185+24); }
-  if(phase==='result'){ ctx.fillStyle=resultCol; ctx.font='900 22px '+F; ctx.fillText(resultTxt,VW/2,VH*0.52); }
+  if(phase==='result'){ ctx.font='900 22px '+F; ctx.textAlign='center'; const tw=Math.min(VW-24,ctx.measureText(resultTxt).width); const by=VH*0.44;
+    ctx.fillStyle='rgba(6,6,16,0.85)'; rr(VW/2-tw/2-16,by-25,tw+32,38,10); ctx.fill(); ctx.strokeStyle=resultCol; ctx.lineWidth=2; rr(VW/2-tw/2-16,by-25,tw+32,38,10); ctx.stroke();
+    ctx.fillStyle=resultCol; ctx.fillText(resultTxt,VW/2,by); }
   floaters.forEach(f=>{ ctx.globalAlpha=Math.min(1,f.life); ctx.fillStyle=f.c; ctx.font='900 34px '+F; ctx.textAlign='center'; ctx.fillText(f.txt,f.x,f.y); }); ctx.globalAlpha=1;
 }
 function drawBtn(b,fill,stroke,label,sub,glow){ if(glow){ ctx.save(); ctx.shadowColor=stroke; ctx.shadowBlur=18+8*Math.sin(performance.now()/150); } ctx.fillStyle=fill; rr(b.x,b.y,b.w,b.h,12); ctx.fill(); ctx.strokeStyle=stroke; ctx.lineWidth=4; rr(b.x,b.y,b.w,b.h,12); ctx.stroke(); if(glow) ctx.restore();
@@ -316,11 +321,9 @@ function drawBtn(b,fill,stroke,label,sub,glow){ if(glow){ ctx.save(); ctx.shadow
 function drawButtons(){
   if(cust && cust.mimic && phase==='wait'){
     const cost=Math.max(50,Math.round(money*0.25));
-    if(bribesLeft>0){ mb.bribe={x:16,y:VH-236,w:VW-32,h:100}; mb.risk={x:16,y:VH-124,w:VW-32,h:100};
-      drawBtn(mb.bribe,'rgba(77,225,255,0.26)','#4de1ff','💸 BRIBE  -$'+cost,'bail out safe · '+bribesLeft+' bribe'+(bribesLeft>1?'s':'')+' left');
-      drawBtn(mb.risk,'rgba(249,200,14,0.26)','#f9c80e','🎲 RISK IT  (50/50)','run for it — get away or BUSTED',true);
-    } else { mb.bribe=null; mb.risk={x:16,y:VH-236,w:VW-32,h:212};
-      drawBtn(mb.risk,'rgba(249,200,14,0.26)','#f9c80e','🎲 RISK IT  (50/50)','no bribes left — go for it!',true); }
+    mb.bribe={x:16,y:VH-236,w:VW-32,h:100}; mb.risk={x:16,y:VH-124,w:VW-32,h:100};
+    drawBtn(mb.bribe,'rgba(77,225,255,0.26)','#4de1ff','💸 BRIBE  -$'+cost,'bail out safe · keep hustling');
+    drawBtn(mb.risk,'rgba(249,200,14,0.26)','#f9c80e','🎲 RISK IT  (50/50)','run for it — get away or BUSTED',true);
     bt={}; return;
   }
   const showPush = heat>=3 && phase==='wait' && cust && !cust.mimic;
@@ -341,7 +344,7 @@ function drawFBI(){
   ctx.fillStyle='#fff'; ctx.font='900 20px '+F; ctx.fillText('they kicked in the door. move NOW.',VW/2,VH*0.475);
   const cost=Math.max(100,Math.round(money*0.30)); let y=VH*0.53; const bw=VW-56;
   if(!phoneUsed){ fb.phone={x:28,y:y,w:bw,h:84}; drawBtn(fb.phone,'rgba(22,199,132,0.3)','#16c784','📞 PHONE A FRIEND','1 per run · escape + keep cash',true); y+=98; } else fb.phone=null;
-  if(bribesLeft>0){ fb.bribe={x:28,y:y,w:bw,h:84}; drawBtn(fb.bribe,'rgba(77,225,255,0.26)','#4de1ff','💸 BRIBE -$'+cost,'guaranteed escape · '+bribesLeft+' left'); y+=98; } else fb.bribe=null;
+  fb.bribe={x:28,y:y,w:bw,h:84}; drawBtn(fb.bribe,'rgba(77,225,255,0.26)','#4de1ff','💸 BRIBE -$'+cost,'guaranteed escape'); y+=98;
   fb.run={x:28,y:y,w:bw,h:84}; drawBtn(fb.run,'rgba(234,57,67,0.30)','#ea3943','🏃 MAKE A RUN (50/50)','free — but you might get caught',true);
 }
 function drawJimothy(){ if(jimT<=0) return; const a=Math.min(1,jimT*1.6); ctx.save(); ctx.globalAlpha=a;
@@ -366,7 +369,8 @@ function drawTitle(){ drawAlley();
   ctx.globalAlpha=fl; ctx.fillStyle='#f9c80e'; ctx.font='900 64px '+F; ctx.fillText('CATNIP',VW/2,78);
   ctx.shadowColor='#16c784'; ctx.fillStyle='#16c784'; ctx.font='900 64px '+F; ctx.fillText('CARTEL',VW/2,140);
   ctx.restore();
-  drawFace(VW/2,300,236,{img:'dealer'},'#f9c80e');
+  const cbob=Math.sin(performance.now()/560)*5;
+  drawFace(VW/2,300+cbob,236,{img:'dealer'},'#f9c80e');
   titleBtns.mint={x:36,y:452,w:VW-72,h:54}; ctaBtn(titleBtns.mint,'rgba(249,200,14,0.28)','#f9c80e','🐱 CUTIE KITTIES — FREE MINT LIVE',20,true);
   ctx.fillStyle='rgba(10,10,26,0.82)'; rr(36,528,VW-72,186,14); ctx.fill(); ctx.strokeStyle='#16c784'; ctx.lineWidth=2; rr(36,528,VW-72,186,14); ctx.stroke();
   ctx.textAlign='center'; ctx.font='900 19px '+F; let ly=566;
