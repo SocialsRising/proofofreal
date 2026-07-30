@@ -74,7 +74,10 @@
 
   #result{display:none;width:100%}
   .rtitle{font-family:'Bungee',cursive;font-size:clamp(18px,4.6vw,24px);text-align:center;color:#fff;text-shadow:0 0 18px rgba(47,107,255,.6);line-height:1.25;margin-bottom:4px}
-  .rhandle{text-align:center;color:var(--base2);font-weight:800;margin-bottom:14px;font-size:15px}
+  .rhandle{text-align:center;color:var(--base2);font-weight:800;margin-bottom:6px;font-size:15px}
+  .catmood{text-align:center;font-weight:800;font-size:13px;color:var(--gold);margin-bottom:14px}
+  .pop{animation:popin .5s ease}
+  @keyframes popin{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
   .mod{background:#0a1022;border:1px solid var(--line);border-radius:16px;padding:17px 18px;margin-top:12px}
   .mod .hd{display:flex;align-items:center;gap:10px;margin-bottom:7px}
   .mod .ic{font-size:26px}
@@ -137,6 +140,7 @@
     <div class="card">
       <div class="rtitle">😼 THE HIGH AF CAT HAS<br/>READ YOUR FORTUNE</div>
       <div class="rhandle" id="rHandle"></div>
+      <div class="catmood" id="catmood"></div>
       <div id="mods"></div>
 
       <div class="drop" id="drop">📷 Add your PFP to the fortune card (optional)</div>
@@ -183,7 +187,7 @@
 const CONFIG = {
   siteUrl:"https://proofofreal.app/social/catpsychic",
   handle:"@mememaxxers",
-  opensea:"https://opensea.io/collection/cutie-cartel/overview",   // Cutie Cartel FREE mint
+  opensea:"https://opensea.io/collection/cutie-kitties-5000/overview",   // Cutie Cartel FREE mint
   jpegjokers:"https://opensea.io/collection/jpeg-jokers", // original JPEG Jokers collection
   quant:"https://flap.sh/robinhood/0xa9aa99d0e567de50c006243ceb1c09a98f707777"
 };
@@ -196,6 +200,9 @@ const LOADING = [
   "The cat got distracted by a laser pointer…","Rolling your cat-paw luck charm…","Aligning your bad karma for transfer…",
   "The cat needs a snack. Please hold…","Finalizing your cursed fortune…"
 ];
+const MOODS=["Blazed beyond the veil ☁️","Hangry and holding","Nine espressos deep","Running on Base Ramen","Enlightened and broke",
+  "Emotionally leveraged","Purring at a loss","Down bad, high hopes","Manifesting a green candle","One nap from ascension",
+  "Spiritually overallocated","Vibing in the trenches","Aped $QUANT, no regrets","Too high to sell","Licking a wound and a chart"];
 
 /* ============================================================ LIBRARIES (expanded for timeline variety) */
 const PASTLIVES=[
@@ -436,6 +443,8 @@ function buildReading(){
 function showResult(){
   document.getElementById("result").style.display="block";
   document.getElementById("rHandle").textContent=handle;
+  document.getElementById("catmood").textContent="😼 The cat is currently: "+pick(MOODS);
+  const rc=document.querySelector("#result .card"); if(rc){rc.classList.remove("pop");void rc.offsetWidth;rc.classList.add("pop");}
   const r=reading;
   document.getElementById("mods").innerHTML=
     mod("🕰️","Your Past Life",r.pastLife,"")+
