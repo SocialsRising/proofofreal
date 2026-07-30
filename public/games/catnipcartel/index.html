@@ -124,7 +124,7 @@ addEventListener('keydown',e=>{ if(state==='title'){ if(e.code==='Space'){ Sound
 /* ---------------- State ---------------- */
 let state='title', last=0, elapsed=0, timeLeft=60;
 let money, heat, streak, served, copsFooled, bestStreak, highHeat;
-let cust, phase, mode, resultT, resultTxt, resultCol, gapT;
+let cust, phase, resultT, resultTxt, resultCol, gapT;
 let evt, evtT, evtName, floaters, spectators, busted, charge, lastEvtT;
 let shake=0, copScratch=0, warnT=0;
 let fbiActive=false, fb={}, phoneUsed=false, fbiSch=[], fbiIdx=0;
@@ -133,7 +133,7 @@ let bt={}, mb={}, endBtns={}, titleBtns={};
 
 function reset(){
   elapsed=0; timeLeft=CONFIG.RUN_SECONDS; money=0; heat=0; streak=0; served=0; copsFooled=0; bestStreak=0; highHeat=0;
-  cust=null; phase='gap'; mode='normal'; gapT=0.4; resultT=0; resultTxt=''; resultCol='#16c784';
+  cust=null; phase='gap'; gapT=0.4; resultT=0; resultTxt=''; resultCol='#16c784';
   evt=null; evtT=0; evtName=''; lastEvtT=6; floaters=[]; busted=false; charge=''; warnT=0;
   spectators=Array.from({length:4},(_,i)=>({x:44+i*150,e:['🧍','🧎','🐀','🧍‍♂️'][i],ph:Math.random()*6}));
   shake=0; copScratch=0; fbiActive=false; phoneUsed=false; jimT=0;
@@ -155,7 +155,7 @@ function spawnEncounter(forceMimic){
   else if(Math.random()<copChance){ arch=COPS[Math.floor(Math.random()*COPS.length)]; }
   else arch=pickCustomer();
   const prod=PRODUCTS[Math.floor(Math.random()*PRODUCTS.length)];
-  cust={arch,prod,pt:(arch.pt||3),maxpt:(arch.pt||3),x:VW+160,cop:!!arch.cop,mimic}; phase='wait'; mode=mimic?'mimic':'normal';
+  cust={arch,prod,pt:(arch.pt||3),maxpt:(arch.pt||3),x:VW+160,cop:!!arch.cop,mimic}; phase='wait';
   if(arch.cop){ Sound.scratch(); copScratch=0.5; }
 }
 
@@ -215,8 +215,8 @@ function doBust(){ busted=true; charge=CHARGES[Math.floor(Math.random()*CHARGES.
 function doSurvive(){ busted=false; state='over'; Sound.stopMusic(); Sound.win(); }
 
 function shareText(){ const url=CONFIG.SITE_URL; const paws='🐾'.repeat(Math.max(1,Math.round(highHeat)));
-  if(busted) return `I got caught by the police 😿\n\nBusted for $${money} of definitely legal product 💨\n\nWanted level: ${paws}\n\nSlang that catnip 👇\n\n${url}`;
-  return `I ran the CATNIP CARTEL 🐱💰\n\n$${money} of definitely-legal product to ${served} degens 💨\n\nWanted level: ${paws}\n\nSlang that catnip 👇\n\n${url}`; }
+  if(busted) return `I got caught by the police 😿\n\nBusted for $${money} of product 💨\n\nWanted level: ${paws}\n\nSlang that @mememaxxers catnip 👇\n\n${url}`;
+  return `I ran the CATNIP CARTEL 🐱💰\n\n$${money} of product to ${served} degens 💨\n\nWanted level: ${paws}\n\nSlang that @mememaxxers catnip 👇\n\n${url}`; }
 function shareURL(){ return 'https://twitter.com/intent/tweet?text='+encodeURIComponent(shareText()); }
 function shareNow(){ const webUrl=shareURL();
   if(isTouch){ const appUrl='twitter://post?message='+encodeURIComponent(shareText()); let opened=false; const onHide=()=>{opened=true;};
