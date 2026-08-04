@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Hold My JPEGs — Leaderboard · Meme Maxxers</title>
-<meta name="description" content="The Hold My JPEGs competition leaderboard. Hold your JPEGs, climb the ranks, split the $3,000 prize pool." />
+<title>Hold My JPEGs — Leaderboard</title>
+<meta name="description" content="The Hold My JPEGs competition leaderboard. Diamond hand NFTs, sweep new projects, and make memes to rank higher. $3,000+ prize pool." />
 <meta property="og:type" content="website" />
 <meta property="og:site_name" content="proofofreal" />
 <meta property="og:title" content="🏆 Hold My JPEGs — Leaderboard" />
-<meta property="og:description" content="16 teams. $3,000 pool. Hold your JPEGs, climb the ranks, split the pool. Where do you rank?" />
+<meta property="og:description" content="16 teams. $3,000+ pool. Diamond hand NFTs, sweep new projects, make memes to rank higher." />
 <meta property="og:url" content="https://proofofreal.app/social/holdmyjpegs" />
 <meta property="og:image" content="https://proofofreal.app/social/holdmyjpegs/og-image.png" />
 <meta property="og:image:width" content="1200" />
@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:site" content="@mememaxxers" />
 <meta name="twitter:title" content="🏆 Hold My JPEGs — Leaderboard" />
-<meta name="twitter:description" content="16 teams · $3,000 pool. Hold your JPEGs, climb the ranks, split the pool." />
+<meta name="twitter:description" content="16 teams · $3,000+ pool. Diamond hand NFTs, sweep, and meme to climb." />
 <meta name="twitter:image" content="https://proofofreal.app/social/holdmyjpegs/og-image.png" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -31,140 +31,111 @@
     background:radial-gradient(1100px 640px at 50% -8%, rgba(163,102,255,.24), transparent 60%),
       radial-gradient(800px 520px at 90% 108%, rgba(255,210,77,.08), transparent 55%), var(--bg);
     -webkit-font-smoothing:antialiased;overflow-x:hidden}
-  .wrap{max-width:640px;margin:0 auto;padding:26px 16px 60px}
+  .wrap{max-width:660px;margin:0 auto;padding:28px 16px 60px}
   .head{text-align:center;margin-bottom:12px}
-  .kick{font-family:'Oswald',sans-serif;font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--gold)}
-  h1{font-family:'Oswald',sans-serif;font-weight:700;font-size:clamp(30px,8vw,50px);line-height:1;margin:6px 0 0;color:#fff;
-    text-shadow:0 0 24px rgba(163,102,255,.55)}
-  .sub{color:var(--ash);font-size:14px;margin:10px auto 0;max-width:440px;line-height:1.5}
+  h1{font-family:'Oswald',sans-serif;font-weight:700;font-size:clamp(34px,9vw,58px);line-height:1;margin:0;color:#fff;
+    text-shadow:0 0 26px rgba(163,102,255,.6)}
+  .sub{color:#c9bff0;font-size:14.5px;margin:12px auto 0;max-width:460px;line-height:1.55}
 
-  .stats{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:16px 0 6px}
-  .stat{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:11px 15px;text-align:center;min-width:104px}
-  .stat .n{font-family:'Oswald',sans-serif;font-weight:700;font-size:22px;line-height:1}
+  .stats{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:18px 0 4px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:12px 16px;text-align:center;min-width:106px}
+  .stat .n{font-family:'Oswald',sans-serif;font-weight:700;font-size:23px;line-height:1}
   .stat .n.money{color:var(--green)}
   .stat .l{font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ash);margin-top:3px}
   .cd{text-align:center;color:var(--gold);font-weight:800;font-size:13px;margin-top:6px;font-family:'Oswald',sans-serif;letter-spacing:.04em}
 
-  .join{display:block;text-align:center;margin:14px auto 0;max-width:420px;font-family:'Oswald',sans-serif;font-weight:700;font-size:16px;letter-spacing:.03em;
-    background:linear-gradient(120deg,var(--gold),#ff9e2c);color:#241400;text-decoration:none;padding:15px;border-radius:14px;box-shadow:0 12px 30px rgba(255,210,77,.28)}
-  .join:hover{filter:brightness(1.06)}
+  /* prize breakdown (above board) */
+  .prizebox{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;background:var(--panel);border:1px solid rgba(255,210,77,.28);
+    border-radius:16px;padding:16px 18px;margin-top:18px}
+  .prizebox .ptitle{grid-column:span 1;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:2px}
+  .pcol{display:flex;flex-direction:column;gap:7px}
+  .prow{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;gap:10px}
+  .prow span{color:#d8cff0}
+  .prow b{color:var(--green);white-space:nowrap;font-size:13px}
+  .prow .p1 span{color:#fff;font-weight:800}
+  .poolnote{margin-top:10px;font-size:12px;color:var(--ash);text-align:center;line-height:1.5}
+  .poolnote b{color:var(--gold)}
 
-  .startbanner{background:linear-gradient(120deg,rgba(163,102,255,.16),rgba(255,210,77,.08));border:1px dashed rgba(255,210,77,.5);
-    border-radius:16px;padding:16px;text-align:center;margin:16px 0 4px;font-size:14px;line-height:1.55;color:#efeaff}
-  .startbanner b{color:var(--gold)}
-
-  .podium{display:grid;grid-template-columns:1fr 1.15fr 1fr;gap:8px;align-items:end;margin:16px 0 8px}
+  /* podium */
+  .podium{display:grid;grid-template-columns:1fr 1.18fr 1fr;gap:8px;align-items:end;margin:16px 0 8px}
   .pod{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:14px 8px;text-align:center}
   .pod.first{border-color:rgba(255,210,77,.6);box-shadow:0 0 30px rgba(255,210,77,.2);padding-top:20px}
-  .pod .medal{font-size:26px}
-  .pod .pfp{width:60px;height:60px;border-radius:50%;margin:6px auto 6px;object-fit:cover;display:block;border:2px solid var(--line)}
-  .pod.first .pfp{width:74px;height:74px;border-color:var(--gold)}
-  .pod .nm{font-weight:800;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .pod .sc{font-family:'Oswald',sans-serif;font-size:16px;color:#fff;margin-top:2px}
+  .pod .medal{font-size:28px}
+  .pod .pfp{width:86px;height:86px;border-radius:50%;margin:8px auto 8px;object-fit:cover;display:block;border:3px solid var(--line)}
+  .pod.first .pfp{width:104px;height:104px;border-color:var(--gold)}
+  .pod .nm{font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .pod .sc{font-family:'Oswald',sans-serif;font-size:17px;color:#fff;margin-top:2px}
   .pod .pz{font-size:12px;color:var(--green);font-weight:800;margin-top:3px}
 
-  .search{width:100%;background:#0d0a1c;border:1px solid var(--line);color:#fff;padding:13px 15px;border-radius:12px;font-family:inherit;font-size:15px;margin:12px 0}
-  .search:focus{outline:none;border-color:var(--purple)}
-
-  .board{display:flex;flex-direction:column;gap:8px}
-  .rowh{display:grid;grid-template-columns:44px 1fr auto auto;gap:10px;align-items:center;padding:4px 14px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ash)}
-  .row{display:grid;grid-template-columns:44px 1fr auto auto;gap:10px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:11px 14px}
-  .row.me{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple) inset}
-  .row .rk{font-family:'Oswald',sans-serif;font-weight:700;font-size:18px;text-align:center;color:var(--ash)}
-  .row .who{display:flex;align-items:center;gap:11px;min-width:0}
-  .row .pfp{width:40px;height:40px;border-radius:50%;object-fit:cover;flex:0 0 auto;border:1px solid var(--line)}
-  .row .av{border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-weight:800;color:#0a0812;font-size:16px}
-  .row .nm{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .row .sc{font-family:'Oswald',sans-serif;font-weight:700;font-size:17px;text-align:right}
+  .board{display:flex;flex-direction:column;gap:9px;margin-top:6px}
+  .rowh{display:grid;grid-template-columns:46px 1fr auto auto;gap:12px;align-items:center;padding:2px 16px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ash)}
+  .row{display:grid;grid-template-columns:46px 1fr auto auto;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:12px 16px}
+  .row.top1{border-color:rgba(255,210,77,.5)}
+  .row .rk{font-family:'Oswald',sans-serif;font-weight:700;font-size:20px;text-align:center;color:var(--ash)}
+  .row .who{display:flex;align-items:center;gap:13px;min-width:0}
+  .row .pfp{border-radius:50%;object-fit:cover;flex:0 0 auto;border:2px solid var(--line)}
+  .row .av{border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-weight:800;color:#0a0812}
+  .row .nm{font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .row .sc{font-family:'Oswald',sans-serif;font-weight:700;font-size:18px;text-align:right}
   .row .pz{text-align:right;min-width:92px}
   .row .pz .pct{font-weight:800;font-size:13px;color:var(--gold)}
   .row .pz .usd{font-size:12px;color:var(--green);font-weight:700}
   .row .pz .none{color:var(--ash);font-size:13px}
   .row .pz .tbd{color:var(--ash);font-size:12px;font-weight:700;letter-spacing:.06em}
-  .empty{text-align:center;color:var(--ash);padding:20px;font-size:14px}
 
-  .legend{margin-top:16px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
-  .legend summary{cursor:pointer;font-family:'Oswald',sans-serif;font-size:13px;letter-spacing:.06em;color:var(--gold);text-transform:uppercase}
-  .legend .grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;font-size:12.5px;color:#ded5ff}
-  .legend .grid b{color:var(--green)}
-
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;font-family:inherit;font-weight:800;cursor:pointer;border:none;
-    border-radius:13px;text-decoration:none;width:100%;padding:15px;transition:filter .12s}
-  .btn-x{background:#000;color:#fff;border:1px solid #2a2a3a;font-size:16px;margin-top:16px}
-  .btn-x:hover{filter:brightness(1.15)}
-  .links{display:flex;flex-direction:column;gap:10px;margin-top:12px}
-  .links a{text-align:center;font-weight:800;font-size:15px;color:#fff;text-decoration:none;background:var(--panel2);border:1px solid var(--line);padding:14px;border-radius:13px}
+  .links{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+  .links a{text-align:center;font-weight:800;font-size:15px;color:#fff;text-decoration:none;background:var(--panel2);border:1px solid var(--line);padding:15px;border-radius:13px}
   .links a:hover{border-color:var(--gold)}
-  .footer{text-align:center;color:var(--ash);font-size:12px;margin-top:18px;line-height:1.6}
+  .footer{text-align:center;color:var(--ash);font-size:12px;margin-top:18px}
   .footer b{color:var(--ink)}
-  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000;border:1px solid var(--purple);color:#fff;
-    padding:13px 20px;border-radius:11px;font-size:14px;font-weight:700;z-index:50;opacity:0;transition:opacity .2s;pointer-events:none}
-  .toast.show{opacity:1}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="head">
-    <div class="kick">Meme Maxxers · Competition</div>
     <h1>HOLD MY JPEGS</h1>
-    <p class="sub">Hold your JPEGs, climb the ranks, split the pool. Rankings update daily.</p>
+    <p class="sub">Diamond hand NFTs, sweep new projects, and make memes to rank higher.</p>
     <div class="stats">
       <div class="stat"><div class="n money" id="poolStat">$3,000</div><div class="l">Prize Pool</div></div>
       <div class="stat"><div class="n" id="playersStat">0</div><div class="l">Teams</div></div>
       <div class="stat"><div class="n" id="updatedStat">—</div><div class="l">Updated</div></div>
     </div>
     <div class="cd" id="cd"></div>
-    <a class="join" id="joinBtn" href="#" target="_blank" rel="noopener">🎯 Earn points — bounties in Discord</a>
   </div>
 
-  <div class="startbanner" id="startbanner"></div>
+  <div class="prizebox">
+    <div class="ptitle">Top 5</div>
+    <div class="ptitle">Runners-up</div>
+    <div class="pcol" id="prizeLeft"></div>
+    <div class="pcol" id="prizeRight"></div>
+  </div>
+  <div class="poolnote">💰 The prize pool <b>grows daily</b> — from sponsors, $QUANT + JPEG Joker trading fees, and game-perk purchases.</div>
+
   <div class="podium" id="podium" style="display:none"></div>
 
-  <input class="search" id="search" placeholder="🔍 Find your team…" autocomplete="off" />
-
-  <div class="rowh" id="rowh"><div>Rank</div><div>Team</div><div style="text-align:right">Score</div><div style="text-align:right">Prize</div></div>
+  <div class="rowh"><div>Rank</div><div>Team</div><div style="text-align:right">Score</div><div style="text-align:right">Prize</div></div>
   <div class="board" id="board"></div>
 
-  <details class="legend">
-    <summary>💰 Prize breakdown ($3,000 pool)</summary>
-    <div class="grid">
-      <div>🥇 1st — <b>20% · ~$600</b></div><div>🥈 2nd — <b>15% · ~$450</b></div>
-      <div>🥉 3rd — <b>10% · ~$300</b></div><div>4th — <b>7.5% · ~$225</b></div>
-      <div>5th — <b>5% · ~$150</b></div><div>6th–10th — <b>3% · ~$90 ea</b></div>
-      <div>11th–25th — <b>1% · ~$30 ea</b></div><div>26th–50th — <b>0.5% · ~$15 ea</b></div>
-    </div>
-  </details>
-
-  <a class="btn btn-x" id="xbtn" target="_blank" rel="noopener" onclick="shareBoard()">Share the board on X</a>
-
   <div class="links">
-    <a href="https://opensea.io/collection/jpeg-jokers" target="_blank" rel="noopener">🌊  JPEG Jokers on OpenSea</a>
+    <a href="https://opensea.io/collection/jpeg-jokers" target="_blank" rel="noopener">🃏  JPEG Jokers on OpenSea</a>
     <a href="https://flap.sh/robinhood/0xa9aa99d0e567de50c006243ceb1c09a98f707777" target="_blank" rel="noopener">🪙  $QUANT token</a>
-    <a href="https://x.com/mememaxxers" target="_blank" rel="noopener">𝕏  Follow @mememaxxers</a>
-    <a href="https://discord.gg/krVPuyksQy" target="_blank" rel="noopener">💬  Join our Discord Community</a>
+    <a href="https://x.com/mememaxxers" target="_blank" rel="noopener">𝕏  Follow mememaxxers</a>
+    <a href="https://discord.gg/krVPuyksQy" target="_blank" rel="noopener">💬  Bounties in Discord</a>
   </div>
 
-  <div class="footer">powered by <b>Meme Maxxers</b> · Hold My JPEGs · prizes update daily</div>
+  <div class="footer">powered by <b>Meme Maxxers AI Agents</b></div>
 </div>
-<div class="toast" id="toast"></div>
 
 <script>
-/* ============================================================
-   CONFIG — update pool + date daily
-   ============================================================ */
+/* ============================================================ CONFIG — update pool + date daily */
 const CONFIG = {
-  siteUrl:"https://proofofreal.app/social/holdmyjpegs",
   prizePool: 3000,
-  updated: "Aug 4",              // <-- date shown as "Updated"
-  endsISO: "",                   // <-- optional countdown end (blank = hidden)
-  joinUrl: "https://discord.gg/krVPuyksQy",
+  updated: "Aug 4",
+  endsISO: "",
   pfpBase: "pfps/"
 };
 
-/* ============================================================
-   TEAMS — paste the daily sheet here (name + score). PFPs in pfps/teamN.jpg.
-   Ranks, %, and $ auto-calculate once scores are above 0.
-   ============================================================ */
+/* ============================================================ TEAMS — name + score (PFPs in pfps/teamN.jpg) */
 let PLAYERS = [
   {name:"The Crew", score:0, pfp:"team1.jpg"},
   {name:"Aziat_Dikiy", score:0, pfp:"team2.jpg"},
@@ -198,29 +169,34 @@ function hashHue(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>
 function esc(s){return (s||"").replace(/'/g,"\\'");}
 function initialAvHTML(name,size){
   const hue=hashHue(name);
-  return '<div class="av" style="width:'+size+'px;height:'+size+'px;background:linear-gradient(135deg,hsl('+hue+',70%,62%),hsl('+((hue+40)%360)+',70%,48%))">'+
+  return '<div class="av" style="width:'+size+'px;height:'+size+'px;font-size:'+Math.round(size*0.42)+'px;background:linear-gradient(135deg,hsl('+hue+',70%,62%),hsl('+((hue+40)%360)+',70%,48%))">'+
     (name.replace(/^@/,"")[0]||"?").toUpperCase()+'</div>';
 }
 function avatar(p,size){
-  const cls=size>=60?"pfp":"pfp";
-  if(p.pfp){return '<img class="'+cls+'" style="width:'+size+'px;height:'+size+'px" src="'+CONFIG.pfpBase+p.pfp+'" alt="" onerror="this.replaceWith(makeAv(\''+esc(p.name)+'\','+size+'))" />';}
-  return initialAvHTML(name0(p),size);
+  if(p.pfp){return '<img class="pfp" style="width:'+size+'px;height:'+size+'px" src="'+CONFIG.pfpBase+p.pfp+'" alt="" onerror="this.replaceWith(makeAv(\''+esc(p.name)+'\','+size+'))" />';}
+  return initialAvHTML(p.name,size);
 }
-function name0(p){return p.name;}
 function makeAv(name,size){const t=document.createElement("template");t.innerHTML=initialAvHTML(name,size);return t.content.firstChild;}
+
+/* ============================================================ PRIZE BOX */
+function renderPrizes(){
+  const L=document.getElementById("prizeLeft"), Rr=document.getElementById("prizeRight");
+  const names={1:"🥇 1st",2:"🥈 2nd",3:"🥉 3rd",4:"4th",5:"5th"};
+  L.innerHTML=[1,2,3,4,5].map(r=>'<div class="prow'+(r===1?' p1':'')+'"><span>'+names[r]+'</span><b>'+tierPct(r)+'% · ~'+fmt(usd(r))+'</b></div>').join("");
+  Rr.innerHTML=
+    '<div class="prow"><span>6th–10th</span><b>3% · ~'+fmt(usd(6))+' ea</b></div>'+
+    '<div class="prow"><span>11th–25th</span><b>1% · ~'+fmt(usd(11))+' ea</b></div>'+
+    '<div class="prow"><span>26th–50th</span><b>0.5% · ~'+fmt(usd(26))+' ea</b></div>';
+}
 
 /* ============================================================ RENDER */
 function ranked(){ return PLAYERS.slice().sort((a,b)=>b.score-a.score).map((p,i)=>({...p,rank:i+1})); }
-function render(filter){
+function render(){
   const all=ranked();
   const started = all.length>0 && all[0].score>0;
   document.getElementById("playersStat").textContent=all.length;
   document.getElementById("poolStat").textContent=fmt(CONFIG.prizePool);
   document.getElementById("updatedStat").textContent=CONFIG.updated||new Date().toLocaleDateString(undefined,{month:"short",day:"numeric"});
-
-  const banner=document.getElementById("startbanner");
-  banner.style.display=started?"none":"block";
-  if(!started) banner.innerHTML="🏁 <b>Day 1 — the starting line.</b> All "+all.length+" teams begin at 0. First points drop soon. Find your team, share the board, and start climbing. 🧗";
 
   const pod=document.getElementById("podium");
   pod.style.display=started?"grid":"none";
@@ -228,30 +204,25 @@ function render(filter){
     pod.innerHTML="";const order=[all[1],all[0],all[2]];const medals={1:"🥇",2:"🥈",3:"🥉"};
     order.forEach(p=>{ if(!p)return;
       const d=document.createElement("div");d.className="pod"+(p.rank===1?" first":"");
-      d.innerHTML='<div class="medal">'+medals[p.rank]+'</div>'+avatar(p,p.rank===1?74:60)+
+      d.innerHTML='<div class="medal">'+medals[p.rank]+'</div>'+avatar(p,p.rank===1?104:86)+
         '<div class="nm">'+p.name+'</div><div class="sc">'+p.score.toLocaleString()+'</div>'+
         '<div class="pz">'+tierPct(p.rank)+'% · ~'+fmt(usd(p.rank))+'</div>';
       pod.appendChild(d);
     });
   }
 
-  const q=(filter||"").trim().toLowerCase();
   const list = started ? all : PLAYERS.slice().sort((a,b)=>a.name.localeCompare(b.name)).map(p=>({...p,rank:null}));
   const board=document.getElementById("board");board.innerHTML="";
-  let shown=0;
   list.forEach(p=>{
-    if(q && !p.name.toLowerCase().includes(q)) return;
-    shown++;
-    const row=document.createElement("div");row.className="row"+(q&&p.name.toLowerCase()===q?" me":"");
+    const row=document.createElement("div");row.className="row"+(started&&p.rank===1?" top1":"");
     const rk = started ? (p.rank<=3?["","🥇","🥈","🥉"][p.rank]:("#"+p.rank)) : "—";
     let pz;
     if(started){const pct=tierPct(p.rank);pz = pct>0?('<div class="pct">'+pct+'%</div><div class="usd">~'+fmt(usd(p.rank))+'</div>'):'<span class="none">—</span>';}
     else pz='<span class="tbd">TBD</span>';
-    row.innerHTML='<div class="rk">'+rk+'</div><div class="who">'+avatar(p,40)+'<span class="nm">'+p.name+'</span></div>'+
+    row.innerHTML='<div class="rk">'+rk+'</div><div class="who">'+avatar(p,56)+'<span class="nm">'+p.name+'</span></div>'+
       '<div class="sc">'+p.score.toLocaleString()+'</div><div class="pz">'+pz+'</div>';
     board.appendChild(row);
   });
-  if(shown===0){const e=document.createElement("div");e.className="empty";e.textContent="No team found — check the spelling 👀";board.appendChild(e);}
 }
 
 /* ============================================================ COUNTDOWN */
@@ -259,23 +230,12 @@ function tickCd(){
   const el=document.getElementById("cd");
   if(!CONFIG.endsISO){el.textContent="";return;}
   const t=new Date(CONFIG.endsISO).getTime()-Date.now();
-  if(isNaN(t)){el.textContent="";return;}
-  if(t<=0){el.textContent="⏳ Competition ended";return;}
+  if(isNaN(t)||t<=0){el.textContent=isNaN(t)?"":"⏳ Competition ended";return;}
   const d=Math.floor(t/864e5),h=Math.floor(t/36e5)%24,m=Math.floor(t/6e4)%60;
   el.textContent="⏳ Ends in "+d+"d "+h+"h "+m+"m";
 }
 
-/* ============================================================ SHARE */
-function shareBoard(){
-  const all=ranked();
-  const txt="🏆 The HOLD MY JPEGS leaderboard is LIVE 🃏\n\n"+all.length+" teams battling for a "+fmt(CONFIG.prizePool)+" pool.\n\nHold your JPEGs, climb the ranks, split the pool. Find your team 👇 @mememaxxers\n\n";
-  document.getElementById("xbtn").href="https://twitter.com/intent/tweet?text="+encodeURIComponent(txt)+"&url="+encodeURIComponent(CONFIG.siteUrl);
-}
-let toastTimer;function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2600);}
-
-document.getElementById("joinBtn").href=CONFIG.joinUrl;
-document.getElementById("search").addEventListener("input",e=>render(e.target.value));
-render("");shareBoard();tickCd();setInterval(tickCd,30000);
+renderPrizes();render();tickCd();setInterval(tickCd,30000);
 </script>
 </body>
 </html>
