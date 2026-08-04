@@ -47,7 +47,10 @@
   /* prize breakdown (above board) */
   .prizebox{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;background:var(--panel);border:1px solid rgba(255,210,77,.28);
     border-radius:16px;padding:16px 18px;margin-top:18px}
-  .prizebox .ptitle{grid-column:span 1;font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-bottom:2px}
+  .prizebox .ptitle{grid-column:1/-1;text-align:center;font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold);margin-bottom:8px}
+  .sectlabel{display:flex;align-items:center;gap:14px;margin:26px 2px 14px;color:var(--ash);font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.26em;text-transform:uppercase}
+  .sectlabel span{color:#efe9ff}
+  .sectlabel:before,.sectlabel:after{content:"";height:1px;flex:1;background:linear-gradient(90deg,transparent,var(--line),transparent)}
   .pcol{display:flex;flex-direction:column;gap:7px}
   .prow{display:flex;justify-content:space-between;align-items:baseline;font-size:13.5px;gap:10px}
   .prow span{color:#d8cff0}
@@ -75,8 +78,8 @@
   .row .who{display:flex;align-items:center;gap:13px;min-width:0}
   .row .pfp{border-radius:50%;object-fit:cover;flex:0 0 auto;border:2px solid var(--line)}
   .row .av{border-radius:50%;flex:0 0 auto;display:grid;place-items:center;font-weight:800;color:#0a0812}
-  .row .nm{font-weight:800;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .row .sc{font-family:'Oswald',sans-serif;font-weight:700;font-size:18px;text-align:right}
+  .row .nm{font-weight:800;font-size:15px;line-height:1.18;white-space:normal;overflow-wrap:anywhere}
+  .row .sc{font-family:'Oswald',sans-serif;font-weight:700;font-size:18px;text-align:right;padding-left:6px}
   .row .pz{text-align:right;min-width:92px}
   .row .pz .pct{font-weight:800;font-size:13px;color:var(--gold)}
   .row .pz .usd{font-size:12px;color:var(--green);font-weight:700}
@@ -104,12 +107,13 @@
   </div>
 
   <div class="prizebox">
-    <div class="ptitle">Top 5</div>
-    <div class="ptitle">Runners-up</div>
+    <div class="ptitle">Prize Allocations</div>
     <div class="pcol" id="prizeLeft"></div>
     <div class="pcol" id="prizeRight"></div>
   </div>
   <div class="poolnote">💰 The prize pool <b>grows daily</b> — from sponsors, $QUANT + JPEG Joker trading fees, and game-perk purchases.</div>
+
+  <div class="sectlabel"><span>Leaderboard</span></div>
 
   <div class="podium" id="podium" style="display:none"></div>
 
