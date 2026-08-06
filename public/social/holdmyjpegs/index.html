@@ -59,6 +59,24 @@
   .prow .p1 span{color:#fff;font-weight:800}
   .poolnote{margin-top:10px;font-size:12px;color:var(--ash);text-align:center;line-height:1.5}
   .poolnote b{color:var(--gold)}
+  .pinfo{margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:15px 17px}
+  .pinfo summary{cursor:pointer;font-family:'Oswald',sans-serif;font-size:14px;letter-spacing:.05em;color:var(--gold);text-transform:uppercase;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:10px}
+  .pinfo summary::-webkit-details-marker{display:none}
+  .pinfo summary:after{content:"▾";color:var(--ash);transition:transform .2s;font-size:14px}
+  .pinfo[open] summary:after{transform:rotate(180deg)}
+  .pgroup{margin-top:16px}
+  .pgroup .gh{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:9px}
+  .pgroup .gh .gtitle{font-family:'Oswald',sans-serif;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:#e7dcff}
+  .pgroup .gh .gpts{font-family:'Oswald',sans-serif;font-weight:700;font-size:14px}
+  .pgroup .gh .glim{color:var(--ash);font-weight:600;font-size:11px}
+  .pitem{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(160,120,255,.09);font-size:14px}
+  .pitem:last-child{border-bottom:none}
+  .pitem a{color:#fff;text-decoration:none;font-weight:800;border-bottom:1px dashed rgba(255,210,77,.55)}
+  .pitem a:hover{color:var(--gold)}
+  .pitem .pi-pts{color:var(--green);font-weight:800;white-space:nowrap}
+  .pitem .pi-lim{color:var(--ash);font-weight:600;font-size:11px}
+  .pchips{display:flex;flex-wrap:wrap;gap:7px}
+  .pchip{font-size:12.5px;font-weight:700;background:var(--panel2);border:1px solid var(--line);color:#e7dcff;padding:6px 12px;border-radius:99px}
 
   /* podium */
   .podium{display:grid;grid-template-columns:1fr 1.18fr 1fr;gap:8px;align-items:end;margin:16px 0 8px}
@@ -89,8 +107,9 @@
   .row .pz .none{color:var(--ash);font-size:13px}
   .row .pz .tbd{color:var(--ash);font-size:12px;font-weight:700;letter-spacing:.06em}
 
-  .links{display:flex;flex-direction:column;gap:10px;margin-top:20px}
-  .links a{text-align:center;font-weight:800;font-size:15px;color:#fff;text-decoration:none;background:var(--panel2);border:1px solid var(--line);padding:15px;border-radius:13px}
+  .links{display:flex;gap:10px;margin-top:22px}
+  .links a{flex:1 1 0;text-align:center;font-weight:800;font-size:15px;color:#fff;text-decoration:none;background:var(--panel2);border:1px solid var(--line);padding:15px;border-radius:13px;transition:border-color .12s,transform .12s}
+  .links a:hover{border-color:var(--gold);transform:translateY(-1px)}
   .links a:hover{border-color:var(--gold)}
   .footer{text-align:center;color:var(--ash);font-size:12px;margin-top:18px}
   .footer b{color:var(--ink)}
@@ -116,6 +135,12 @@
   </div>
   <div class="poolnote">💰 The prize pool <b>grows daily</b> — from sponsors, $QUANT + JPEG Joker trading fees, and game-perk purchases.</div>
 
+  <details class="pinfo">
+    <summary>📊 How to earn points — collections &amp; values</summary>
+    <div id="pointsBody"></div>
+    <div class="poolnote" style="margin-top:14px">Passive points update daily from your holdings across these collections + $QUANT. Tap a Special collection to view it on OpenSea.</div>
+  </details>
+
   <div class="sectlabel"><span>Leaderboard</span></div>
 
   <div class="podium" id="podium" style="display:none"></div>
@@ -124,8 +149,6 @@
   <div class="board" id="board"></div>
 
   <div class="links">
-    <a href="https://opensea.io/collection/jpeg-jokers" target="_blank" rel="noopener">🃏  JPEG Jokers on OpenSea</a>
-    <a href="https://flap.sh/robinhood/0xa9aa99d0e567de50c006243ceb1c09a98f707777" target="_blank" rel="noopener">🪙  $QUANT token</a>
     <a href="https://x.com/mememaxxers" target="_blank" rel="noopener">𝕏  Follow mememaxxers</a>
     <a href="https://discord.gg/krVPuyksQy" target="_blank" rel="noopener">💬  Bounties in Discord</a>
   </div>
@@ -137,48 +160,55 @@
 /* ============================================================ CONFIG — update pool + date daily */
 const CONFIG = {
   prizePool: 3200,
-  updated: "Aug 5",
+  updated: "Aug 6",
   endsISO: "",
   pfpBase: "pfps/"
 };
 
 /* ============================================================ TEAMS — name + score (PFPs in pfps/teamN.jpg) */
 let PLAYERS = [
-  {name:"The Crew", score:0, pfp:"team1.jpg"},
-  {name:"Aziat_Dikiy", score:0, pfp:"team2.jpg"},
-  {name:"Tradesgiving Turkeys", score:0, pfp:"team3.jpg"},
-  {name:"Aliens", score:0, pfp:"team4.jpg"},
-  {name:"Martingas", score:0, pfp:"team5.jpg"},
-  {name:"Crusaders", score:0, pfp:"team6.jpg"},
-  {name:"Quantum Joker", score:0, pfp:"team7.jpg"},
-  {name:"Glizzy Dominatrix", score:0, pfp:"team8.jpg"},
-  {name:"他妈的你妈妈", score:0, pfp:"team9.jpg"},
-  {name:"Asuka Mommy", score:0, pfp:"team10.jpg"},
-  {name:"Cesar's", score:0, pfp:"team11.jpg"},
-  {name:"Jolly Jokers", score:0, pfp:"team12.jpg"},
-  {name:"Metal-Heads", score:0, pfp:"team13.jpg"},
-  {name:"Komodo DAO 1", score:0, pfp:"team14.jpg"},
-  {name:"Jennie", score:0, pfp:"team15.jpg"},
-  {name:"Zaki", score:0, pfp:"team16.jpg"},
-  {name:"Akatsuki", score:0, pfp:"team17.jpg"},
-  {name:"Germaine", score:0, pfp:"team18.jpg"},
-  {name:"100010101001", score:0, pfp:"team19.jpg"},
-  {name:"GTA", score:0, pfp:"team20.jpg"},
-  {name:"Musketeers", score:0, pfp:"team21.jpg"},
-  {name:"The Wolves", score:0, pfp:"team22.jpg"},
-  {name:"Cosmic Raiders", score:0, pfp:"team23.jpg"},
-  {name:"Team Astro", score:0, pfp:"team24.jpg"},
-  {name:"Frankies", score:0, pfp:"team25.jpg"},
-  {name:"Gamblers", score:0, pfp:"team26.jpg"},
-  {name:"Bamboeskud", score:0, pfp:"team27.jpg"},
-  {name:"Darian", score:0, pfp:"team28.jpg"},
-  {name:"Zulvke", score:0, pfp:"team29.jpg"},
-  {name:"Team IQ", score:0, pfp:"team30.jpg"},
-  {name:"King of the JPEGs", score:0, pfp:"team31.jpg"},
-  {name:"Lucky Duckys", score:0, pfp:"team32.jpg"},
-  {name:"kimchi", score:0, pfp:"team33.jpg"},
-  {name:"DADDY", score:0, pfp:"team34.jpg"},
-  {name:"Ching", score:0, pfp:"team35.jpg"}
+  {name:"The Crew", score:1510000, pfp:"team1.jpg"},
+  {name:"Aziat_Dikiy", score:250000, pfp:"team2.jpg"},
+  {name:"Tradesgiving Turkeys", score:550000, pfp:"team3.jpg"},
+  {name:"Aliens", score:310000, pfp:"team4.jpg"},
+  {name:"Martingas", score:710000, pfp:"team5.jpg"},
+  {name:"Crusaders", score:590000, pfp:"team6.jpg"},
+  {name:"Quantum Joker", score:420000, pfp:"team7.jpg"},
+  {name:"Jolly Jokers", score:2050000, pfp:"team8.jpg"},
+  {name:"Metal-Heads", score:1590000, pfp:"team9.jpg"},
+  {name:"Bamboeskud", score:1030000, pfp:"team10.jpg"},
+  {name:"Darian", score:260000, pfp:"team11.jpg"},
+  {name:"Zulvke", score:1850000, pfp:"team12.jpg"},
+  {name:"Team IQ", score:800000, pfp:"team13.jpg"},
+  {name:"Zatch", score:220000, pfp:"team14.jpg"},
+  {name:"King of the JPEGs", score:1320000, pfp:"team15.jpg"},
+  {name:"Lucky Duckys", score:3000, pfp:"team16.jpg"},
+  {name:"kimchi", score:80000, pfp:"team17.jpg"},
+  {name:"DADDY", score:11000, pfp:"team18.jpg"},
+  {name:"Ching", score:80000, pfp:"team19.jpg"},
+  {name:"Neon Falcons", score:40000, pfp:"team20.jpg"},
+  {name:"Cherry on Top", score:20000, pfp:"team21.jpg"},
+  {name:"Team Saints", score:5000, pfp:"team22.jpg"},
+  {name:"Lakers", score:10000, pfp:"team23.jpg"},
+  {name:"Final Boss", score:630000, pfp:"team24.jpg"},
+  {name:"Glizzy Dominatrix", score:80000, pfp:"team25.jpg"},
+  {name:"他妈的你妈妈", score:150000, pfp:"team26.jpg"},
+  {name:"Asuka Mommy", score:110000, pfp:"team27.jpg"},
+  {name:"Cesar's", score:150000, pfp:"team28.jpg"},
+  {name:"Komodo DAO 1", score:1200000, pfp:"team29.jpg"},
+  {name:"Jennie", score:310000, pfp:"team30.jpg"},
+  {name:"Zaki", score:400000, pfp:"team31.jpg"},
+  {name:"Akatsuki", score:600000, pfp:"team32.jpg"},
+  {name:"Germaine", score:650000, pfp:"team33.jpg"},
+  {name:"100010101001", score:20000, pfp:"team34.jpg"},
+  {name:"GTA", score:225000, pfp:"team35.jpg"},
+  {name:"Musketeers", score:300000, pfp:"team36.jpg"},
+  {name:"The Wolves", score:1010000, pfp:"team37.jpg"},
+  {name:"Cosmic Raiders", score:1000000, pfp:"team38.jpg"},
+  {name:"Team Astro", score:600000, pfp:"team39.jpg"},
+  {name:"Frankies", score:50000, pfp:"team40.jpg"},
+  {name:"Gamblers", score:340000, pfp:"team41.jpg"},
+  {name:"DotStorm", score:2390000, pfp:"team42.jpg"}
 ];
 
 /* ============================================================ PRIZE TIERS */
@@ -189,6 +219,7 @@ function tierPct(rank){
 }
 function usd(rank){return Math.round(CONFIG.prizePool*tierPct(rank)/100);}
 function fmt(n){return "$"+Math.round(n).toLocaleString();}
+function fmtScore(n){if(n>=1e6)return (n/1e6).toFixed(2).replace(/\.?0+$/,'')+"M";if(n>=1e3)return Math.round(n/1e3)+"K";return String(n);}
 
 /* ============================================================ AVATARS */
 function hashHue(s){let h=0;for(let i=0;i<s.length;i++)h=(h*31+s.charCodeAt(i))>>>0;return h%360;}
@@ -231,7 +262,7 @@ function render(){
     order.forEach(p=>{ if(!p)return;
       const d=document.createElement("div");d.className="pod"+(p.rank===1?" first":"");
       d.innerHTML='<div class="medal">'+medals[p.rank]+'</div>'+avatar(p,p.rank===1?104:86)+
-        '<div class="nm">'+p.name+'</div><div class="sc">'+p.score.toLocaleString()+'</div>'+
+        '<div class="nm">'+p.name+'</div><div class="sc">'+fmtScore(p.score)+'</div>'+
         '<div class="pz">'+tierPct(p.rank)+'% · ~'+fmt(usd(p.rank))+'</div>';
       pod.appendChild(d);
     });
@@ -246,7 +277,7 @@ function render(){
     if(started){const pct=tierPct(p.rank);pz = pct>0?('<div class="pct">'+pct+'%</div><div class="usd">~'+fmt(usd(p.rank))+'</div>'):'<span class="none">—</span>';}
     else pz='<span class="tbd">TBD</span>';
     row.innerHTML='<div class="rk">'+rk+'</div><div class="who">'+avatar(p,56)+'<span class="nm">'+p.name+'</span></div>'+
-      '<div class="sc">'+p.score.toLocaleString()+'</div><div class="pz">'+pz+'</div>';
+      '<div class="sc">'+fmtScore(p.score)+'</div><div class="pz">'+pz+'</div>';
     board.appendChild(row);
   });
 }
@@ -261,7 +292,39 @@ function tickCd(){
   el.textContent="⏳ Ends in "+d+"d "+h+"h "+m+"m";
 }
 
-renderPrizes();render();tickCd();setInterval(tickCd,30000);
+/* ============================================================ POINTS INFO */
+const POINTS = {
+  special:[
+    ["Liz Labs","10,000","limit 25","https://opensea.io/collection/ethlizards"],
+    ["Sacred Waste","10,000","limit 25","https://opensea.io/collection/sw-prophets"],
+    ["JPEG Jokers","10,000","no limit","https://opensea.io/collection/jpeg-jokers"],
+    ["QUANT","10,000 / 1M","no limit","https://flap.sh/robinhood/0xa9aa99d0e567de50c006243ceb1c09a98f707777"],
+    ["Handsome Ansems","1,000","no limit","https://opensea.io/collection/handsome-ansems"],
+    ["Quantum Queens","1,000","no limit","https://opensea.io/collection/quantum-queens-8000"],
+    ["Cutie Kitties","1,000","no limit","https://opensea.io/collection/cutie-kitties-5000"]
+  ],
+  tiers:[
+    {pts:"100,000",lim:"max 3 each",c:"#ff5ecb",names:["Stonkbrokers","Pudgy Penguins","BAYC","Azuki"]},
+    {pts:"10,000",lim:"max 10 each",c:"#4d8bff",names:["GLHF","Gigaverse ROMs","Mortals","Good Vibes Club","Normies","Lil Pudgies"]},
+    {pts:"1,000",lim:"max 15 each",c:"#a366ff",names:["Green Acres","Gigaverse Giglings","Pyopyopyo","Pitboys","Onchain Hoodies","Onchain Heroes","Book Games","HVMTL Activated","Cash Cats"]}
+  ]
+};
+function renderPoints(){
+  let h='<div class="pgroup"><div class="gh"><span class="gtitle">⭐ Special — sponsors &amp; in-house</span></div>';
+  POINTS.special.forEach(s=>{
+    h+='<div class="pitem"><a href="'+s[3]+'" target="_blank" rel="noopener">'+s[0]+'</a>'+
+       '<span class="pi-pts">'+s[1]+' <span class="pi-lim">· '+s[2]+'</span></span></div>';
+  });
+  h+='</div>';
+  POINTS.tiers.forEach(t=>{
+    h+='<div class="pgroup"><div class="gh"><span class="gpts" style="color:'+t.c+'">'+t.pts+' pts / NFT</span>'+
+       '<span class="glim">'+t.lim+'</span></div><div class="pchips">'+
+       t.names.map(n=>'<span class="pchip">'+n+'</span>').join("")+'</div></div>';
+  });
+  document.getElementById("pointsBody").innerHTML=h;
+}
+
+renderPrizes();renderPoints();render();tickCd();setInterval(tickCd,30000);
 </script>
 </body>
 </html>
