@@ -77,6 +77,21 @@
   .pitem .pi-lim{color:var(--ash);font-weight:600;font-size:11px}
   .pchips{display:flex;flex-wrap:wrap;gap:7px}
   .pchip{font-size:12.5px;font-weight:700;background:var(--panel2);border:1px solid var(--line);color:#e7dcff;padding:6px 12px;border-radius:99px}
+  /* 24h limited quest */
+  .pi-name{display:flex;align-items:center;gap:7px;min-width:0}
+  .qtag{font-family:'Oswald',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.03em;color:#1a0d00;background:linear-gradient(90deg,#ffd24d,#ff8a3d);padding:2px 7px;border-radius:99px;white-space:nowrap}
+  .qbadge{font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#1a0d00;background:linear-gradient(90deg,#ffd24d,#ff8a3d);padding:3px 10px;border-radius:99px;white-space:nowrap;animation:qpulse 1.6s ease-in-out infinite}
+  @keyframes qpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,138,61,.55)}50%{box-shadow:0 0 15px 2px rgba(255,138,61,.8)}}
+  .quest{margin-top:16px;border-radius:14px;padding:14px 15px;background:linear-gradient(135deg,rgba(255,138,61,.17),rgba(255,80,90,.10));border:1px solid rgba(255,165,70,.55);position:relative;overflow:hidden}
+  .quest:before{content:"";position:absolute;inset:0;background:radial-gradient(140px 70px at 12% 0%,rgba(255,205,100,.28),transparent 70%);pointer-events:none}
+  .quest .qh{display:flex;align-items:center;gap:9px;flex-wrap:wrap;position:relative}
+  .quest .qtitle{font-family:'Oswald',sans-serif;font-weight:700;font-size:15px;letter-spacing:.05em;text-transform:uppercase;color:#ffb85c}
+  .quest .qsub{font-size:11.5px;color:#ffd9a8;font-weight:600;margin-top:6px;position:relative}
+  .quest .qrow{display:flex;gap:9px;flex-wrap:wrap;margin-top:12px;position:relative}
+  .qcard{flex:1 1 28%;min-width:92px;background:rgba(24,12,5,.5);border:1px solid rgba(255,165,70,.38);border-radius:11px;padding:10px 8px;text-align:center}
+  .qcard .qn{font-size:12px;font-weight:800;color:#fff;margin-bottom:5px}
+  .qcard .qv{font-family:'Oswald',sans-serif;font-weight:700;font-size:20px;color:#ffcf6e;line-height:1}
+  .qcard .qk{font-size:9.5px;color:#ffb267;font-weight:700;text-transform:uppercase;letter-spacing:.04em;margin-top:4px}
 
   /* podium */
   .podium{display:grid;grid-template-columns:1fr 1.18fr 1fr;gap:8px;align-items:end;margin:16px 0 8px}
@@ -136,7 +151,7 @@
   <div class="poolnote">💰 The prize pool <b>grows daily</b> — from sponsors, $QUANT + JPEG Joker trading fees, and game-perk purchases.</div>
 
   <details class="pinfo">
-    <summary>📊 How to earn points — collections &amp; values</summary>
+    <summary><span class="psum">📊 How to earn points — collections &amp; values <span class="qbadge">⚡ Quest live</span></span></summary>
     <div id="pointsBody"></div>
     <div class="poolnote" style="margin-top:14px">Passive points update daily from your holdings across these collections + $QUANT. Tap a Special collection to view it on OpenSea.</div>
   </details>
@@ -160,55 +175,59 @@
 /* ============================================================ CONFIG — update pool + date daily */
 const CONFIG = {
   prizePool: 3200,
-  updated: "Aug 6",
+  updated: "Aug 7",
   endsISO: "",
   pfpBase: "pfps/"
 };
 
 /* ============================================================ TEAMS — name + score (PFPs in pfps/teamN.jpg) */
 let PLAYERS = [
-  {name:"The Crew", score:1510000, pfp:"team1.jpg"},
-  {name:"Aziat_Dikiy", score:250000, pfp:"team2.jpg"},
-  {name:"Tradesgiving Turkeys", score:550000, pfp:"team3.jpg"},
-  {name:"Aliens", score:310000, pfp:"team4.jpg"},
-  {name:"Martingas", score:710000, pfp:"team5.jpg"},
-  {name:"Crusaders", score:590000, pfp:"team6.jpg"},
-  {name:"Quantum Joker", score:420000, pfp:"team7.jpg"},
-  {name:"Jolly Jokers", score:2050000, pfp:"team8.jpg"},
-  {name:"Metal-Heads", score:1590000, pfp:"team9.jpg"},
-  {name:"Bamboeskud", score:1030000, pfp:"team10.jpg"},
-  {name:"Darian", score:260000, pfp:"team11.jpg"},
-  {name:"Zulvke", score:1850000, pfp:"team12.jpg"},
-  {name:"Team IQ", score:800000, pfp:"team13.jpg"},
-  {name:"Zatch", score:220000, pfp:"team14.jpg"},
-  {name:"King of the JPEGs", score:1320000, pfp:"team15.jpg"},
-  {name:"Lucky Duckys", score:3000, pfp:"team16.jpg"},
-  {name:"kimchi", score:80000, pfp:"team17.jpg"},
-  {name:"DADDY", score:11000, pfp:"team18.jpg"},
-  {name:"Ching", score:80000, pfp:"team19.jpg"},
-  {name:"Neon Falcons", score:40000, pfp:"team20.jpg"},
-  {name:"Cherry on Top", score:20000, pfp:"team21.jpg"},
-  {name:"Team Saints", score:5000, pfp:"team22.jpg"},
-  {name:"Lakers", score:10000, pfp:"team23.jpg"},
-  {name:"Final Boss", score:630000, pfp:"team24.jpg"},
-  {name:"Glizzy Dominatrix", score:80000, pfp:"team25.jpg"},
-  {name:"他妈的你妈妈", score:150000, pfp:"team26.jpg"},
-  {name:"Asuka Mommy", score:110000, pfp:"team27.jpg"},
-  {name:"Cesar's", score:150000, pfp:"team28.jpg"},
-  {name:"Komodo DAO 1", score:1200000, pfp:"team29.jpg"},
-  {name:"Jennie", score:310000, pfp:"team30.jpg"},
-  {name:"Zaki", score:400000, pfp:"team31.jpg"},
-  {name:"Akatsuki", score:600000, pfp:"team32.jpg"},
-  {name:"Germaine", score:650000, pfp:"team33.jpg"},
-  {name:"100010101001", score:20000, pfp:"team34.jpg"},
-  {name:"GTA", score:225000, pfp:"team35.jpg"},
-  {name:"Musketeers", score:300000, pfp:"team36.jpg"},
-  {name:"The Wolves", score:1010000, pfp:"team37.jpg"},
-  {name:"Cosmic Raiders", score:1000000, pfp:"team38.jpg"},
-  {name:"Team Astro", score:600000, pfp:"team39.jpg"},
-  {name:"Frankies", score:50000, pfp:"team40.jpg"},
-  {name:"Gamblers", score:340000, pfp:"team41.jpg"},
-  {name:"DotStorm", score:2390000, pfp:"team42.jpg"}
+  {name:"The Crew", score:2780000, pfp:"team1.jpg"},
+  {name:"Aziat_Dikiy", score:460000, pfp:"team2.jpg"},
+  {name:"Tradesgiving Turkeys", score:1000000, pfp:"team3.jpg"},
+  {name:"Aliens", score:510000, pfp:"team4.jpg"},
+  {name:"Martingas", score:1150000, pfp:"team5.jpg"},
+  {name:"Crusaders", score:1700000, pfp:"team6.jpg"},
+  {name:"Quantum Joker", score:770000, pfp:"team7.jpg"},
+  {name:"Jolly Jokers", score:3310000, pfp:"team8.jpg"},
+  {name:"Metal-Heads", score:2690000, pfp:"team9.jpg"},
+  {name:"Bamboeskud", score:1960000, pfp:"team10.jpg"},
+  {name:"Darian", score:380000, pfp:"team11.jpg"},
+  {name:"Zulvke", score:3410000, pfp:"team12.jpg"},
+  {name:"Team IQ", score:1560000, pfp:"team13.jpg"},
+  {name:"King of the JPEGs", score:2620000, pfp:"team15.jpg"},
+  {name:"Lucky Duckys", score:6000, pfp:"team16.jpg"},
+  {name:"kimchi", score:170000, pfp:"team17.jpg"},
+  {name:"DADDY", score:30000, pfp:"team18.jpg"},
+  {name:"Ching", score:160000, pfp:"team19.jpg"},
+  {name:"Neon Falcons", score:80000, pfp:"team20.jpg"},
+  {name:"Cherry on Top", score:40000, pfp:"team21.jpg"},
+  {name:"Team Saints", score:15000, pfp:"team22.jpg"},
+  {name:"Lakers", score:70000, pfp:"team23.jpg"},
+  {name:"Final Boss", score:1300000, pfp:"team24.jpg"},
+  {name:"Glizzy Dominatrix", score:160000, pfp:"team25.jpg"},
+  {name:"他妈的你妈妈", score:300000, pfp:"team26.jpg"},
+  {name:"Asuka Mommy", score:220000, pfp:"team27.jpg"},
+  {name:"Cesar's", score:300000, pfp:"team28.jpg"},
+  {name:"Komodo DAO 1", score:2400000, pfp:"team29.jpg"},
+  {name:"Jennie", score:620000, pfp:"team30.jpg"},
+  {name:"Zaki", score:900000, pfp:"team31.jpg"},
+  {name:"Akatsuki", score:1200000, pfp:"team32.jpg"},
+  {name:"Germaine", score:1300000, pfp:"team33.jpg"},
+  {name:"100010101001", score:40000, pfp:"team34.jpg"},
+  {name:"GTA", score:450000, pfp:"team35.jpg"},
+  {name:"Musketeers", score:600000, pfp:"team36.jpg"},
+  {name:"The Wolves", score:2030000, pfp:"team37.jpg"},
+  {name:"Cosmic Raiders", score:2000000, pfp:"team38.jpg"},
+  {name:"Team Astro", score:1200000, pfp:"team39.jpg"},
+  {name:"Frankies", score:100000, pfp:"team40.jpg"},
+  {name:"Gamblers", score:700000, pfp:"team41.jpg"},
+  {name:"DotStorm", score:3890000, pfp:"team42.jpg"},
+  {name:"Mcozzy", score:150000, pfp:"team43.jpg"},
+  {name:"505", score:130000, pfp:"team44.jpg"},
+  {name:"BBL LATINAS", score:30000, pfp:"team45.jpg"},
+  {name:"Poland Penguins", score:120000, pfp:"team46.jpg"},
+  {name:"Squid", score:10000, pfp:"team47.jpg"}
 ];
 
 /* ============================================================ PRIZE TIERS */
@@ -309,10 +328,29 @@ const POINTS = {
     {pts:"1,000",lim:"max 15 each",c:"#a366ff",names:["Green Acres","Gigaverse Giglings","Pyopyopyo","Pitboys","Onchain Hoodies","Onchain Heroes","Book Games","HVMTL Activated","Cash Cats"]}
   ]
 };
+const QUEST = {
+  active:true,
+  boosted:["JPEG Jokers","QUANT"],   // rows that get the ⚡2× tag
+  items:[
+    ["🃏 JPEG Jokers","20,000","2× boost"],
+    ["🪙 QUANT","20,000","2× boost"],
+    ["🧹 Each Sweep","60,000","limited"]
+  ]
+};
 function renderPoints(){
-  let h='<div class="pgroup"><div class="gh"><span class="gtitle">⭐ Special — sponsors &amp; in-house</span></div>';
+  let h='';
+  if(QUEST.active){
+    h+='<div class="quest"><div class="qh"><span class="qtitle">⚡ 24-Hour Limited Quest</span><span class="qbadge">Live now</span></div>'+
+       '<div class="qsub">Boosted values for the next 24 hours only — stack these before the clock runs out.</div>'+
+       '<div class="qrow">'+
+       QUEST.items.map(q=>'<div class="qcard"><div class="qn">'+q[0]+'</div><div class="qv">'+q[1]+'</div><div class="qk">'+q[2]+'</div></div>').join('')+
+       '</div></div>';
+  }
+  h+='<div class="pgroup"><div class="gh"><span class="gtitle">⭐ Special — sponsors &amp; in-house</span></div>';
   POINTS.special.forEach(s=>{
-    h+='<div class="pitem"><a href="'+s[3]+'" target="_blank" rel="noopener">'+s[0]+'</a>'+
+    const boost = QUEST.active && QUEST.boosted.indexOf(s[0])>-1;
+    h+='<div class="pitem"><span class="pi-name"><a href="'+s[3]+'" target="_blank" rel="noopener">'+s[0]+'</a>'+
+       (boost?'<span class="qtag">⚡2×</span>':'')+'</span>'+
        '<span class="pi-pts">'+s[1]+' <span class="pi-lim">· '+s[2]+'</span></span></div>';
   });
   h+='</div>';
