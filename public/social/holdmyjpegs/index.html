@@ -107,7 +107,7 @@
   .board{display:flex;flex-direction:column;gap:9px;margin-top:6px}
   .rowh{display:grid;grid-template-columns:46px 1fr auto auto;gap:12px;align-items:center;padding:2px 16px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ash)}
   .row{display:grid;grid-template-columns:46px 1fr auto auto;gap:12px;align-items:center;background:var(--panel);border:1px solid var(--line);border-radius:15px;padding:12px 16px}
-  .row.top1{border-color:rgba(255,210,77,.5)}
+  .row.top1{border-color:rgba(255,210,77,.6);background:linear-gradient(90deg,rgba(255,210,77,.09),var(--panel) 60%);box-shadow:0 0 18px rgba(255,210,77,.14)}
   .row{transition:border-color .12s,transform .12s}
   .row:hover{border-color:rgba(163,102,255,.45);transform:translateX(2px)}
   .row .rk{font-family:'Oswald',sans-serif;font-weight:700;font-size:20px;text-align:center;color:var(--ash)}
@@ -125,7 +125,6 @@
   .links{display:flex;gap:10px;margin-top:22px}
   .links a{flex:1 1 0;text-align:center;font-weight:800;font-size:15px;color:#fff;text-decoration:none;background:var(--panel2);border:1px solid var(--line);padding:15px;border-radius:13px;transition:border-color .12s,transform .12s}
   .links a:hover{border-color:var(--gold);transform:translateY(-1px)}
-  .links a:hover{border-color:var(--gold)}
   .footer{text-align:center;color:var(--ash);font-size:12px;margin-top:18px}
   .footer b{color:var(--ink)}
 </style>
@@ -174,65 +173,70 @@
 <script>
 /* ============================================================ CONFIG — update pool + date daily */
 const CONFIG = {
-  prizePool: 3400,
-  updated: "Aug 8",
+  prizePool: 3800,
+  updated: "Aug 9",
   endsISO: "",
   pfpBase: "pfps/"
 };
 
 /* ============================================================ TEAMS — name + score (PFPs in pfps/teamN.jpg) */
 let PLAYERS = [
-  {name:"The Crew", score:3740000, pfp:"team1.jpg"},
-  {name:"Aziat_Dikiy", score:590000, pfp:"team2.jpg"},
-  {name:"Tradesgiving Turkeys", score:1300000, pfp:"team3.jpg"},
-  {name:"Aliens", score:690000, pfp:"team4.jpg"},
-  {name:"Martingas", score:1560000, pfp:"team5.jpg"},
-  {name:"Crusaders", score:2990000, pfp:"team6.jpg"},
-  {name:"Quantum Joker", score:1130000, pfp:"team7.jpg"},
-  {name:"Jolly Jokers", score:5130000, pfp:"team8.jpg"},
-  {name:"Metal-Heads", score:3570000, pfp:"team9.jpg"},
-  {name:"Bamboeskud", score:2890000, pfp:"team10.jpg"},
-  {name:"Darian", score:530000, pfp:"team11.jpg"},
-  {name:"Zulvke", score:5110000, pfp:"team12.jpg"},
-  {name:"Team IQ", score:2080000, pfp:"team13.jpg"},
-  {name:"King of the JPEGs", score:3520000, pfp:"team15.jpg"},
-  {name:"Lucky Duckys", score:15000, pfp:"team16.jpg"},
-  {name:"kimchi", score:340000, pfp:"team17.jpg"},
-  {name:"DADDY", score:80000, pfp:"team18.jpg"},
-  {name:"Ching", score:345000, pfp:"team19.jpg"},
-  {name:"Neon Falcons", score:170000, pfp:"team20.jpg"},
-  {name:"Cherry on Top", score:90000, pfp:"team21.jpg"},
-  {name:"Team Saints", score:30000, pfp:"team22.jpg"},
-  {name:"Lakers", score:140000, pfp:"team23.jpg"},
-  {name:"Final Boss", score:1900000, pfp:"team24.jpg"},
-  {name:"Glizzy Dominatrix", score:250000, pfp:"team25.jpg"},
-  {name:"他妈的你妈妈", score:440000, pfp:"team26.jpg"},
-  {name:"Asuka Mommy", score:310000, pfp:"team27.jpg"},
-  {name:"Cesar's", score:450000, pfp:"team28.jpg"},
-  {name:"Komodo DAO 1", score:3600000, pfp:"team29.jpg"},
-  {name:"Jennie", score:900000, pfp:"team30.jpg"},
-  {name:"Zaki", score:1300000, pfp:"team31.jpg"},
-  {name:"Akatsuki", score:1800000, pfp:"team32.jpg"},
-  {name:"Germaine", score:1950000, pfp:"team33.jpg"},
-  {name:"100010101001", score:60000, pfp:"team34.jpg"},
-  {name:"GTA", score:670000, pfp:"team35.jpg"},
-  {name:"Musketeers", score:850000, pfp:"team36.jpg"},
-  {name:"The Wolves", score:3100000, pfp:"team37.jpg"},
-  {name:"Cosmic Raiders", score:3000000, pfp:"team38.jpg"},
-  {name:"Team Astro", score:1600000, pfp:"team39.jpg"},
-  {name:"Frankies", score:150000, pfp:"team40.jpg"},
-  {name:"Gamblers", score:700000, pfp:"team41.jpg"},
-  {name:"DotStorm", score:5780000, pfp:"team42.jpg"},
-  {name:"Mcozzy", score:190000, pfp:"team43.jpg"},
-  {name:"505", score:270000, pfp:"team44.jpg"},
-  {name:"BBL LATINAS", score:110000, pfp:"team45.jpg"},
-  {name:"Poland Penguins", score:250000, pfp:"team46.jpg"},
-  {name:"Squid", score:20000, pfp:"team47.jpg"},
-  {name:"The King of Gotham City", score:200000, pfp:"team48.jpg"},
-  {name:"Lizzos", score:300000, pfp:"team49.jpg"},
-  {name:"Berserk", score:150000, pfp:"team50.jpg"},
-  {name:"Tom Ho Yeah", score:60000, pfp:"team51.jpg"},
-  {name:"Seven", score:450000, pfp:"team52.jpg"}
+  {name:"The Crew", score:6400000, pfp:"team1.jpg"},
+  {name:"Aziat_Dikiy", score:720000, pfp:"team2.jpg"},
+  {name:"Tradesgiving Turkeys", score:1700000, pfp:"team3.jpg"},
+  {name:"Aliens", score:900000, pfp:"team4.jpg"},
+  {name:"Martingas", score:2300000, pfp:"team5.jpg"},
+  {name:"Crusaders", score:4690000, pfp:"team6.jpg"},
+  {name:"Quantum Joker", score:1600000, pfp:"team7.jpg"},
+  {name:"Jolly Jokers", score:7050000, pfp:"team8.jpg"},
+  {name:"Metal-Heads", score:5390000, pfp:"team9.jpg"},
+  {name:"Bamboeskud", score:4290000, pfp:"team10.jpg"},
+  {name:"Darian", score:630000, pfp:"team11.jpg"},
+  {name:"Zulvke", score:6810000, pfp:"team12.jpg"},
+  {name:"Team IQ", score:4190000, pfp:"team13.jpg"},
+  {name:"King of the JPEGs", score:4100000, pfp:"team15.jpg"},
+  {name:"Lucky Duckys", score:20000, pfp:"team16.jpg"},
+  {name:"kimchi", score:450000, pfp:"team17.jpg"},
+  {name:"DADDY", score:120000, pfp:"team18.jpg"},
+  {name:"Ching", score:450000, pfp:"team19.jpg"},
+  {name:"Neon Falcons", score:230000, pfp:"team20.jpg"},
+  {name:"Cherry on Top", score:120000, pfp:"team21.jpg"},
+  {name:"Team Saints", score:45000, pfp:"team22.jpg"},
+  {name:"Lakers", score:160000, pfp:"team23.jpg"},
+  {name:"Final Boss", score:2600000, pfp:"team24.jpg"},
+  {name:"Glizzy Dominatrix", score:200000, pfp:"team25.jpg"},
+  {name:"他妈的你妈妈", score:480000, pfp:"team26.jpg"},
+  {name:"Asuka Mommy", score:420000, pfp:"team27.jpg"},
+  {name:"Cesar's", score:600000, pfp:"team28.jpg"},
+  {name:"Komodo DAO 1", score:4800000, pfp:"team29.jpg"},
+  {name:"Jennie", score:1200000, pfp:"team30.jpg"},
+  {name:"Zaki", score:1650000, pfp:"team31.jpg"},
+  {name:"Akatsuki", score:2300000, pfp:"team32.jpg"},
+  {name:"Germaine", score:2650000, pfp:"team33.jpg"},
+  {name:"100010101001", score:90000, pfp:"team34.jpg"},
+  {name:"GTA", score:900000, pfp:"team35.jpg"},
+  {name:"Musketeers", score:1100000, pfp:"team36.jpg"},
+  {name:"The Wolves", score:4000000, pfp:"team37.jpg"},
+  {name:"Cosmic Raiders", score:3800000, pfp:"team38.jpg"},
+  {name:"Team Astro", score:2100000, pfp:"team39.jpg"},
+  {name:"Frankies", score:200000, pfp:"team40.jpg"},
+  {name:"Gamblers", score:900000, pfp:"team41.jpg"},
+  {name:"DotStorm", score:8010000, pfp:"team42.jpg"},
+  {name:"Mcozzy", score:230000, pfp:"team43.jpg"},
+  {name:"505", score:360000, pfp:"team44.jpg"},
+  {name:"BBL LATINAS", score:130000, pfp:"team45.jpg"},
+  {name:"Poland Penguins", score:450000, pfp:"team46.jpg"},
+  {name:"Squid", score:60000, pfp:"team47.jpg"},
+  {name:"The King of Gotham City", score:480000, pfp:"team48.jpg"},
+  {name:"Lizzos", score:450000, pfp:"team49.jpg"},
+  {name:"Berserk", score:220000, pfp:"team50.jpg"},
+  {name:"Tom Ho Yeah", score:100000, pfp:"team51.jpg"},
+  {name:"Seven", score:660000, pfp:"team52.jpg"},
+  {name:"Lychee", score:60000, pfp:"team53.jpg"},
+  {name:"SHIKI SHIKI", score:80000, pfp:"team54.jpg"},
+  {name:"Avengers", score:4000, pfp:"team55.jpg"},
+  {name:"Sodapop", score:20000, pfp:"team56.jpg"},
+  {name:"Hikari", score:50000, pfp:"team57.jpg"}
 ];
 
 /* ============================================================ PRIZE TIERS */
@@ -331,6 +335,7 @@ const POINTS = {
   special:[
     ["Liz Labs","10,000","limit 25","https://opensea.io/collection/ethlizards"],
     ["Sacred Waste","10,000","limit 25","https://opensea.io/collection/sw-prophets"],
+    ["Humble Tractors","10,000","limit 25","https://opensea.io/collection/flip-humble-tractors"],
     ["JPEG Jokers","10,000","no limit","https://opensea.io/collection/jpeg-jokers"],
     ["QUANT","10,000 / 1M","no limit","https://flap.sh/robinhood/0xa9aa99d0e567de50c006243ceb1c09a98f707777"],
     ["Handsome Ansems","1,000","no limit","https://opensea.io/collection/handsome-ansems"],
