@@ -82,14 +82,41 @@
   .qbadge{font-family:'Oswald',sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#1a0d00;background:linear-gradient(90deg,#ffd24d,#ff8a3d);padding:3px 10px;border-radius:99px;white-space:nowrap;animation:qpulse 1.6s ease-in-out infinite}
   .qbadge.devil{color:#fff;background:linear-gradient(90deg,#ff2e63,#b3122f)}
   @keyframes qpulse{0%,100%{box-shadow:0 0 0 0 rgba(255,46,99,.5)}50%{box-shadow:0 0 15px 2px rgba(255,46,99,.85)}}
-  /* Villain Beatdown banner */
-  .beatdown{margin-top:14px;border-radius:16px;padding:15px 17px;background:linear-gradient(135deg,rgba(179,18,47,.28),rgba(40,6,14,.5));border:1px solid rgba(255,60,90,.55);position:relative;overflow:hidden;box-shadow:0 0 22px rgba(255,40,80,.13)}
-  .beatdown:before{content:"😈";position:absolute;right:-6px;top:-14px;font-size:82px;opacity:.10;transform:rotate(-12deg);pointer-events:none}
-  .beatdown .bh{display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:relative}
-  .beatdown .btitle{font-family:'Oswald',sans-serif;font-weight:700;font-size:17px;letter-spacing:.04em;text-transform:uppercase;color:#ff6b83;text-shadow:0 0 12px rgba(255,60,90,.5)}
-  .beatdown .bsub{font-size:12.5px;line-height:1.5;color:#ffd0d8;font-weight:600;margin-top:9px;position:relative}
-  .beatdown .bsub b{color:#fff}
-  .beatdown .bnote{font-size:11px;color:#ff9aa8;font-weight:700;margin-top:9px;letter-spacing:.02em;position:relative}
+  /* FINAL BOSS teaser */
+  .boss{margin-top:16px;border-radius:18px;padding:16px;position:relative;overflow:hidden;
+    background:radial-gradient(120% 140% at 50% -20%, rgba(255,60,90,.28), transparent 55%), linear-gradient(160deg,#1a0710,#0c0510);
+    border:1px solid rgba(255,80,90,.5);box-shadow:0 0 34px rgba(255,40,80,.22), inset 0 0 40px rgba(255,40,70,.08);animation:bossaura 3.4s ease-in-out infinite}
+  @keyframes bossaura{0%,100%{box-shadow:0 0 30px rgba(255,40,80,.20), inset 0 0 40px rgba(255,40,70,.07)}50%{box-shadow:0 0 46px rgba(255,50,90,.42), inset 0 0 52px rgba(255,50,80,.12)}}
+  .boss:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,rgba(255,60,90,.05) 0 2px,transparent 2px 6px);opacity:.5;pointer-events:none;animation:bossscan 6s linear infinite}
+  @keyframes bossscan{to{background-position:120px 0}}
+  .bosshead{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;position:relative;z-index:1}
+  .bosskicker{font-family:'Oswald',sans-serif;font-weight:700;font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#ffb0bb;text-shadow:0 0 14px rgba(255,60,90,.65)}
+  .bosscd{font-family:'Oswald',sans-serif;font-weight:700;font-size:13px;color:#0a0812;background:linear-gradient(90deg,#ff5ecb,#ff2e63);padding:4px 11px;border-radius:99px;white-space:nowrap;box-shadow:0 0 16px rgba(255,46,99,.6);animation:bosspulse 1.3s ease-in-out infinite}
+  @keyframes bosspulse{0%,100%{box-shadow:0 0 0 0 rgba(255,46,99,.5)}50%{box-shadow:0 0 18px 3px rgba(255,46,99,.85)}}
+  .bossbody{display:flex;gap:14px;align-items:center;margin-top:13px;position:relative;z-index:1}
+  .bossimg{position:relative;flex:0 0 auto}
+  .bossimg img{width:112px;height:112px;border-radius:14px;object-fit:cover;border:2px solid rgba(255,90,110,.7);box-shadow:0 0 22px rgba(255,50,80,.5);animation:bossfloat 3.4s ease-in-out infinite}
+  @keyframes bossfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+  .bosslvl{position:absolute;left:6px;bottom:6px;font-family:'Oswald',sans-serif;font-weight:700;font-size:10px;letter-spacing:.05em;color:#fff;background:rgba(10,4,10,.82);border:1px solid rgba(255,90,110,.6);padding:2px 7px;border-radius:7px}
+  .bossinfo{flex:1;min-width:0}
+  .bossname{font-family:'Oswald',sans-serif;font-weight:700;font-size:clamp(19px,5.4vw,25px);line-height:1.08;letter-spacing:.02em;
+    background:linear-gradient(180deg,#fff,#ff9aa8);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:#ff9aa8;
+    filter:drop-shadow(0 0 14px rgba(255,60,90,.5));animation:bossname 3.4s ease-in-out infinite}
+  @keyframes bossname{0%,100%{filter:drop-shadow(0 0 10px rgba(255,60,90,.4))}50%{filter:drop-shadow(0 0 20px rgba(255,80,110,.75))}}
+  .bosstag{font-size:11.5px;color:#ffc9d1;font-weight:600;margin-top:5px}
+  .bosstag b{color:#fff}
+  .hpwrap{margin-top:10px}
+  .hplabel{display:flex;justify-content:space-between;font-family:'Oswald',sans-serif;font-size:10.5px;letter-spacing:.1em;color:#ff9aa8;margin-bottom:4px}
+  .hpbar{height:13px;border-radius:8px;background:rgba(255,255,255,.07);border:1px solid rgba(255,90,110,.4);overflow:hidden;position:relative}
+  .hpfill{height:100%;width:100%;border-radius:7px;background:linear-gradient(90deg,#37ff9e,#b6ff3d 55%,#ffd24d);box-shadow:0 0 12px rgba(120,255,120,.5)}
+  .hpfill:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.45),transparent);transform:translateX(-100%);animation:hpshine 2.4s ease-in-out infinite}
+  @keyframes hpshine{60%,100%{transform:translateX(100%)}}
+  .bossnote{font-size:11px;color:#ffb0bb;font-weight:700;margin-top:10px;line-height:1.5}
+  /* sound toggle */
+  .sndbtn{position:fixed;right:14px;bottom:14px;z-index:50;font-family:'Oswald',sans-serif;font-weight:700;font-size:12px;letter-spacing:.06em;color:#fff;
+    background:linear-gradient(90deg,#ff2e63,#b3122f);border:1px solid rgba(255,120,140,.6);border-radius:99px;padding:9px 14px;cursor:pointer;box-shadow:0 4px 18px rgba(255,40,80,.4)}
+  .sndbtn.playing{background:linear-gradient(90deg,#37d67a,#149e57)}
+  .sndbtn.hint{animation:bosspulse 1.1s ease-in-out infinite}
   /* movement arrows */
   .mv{display:block;font-size:10px;line-height:1;margin-top:3px;font-weight:800;letter-spacing:-1px}
   .mv.up{color:#37d67a} .mv.down{color:#ff5b6e} .mv.flat{color:var(--ash);letter-spacing:0}
@@ -101,13 +128,31 @@
   /* 3x sweep bonus callout */
   .bonusline{margin-top:12px;padding:11px 13px;border-radius:12px;background:linear-gradient(90deg,rgba(255,46,99,.16),rgba(255,138,61,.11));border:1px solid rgba(255,120,90,.42);color:#ffd9a8;font-weight:800;font-size:13px;text-align:center}
   .bonusline b{color:#fff}
+  .bonusline.jj{margin-top:8px;background:linear-gradient(90deg,rgba(255,210,77,.16),rgba(163,102,255,.12));border-color:rgba(255,210,77,.45);color:#ffe9b0}
+  /* rules */
+  .rules{margin-top:16px}
+  .rules summary{color:#c9bff0}
+  .rulelist{margin:14px 0 2px;padding-left:20px;display:flex;flex-direction:column;gap:11px}
+  .rulelist li{font-size:12.5px;line-height:1.55;color:#d8cff0}
+  .rulelist li b{color:#fff}
+  .rulelist li::marker{color:var(--gold);font-weight:800}
   /* note under board */
   .boardnote{margin-top:12px;text-align:center;font-size:11.5px;color:var(--ash);font-weight:600;line-height:1.6}
   .boardnote b{color:#c9a0ff}
   .boardnote .up{color:#37d67a;font-weight:800} .boardnote .down{color:#ff5b6e;font-weight:800}
+  .tierlegend{margin-top:7px;font-size:11px;letter-spacing:.04em}
   /* big-mover accents (Villain Beatdown flavor) */
   .row.surge{border-left:3px solid #37d67a;box-shadow:0 0 14px rgba(55,214,122,.12)}
   .row.plunge{border-left:3px solid #ff5b6e;box-shadow:0 0 14px rgba(255,91,110,.12)}
+  /* rank-tier colors on the # */
+  .row .rk.t410{color:#ffd24d;text-shadow:0 0 10px rgba(255,210,77,.4)}
+  .row .rk.t1125{color:#4d8bff;text-shadow:0 0 10px rgba(77,139,255,.4)}
+  .row .rk.t2650{color:#a366ff;text-shadow:0 0 10px rgba(163,102,255,.4)}
+  .row .rk.t51{color:#ff5ecb;text-shadow:0 0 10px rgba(255,94,203,.4)}
+  .row .rk.medal{font-size:34px;line-height:1;filter:drop-shadow(0 2px 5px rgba(0,0,0,.55)) drop-shadow(0 0 10px rgba(255,210,77,.45))}
+  /* top-3 gently hover */
+  .row.float{animation:rowfloat 3.4s ease-in-out infinite;will-change:transform}
+  @keyframes rowfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
   /* biggest climber callout */
   .mover{margin-top:10px;text-align:center;font-size:12.5px;font-weight:800;color:#eafff3;background:linear-gradient(90deg,rgba(55,214,122,.14),rgba(55,214,122,.05));border:1px solid rgba(55,214,122,.32);border-radius:11px;padding:9px 12px}
   .mover b{color:#37d67a}
@@ -117,7 +162,10 @@
   .podium{display:grid;grid-template-columns:1fr 1.18fr 1fr;gap:8px;align-items:end;margin:16px 0 8px}
   .pod{background:linear-gradient(180deg,var(--panel2),var(--panel));border:1px solid var(--line);border-radius:16px;padding:14px 8px;text-align:center}
   .pod.first{border-color:rgba(255,210,77,.6);box-shadow:0 0 30px rgba(255,210,77,.2);padding-top:20px}
-  .pod .medal{font-size:28px}
+  .pod .medal{font-size:38px;line-height:1;filter:drop-shadow(0 3px 7px rgba(0,0,0,.5)) drop-shadow(0 0 12px rgba(255,210,77,.5))}
+  .pod.first .medal{font-size:46px}
+  .pod.first .sc{color:var(--gold)}
+  .pod.first .nm{color:#fff}
   .pod .pfp{width:86px;height:86px;border-radius:50%;margin:8px auto 8px;object-fit:cover;display:block;border:3px solid var(--line)}
   .pod.first .pfp{width:104px;height:104px;border-color:var(--gold)}
   .pod .nm{font-weight:800;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -150,6 +198,8 @@
 </style>
 </head>
 <body>
+<audio id="bosstheme" src="those-who-fight.mp3" loop preload="auto"></audio>
+<button id="sndBtn" class="sndbtn" type="button" aria-label="Toggle boss theme">🔈 Sound</button>
 <div class="wrap">
   <div class="head">
     <h1>HOLD MY JPEGS</h1>
@@ -167,18 +217,24 @@
     <div class="pcol" id="prizeLeft"></div>
     <div class="pcol" id="prizeRight"></div>
   </div>
-  <div class="poolnote">💰 The prize pool <b>grows daily</b> — from sponsors, $QUANT + JPEG Joker trading fees, and game-perk purchases.</div>
+  <div class="poolnote">💰 The prize pool <b>grows daily</b> — from sponsors and $QUANT + JPEG Joker trading fees.</div>
 
-  <div class="beatdown">
-    <div class="bh"><span class="btitle">😈 Villain Beatdown</span><span class="bbadge" id="bcd">Live</span></div>
-    <div class="bsub">Every <b>sweep</b> you make also <b>subtracts that same amount</b> of points from the team ranked directly ahead of you. Climb by dragging your rival down. 😈🔪</div>
-    <div class="bnote">Mechanic active until <b>8/12 · 10 AM PST</b> — sweep smart, sweep vicious.</div>
+  <div class="boss">
+    <div class="bosshead"><span class="bosskicker">⚔️ Final Boss Approaches</span><span class="bosscd" id="bosscd">—</span></div>
+    <div class="bossbody">
+      <div class="bossimg"><img src="finalboss.jpg" alt="The Final Boss" loading="lazy" /><span class="bosslvl">LVL&nbsp;∞</span></div>
+      <div class="bossinfo">
+        <div class="bossname">Michael Saylor: The Paperhand God</div>
+        <div class="hpwrap">
+          <div class="hplabel"><span>BOSS HP</span><span id="hppct">100%</span></div>
+          <div class="hpbar"><div class="hpfill" id="hpfill"></div></div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <div class="mover" id="mover"></div>
-
   <details class="pinfo">
-    <summary><span class="psum">📊 How to earn points — collections &amp; values <span class="qbadge devil">😈 Beatdown live</span></span></summary>
+    <summary><span class="psum">📊 How to earn points — collections &amp; values <span class="qbadge devil">⚔️ Final Boss Multipliers Live</span></span></summary>
     <div id="pointsBody"></div>
     <div class="poolnote" style="margin-top:14px">Passive points update daily from your holdings across these collections + $QUANT. Tap a Special collection to view it on OpenSea.</div>
   </details>
@@ -190,12 +246,24 @@
   <div class="rowh"><div>Rank</div><div>Team</div><div style="text-align:right">Score</div><div style="text-align:right">Prize</div></div>
   <div class="board" id="board"></div>
 
-  <div class="boardnote">🃏 Every team earns <b>1–7 Joker Relics</b> based on final ranking. &nbsp;·&nbsp; <span class="up">▲</span>/<span class="down">▼</span> = rank change since yesterday.</div>
+  <div class="boardnote">🃏 Every team earns <b>1–7 Joker Relics</b> based on final ranking. &nbsp;·&nbsp; <span class="up">▲</span>/<span class="down">▼</span> = rank change since yesterday.
+    <div class="tierlegend">Rank tiers: <b style="color:#ffd24d">4–10</b> · <b style="color:#4d8bff">11–25</b> · <b style="color:#a366ff">26–50</b> · <b style="color:#ff5ecb">51+</b></div>
+  </div>
 
   <div class="links">
     <a href="https://x.com/mememaxxers" target="_blank" rel="noopener">𝕏  Follow mememaxxers</a>
     <a href="https://discord.gg/krVPuyksQy" target="_blank" rel="noopener">💬  Bounties in Discord</a>
   </div>
+
+  <details class="pinfo rules">
+    <summary><span class="psum">📜 Rules &amp; fair play — tap to read</span></summary>
+    <ol class="rulelist">
+      <li>Members who contribute <b>less than 10%</b> of their team party's total points are subject to reduced rewards — the difference is redistributed to the bigger contributors on their team.</li>
+      <li><b>Passive holders</b> who don't participate in bounties may also have part of their rewards redistributed to active players in the game.</li>
+      <li><b>Low-effort, copy/paste AI slop</b> content is punished with reduced rewards, which are redistributed to genuine, high-quality creators.</li>
+      <li><b>Wash trading</b> earns significantly fewer points and is subject to penalties for any suspicious foul play.</li>
+    </ol>
+  </details>
 
   <div class="footer">powered by <b>Meme Maxxers AI Agents</b></div>
 </div>
@@ -203,71 +271,71 @@
 <script>
 /* ============================================================ CONFIG — update pool + date daily */
 const CONFIG = {
-  prizePool: 4300,
-  updated: "Aug 11",
+  prizePool: 4500,
+  updated: "Aug 12",
   endsISO: "",
   pfpBase: "pfps/"
 };
 
 /* ============================================================ TEAMS — name + score (PFPs in pfps/teamN.jpg) */
 let PLAYERS = [
-  {name:"The Crew", score:10750000, pr:2, pfp:"team1.jpg"},
-  {name:"Aziat_Dikiy", score:1020000, pr:26, pfp:"team2.jpg"},
-  {name:"Tradesgiving Turkeys", score:2550000, pr:18, pfp:"team3.jpg"},
-  {name:"Aliens", score:1260000, pr:24, pfp:"team4.jpg"},
-  {name:"Martingas", score:3900000, pr:16, pfp:"team5.jpg"},
-  {name:"Crusaders", score:7350000, pr:6, pfp:"team6.jpg"},
-  {name:"Quantum Joker", score:2270000, pr:20, pfp:"team7.jpg"},
-  {name:"Jolly Jokers", score:10350000, pr:4, pfp:"team8.jpg"},
-  {name:"Metal-Heads", score:7530000, pr:5, pfp:"team9.jpg"},
-  {name:"Bamboeskud", score:6430000, pr:8, pfp:"team10.jpg"},
-  {name:"Darian", score:900000, pr:28, pfp:"team11.jpg"},
-  {name:"Zulvke", score:10210000, pr:3, pfp:"team12.jpg"},
-  {name:"Team IQ", score:7100000, pr:7, pfp:"team13.jpg"},
-  {name:"King of the JPEGs", score:5900000, pr:10, pfp:"team15.jpg"},
-  {name:"Lucky Duckys", score:50000, pr:55, pfp:"team16.jpg"},
-  {name:"kimchi", score:740000, pr:32, pfp:"team17.jpg"},
-  {name:"DADDY", score:210000, pr:47, pfp:"team18.jpg"},
-  {name:"Ching", score:590000, pr:35, pfp:"team19.jpg"},
-  {name:"Neon Falcons", score:265000, pr:44, pfp:"team20.jpg"},
-  {name:"Cherry on Top", score:165000, pr:50, pfp:"team21.jpg"},
-  {name:"Team Saints", score:100000, pr:54, pfp:"team22.jpg"},
-  {name:"Lakers", score:230000, pr:46, pfp:"team23.jpg"},
-  {name:"Final Boss", score:3850000, pr:13, pfp:"team24.jpg"},
-  {name:"Glizzy Dominatrix", score:280000, pr:45, pfp:"team25.jpg"},
-  {name:"他妈的你妈妈", score:800000, pr:31, pfp:"team26.jpg"},
-  {name:"Asuka Mommy", score:580000, pr:36, pfp:"team27.jpg"},
-  {name:"Cesar's", score:960000, pr:29, pfp:"team28.jpg"},
-  {name:"Komodo DAO 1", score:6250000, pr:9, pfp:"team29.jpg"},
-  {name:"Jennie", score:2100000, pr:21, pfp:"team30.jpg"},
-  {name:"Zaki", score:2330000, pr:19, pfp:"team31.jpg"},
-  {name:"Akatsuki", score:3600000, pr:15, pfp:"team32.jpg"},
-  {name:"Germaine", score:3700000, pr:14, pfp:"team33.jpg"},
-  {name:"100010101001", score:180000, pr:51, pfp:"team34.jpg"},
-  {name:"GTA", score:1010000, pr:27, pfp:"team35.jpg"},
-  {name:"Musketeers", score:1550000, pr:22, pfp:"team36.jpg"},
-  {name:"The Wolves", score:5300000, pr:11, pfp:"team37.jpg"},
-  {name:"Cosmic Raiders", score:5100000, pr:12, pfp:"team38.jpg"},
-  {name:"Team Astro", score:3000000, pr:17, pfp:"team39.jpg"},
-  {name:"Frankies", score:330000, pr:39, pfp:"team40.jpg"},
-  {name:"Gamblers", score:1550000, pr:23, pfp:"team41.jpg"},
-  {name:"DotStorm", score:12300000, pr:1, pfp:"team42.jpg"},
-  {name:"Mcozzy", score:430000, pr:41, pfp:"team43.jpg"},
-  {name:"505", score:440000, pr:37, pfp:"team44.jpg"},
-  {name:"BBL LATINAS", score:230000, pr:49, pfp:"team45.jpg"},
-  {name:"Poland Penguins", score:1000000, pr:33, pfp:"team46.jpg"},
-  {name:"Squid", score:120000, pr:53, pfp:"team47.jpg"},
-  {name:"The King of Gotham City", score:900000, pr:30, pfp:"team48.jpg"},
-  {name:"Davuswho", score:750000, pr:null, pfp:"team58.jpg"},
-  {name:"Lizzos", score:750000, pr:34, pfp:"team49.jpg"},
-  {name:"Berserk", score:300000, pr:42, pfp:"team50.jpg"},
-  {name:"Tom Ho Yeah", score:340000, pr:48, pfp:"team51.jpg"},
-  {name:"Seven", score:1100000, pr:25, pfp:"team52.jpg"},
-  {name:"Lychee", score:100000, pr:56, pfp:"team53.jpg"},
-  {name:"SHIKI SHIKI", score:240000, pr:52, pfp:"team54.jpg"},
-  {name:"Avengers", score:500000, pr:43, pfp:"team55.jpg"},
-  {name:"Sodapop", score:525000, pr:38, pfp:"team56.jpg"},
-  {name:"Hikari", score:400000, pr:40, pfp:"team57.jpg"}
+  {name:"The Crew", score:12900000, pr:2, pfp:"team1.jpg"},
+  {name:"Aziat_Dikiy", score:1150000, pr:26, pfp:"team2.jpg"},
+  {name:"Tradesgiving Turkeys", score:3000000, pr:18, pfp:"team3.jpg"},
+  {name:"Aliens", score:1440000, pr:24, pfp:"team4.jpg"},
+  {name:"Martingas", score:5800000, pr:13, pfp:"team5.jpg"},
+  {name:"Crusaders", score:8730000, pr:6, pfp:"team6.jpg"},
+  {name:"Quantum Joker", score:2580000, pr:20, pfp:"team7.jpg"},
+  {name:"Jolly Jokers", score:12450000, pr:3, pfp:"team8.jpg"},
+  {name:"Metal-Heads", score:8700000, pr:5, pfp:"team9.jpg"},
+  {name:"Bamboeskud", score:8100000, pr:8, pfp:"team10.jpg"},
+  {name:"Darian", score:1030000, pr:30, pfp:"team11.jpg"},
+  {name:"Zulvke", score:12360000, pr:4, pfp:"team12.jpg"},
+  {name:"Team IQ", score:8450000, pr:7, pfp:"team13.jpg"},
+  {name:"King of the JPEGs", score:6500000, pr:10, pfp:"team15.jpg"},
+  {name:"Lucky Duckys", score:60000, pr:57, pfp:"team16.jpg"},
+  {name:"kimchi", score:800000, pr:35, pfp:"team17.jpg"},
+  {name:"DADDY", score:240000, pr:51, pfp:"team18.jpg"},
+  {name:"Ching", score:680000, pr:36, pfp:"team19.jpg"},
+  {name:"Neon Falcons", score:310000, pr:47, pfp:"team20.jpg"},
+  {name:"Cherry on Top", score:190000, pr:53, pfp:"team21.jpg"},
+  {name:"Team Saints", score:120000, pr:55, pfp:"team22.jpg"},
+  {name:"Lakers", score:270000, pr:49, pfp:"team23.jpg"},
+  {name:"Final Boss", score:4550000, pr:14, pfp:"team24.jpg"},
+  {name:"Glizzy Dominatrix", score:460000, pr:46, pfp:"team25.jpg"},
+  {name:"他妈的你妈妈", score:950000, pr:32, pfp:"team26.jpg"},
+  {name:"Asuka Mommy", score:650000, pr:37, pfp:"team27.jpg"},
+  {name:"Cesar's", score:1100000, pr:29, pfp:"team28.jpg"},
+  {name:"Komodo DAO 1", score:7400000, pr:9, pfp:"team29.jpg"},
+  {name:"Jennie", score:2450000, pr:21, pfp:"team30.jpg"},
+  {name:"Zaki", score:2650000, pr:19, pfp:"team31.jpg"},
+  {name:"Akatsuki", score:4100000, pr:16, pfp:"team32.jpg"},
+  {name:"Germaine", score:4200000, pr:15, pfp:"team33.jpg"},
+  {name:"100010101001", score:520000, pr:52, pfp:"team34.jpg"},
+  {name:"GTA", score:1200000, pr:27, pfp:"team35.jpg"},
+  {name:"Musketeers", score:1900000, pr:22, pfp:"team36.jpg"},
+  {name:"The Wolves", score:6100000, pr:11, pfp:"team37.jpg"},
+  {name:"Cosmic Raiders", score:5700000, pr:12, pfp:"team38.jpg"},
+  {name:"Team Astro", score:3500000, pr:17, pfp:"team39.jpg"},
+  {name:"Frankies", score:580000, pr:44, pfp:"team40.jpg"},
+  {name:"Gamblers", score:1850000, pr:23, pfp:"team41.jpg"},
+  {name:"DotStorm", score:15250000, pr:1, pfp:"team42.jpg"},
+  {name:"Mcozzy", score:490000, pr:41, pfp:"team43.jpg"},
+  {name:"505", score:480000, pr:40, pfp:"team44.jpg"},
+  {name:"BBL LATINAS", score:520000, pr:50, pfp:"team45.jpg"},
+  {name:"Poland Penguins", score:1150000, pr:28, pfp:"team46.jpg"},
+  {name:"Squid", score:500000, pr:54, pfp:"team47.jpg"},
+  {name:"The King of Gotham City", score:1250000, pr:31, pfp:"team48.jpg"},
+  {name:"Davuswho", score:1500000, pr:33, pfp:"team58.jpg"},
+  {name:"Lizzos", score:950000, pr:34, pfp:"team49.jpg"},
+  {name:"Berserk", score:600000, pr:45, pfp:"team50.jpg"},
+  {name:"Tom Ho Yeah", score:540000, pr:43, pfp:"team51.jpg"},
+  {name:"Seven", score:1450000, pr:25, pfp:"team52.jpg"},
+  {name:"Lychee", score:130000, pr:56, pfp:"team53.jpg"},
+  {name:"SHIKI SHIKI", score:300000, pr:48, pfp:"team54.jpg"},
+  {name:"Avengers", score:550000, pr:39, pfp:"team55.jpg"},
+  {name:"Sodapop", score:750000, pr:38, pfp:"team56.jpg"},
+  {name:"Hikari", score:600000, pr:42, pfp:"team57.jpg"}
 ];
 
 /* ============================================================ PRIZE TIERS */
@@ -279,6 +347,11 @@ function tierPct(rank){
 function usd(rank){return Math.round(CONFIG.prizePool*tierPct(rank)/100);}
 function fmt(n){return "$"+Math.round(n).toLocaleString();}
 function fmtScore(n){if(n>=1e6)return (n/1e6).toFixed(2).replace(/\.?0+$/,'')+"M";if(n>=1e3)return Math.round(n/1e3)+"K";return String(n);}
+/* rank-tier color class for the # */
+function rankCls(rank){
+  if(rank<=3)return "medal"; if(rank<=10)return "t410"; if(rank<=25)return "t1125";
+  if(rank<=50)return "t2650"; return "t51";
+}
 /* Joker relics by rank */
 function relicCount(rank){
   if(rank===1)return 7; if(rank===2)return 6; if(rank===3)return 5;
@@ -329,14 +402,6 @@ function render(){
   document.getElementById("poolStat").textContent=fmt(CONFIG.prizePool);
   document.getElementById("updatedStat").textContent=CONFIG.updated||new Date().toLocaleDateString(undefined,{month:"short",day:"numeric"});
 
-  const mv=document.getElementById("mover");
-  if(mv){
-    let best=null;
-    if(started) all.forEach(p=>{ if(p.pr!=null){const d=p.pr-p.rank; if(d>0 && (!best||d>best.d)) best={n:p.name,d};} });
-    mv.innerHTML = best ? '🔥 Biggest climber today: <b>'+best.n+'</b> <span class="up">▲'+best.d+'</span>' : '';
-    mv.style.display = best ? 'block' : 'none';
-  }
-
   const pod=document.getElementById("podium");
   pod.style.display=started?"grid":"none";
   if(started){
@@ -357,9 +422,11 @@ function render(){
     const row=document.createElement("div");
     let mvCls="";
     if(started&&p.pr!=null){const dd=p.pr-p.rank; if(dd>=4)mvCls=" surge"; else if(dd<=-4)mvCls=" plunge";}
-    row.className="row"+(started&&p.rank===1?" top1":"")+mvCls;
+    const isTop3 = started && p.rank<=3;
+    row.className="row"+(started&&p.rank===1?" top1":"")+mvCls+(isTop3?" float":"");
+    if(isTop3) row.style.animationDelay=((p.rank-1)*0.3)+"s";
     const rk = started ? (p.rank<=3?["","🥇","🥈","🥉"][p.rank]:("#"+p.rank)) : "—";
-    const rkCell = started ? '<div class="rk">'+rk+moveHTML(p)+'</div>' : '<div class="rk">'+rk+'</div>';
+    const rkCell = started ? '<div class="rk '+rankCls(p.rank)+'">'+rk+moveHTML(p)+'</div>' : '<div class="rk">'+rk+'</div>';
     let pz;
     if(started){
       const pct=tierPct(p.rank), rel=relicCount(p.rank);
@@ -383,30 +450,45 @@ function tickCd(){
   const d=Math.floor(t/864e5),h=Math.floor(t/36e5)%24,m=Math.floor(t/6e4)%60;
   el.textContent="⏳ Ends in "+d+"d "+h+"h "+m+"m";
 }
-const BEATDOWN = {
+const BOSS = {
   active:true,
-  endsISO:"2026-08-12T10:00:00-07:00",   // Wed 8/12 10 AM PST
-  deadlineLabel:"8/12 · 10 AM PST"
+  endsISO:"2026-08-13T12:00:00-07:00",   // 8/13 12 PM PST
+  deadlineLabel:"8/13 · 12 PM PST"
 };
-function tickBeatdown(){
-  const el=document.getElementById("bcd");
+function tickBoss(){
+  const el=document.getElementById("bosscd");
   if(!el)return;
-  if(!BEATDOWN.active){el.textContent="Ended";return;}
-  if(!BEATDOWN.endsISO){el.textContent="Live";return;}
-  const t=new Date(BEATDOWN.endsISO).getTime()-Date.now();
-  if(isNaN(t)||t<=0){el.textContent="😈 Ended";return;}
+  const t=new Date(BOSS.endsISO).getTime()-Date.now();
+  if(isNaN(t)||t<=0){el.textContent="⚔️ BATTLE LIVE";return;}
   const d=Math.floor(t/864e5),h=Math.floor(t/36e5)%24,m=Math.floor(t/6e4)%60,s=Math.floor(t/1e3)%60;
-  el.textContent="⏳ "+(d>0?d+"d ":"")+h+"h "+m+"m "+s+"s";
+  el.textContent="⚔️ "+(d>0?d+"d ":"")+h+"h "+m+"m "+s+"s";
 }
+/* boss theme audio — autoplay w/ first-gesture fallback + toggle */
+(function(){
+  const audio=document.getElementById("bosstheme"), btn=document.getElementById("sndBtn");
+  if(!audio||!btn)return;
+  audio.volume=0.55;
+  let playing=false;
+  function setUI(){ btn.classList.toggle("playing",playing); btn.classList.toggle("hint",!playing);
+    btn.textContent = playing ? "🔊 Boss Theme" : "🔇 Tap for sound"; }
+  function play(){ audio.play().then(()=>{playing=true;setUI();}).catch(()=>{playing=false;setUI();}); }
+  function stop(){ audio.pause(); playing=false; setUI(); }
+  btn.addEventListener("click",()=>{ playing?stop():play(); });
+  // try autoplay; if blocked, start on first user gesture
+  play();
+  function firstGesture(){ if(!playing) play(); window.removeEventListener("pointerdown",firstGesture); window.removeEventListener("keydown",firstGesture); }
+  window.addEventListener("pointerdown",firstGesture); window.addEventListener("keydown",firstGesture);
+  setUI();
+})();
 
 /* ============================================================ POINTS INFO */
 const POINTS = {
   special:[
+    ["JPEG Jokers","10,000","no limit","https://opensea.io/collection/jpeg-jokers"],
+    ["QUANT","10,000 / 1M","no limit","https://flap.sh/robinhood/0xa9aa99d0e567de50c006243ceb1c09a98f707777"],
     ["Liz Labs","10,000","limit 25","https://opensea.io/collection/ethlizards"],
     ["Sacred Waste","10,000","limit 25","https://opensea.io/collection/sw-prophets"],
     ["Humble Tractors","10,000","limit 25","https://opensea.io/collection/flip-humble-tractors"],
-    ["JPEG Jokers","10,000","no limit","https://opensea.io/collection/jpeg-jokers"],
-    ["QUANT","10,000 / 1M","no limit","https://flap.sh/robinhood/0xa9aa99d0e567de50c006243ceb1c09a98f707777"],
     ["Handsome Ansems","1,000","no limit","https://opensea.io/collection/handsome-ansems"],
     ["Quantum Queens","1,000","no limit","https://opensea.io/collection/quantum-queens-8000"],
     ["Cutie Kitties","1,000","no limit","https://opensea.io/collection/cutie-kitties-5000"]
@@ -418,13 +500,14 @@ const POINTS = {
   ]
 };
 function renderPoints(){
-  let h='<div class="pgroup"><div class="gh"><span class="gtitle">⭐ Special — sponsors &amp; in-house</span></div>';
+  let h='<div class="bonusline jj">🃏 JPEG Jokers &amp; QUANT sweeps — <b>2.5× bonus = 70,000 pts each</b></div>';
+  h+='<div class="bonusline">🔥 Each sweep &amp; hold until event end = <b>3× points</b></div>';
+  h+='<div class="pgroup"><div class="gh"><span class="gtitle">⭐ Special — sponsors &amp; in-house</span></div>';
   POINTS.special.forEach(s=>{
     h+='<div class="pitem"><span class="pi-name"><a href="'+s[3]+'" target="_blank" rel="noopener">'+s[0]+'</a></span>'+
        '<span class="pi-pts">'+s[1]+' <span class="pi-lim">· '+s[2]+'</span></span></div>';
   });
   h+='</div>';
-  h+='<div class="bonusline">🔥 Each sweep &amp; hold until event end = <b>3× points</b></div>';
   POINTS.tiers.forEach(t=>{
     h+='<div class="pgroup"><div class="gh"><span class="gpts" style="color:'+t.c+'">'+t.pts+' pts / NFT</span>'+
        '<span class="glim">'+t.lim+'</span></div><div class="pchips">'+
@@ -433,7 +516,7 @@ function renderPoints(){
   document.getElementById("pointsBody").innerHTML=h;
 }
 
-renderPrizes();renderPoints();render();tickCd();tickBeatdown();setInterval(function(){tickCd();tickBeatdown();},1000);
+renderPrizes();renderPoints();render();tickCd();tickBoss();setInterval(function(){tickCd();tickBoss();},1000);
 </script>
 </body>
 </html>
