@@ -50,8 +50,9 @@
   .head{text-align:center;margin-bottom:26px;padding-bottom:2px}
   .kicker{font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--ash);font-weight:600}
   h1{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:clamp(44px,13vw,72px);line-height:1.06;margin:10px 0 0;padding-bottom:.09em;
-    background:linear-gradient(120deg,#fff 20%,var(--aura2) 55%,var(--aura3));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
-    filter:drop-shadow(0 0 26px rgba(160,107,255,.4))}
+    background:linear-gradient(100deg,#fff 12%,var(--aura2) 38%,var(--aura3) 60%,#fff 88%);background-size:220% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 0 26px rgba(160,107,255,.4));animation:h1shine 6s linear infinite}
+  @keyframes h1shine{0%{background-position:120% 0}100%{background-position:-120% 0}}
   .tag{color:#cfc7ea;font-size:15px;margin:14px auto 0;line-height:1.65;max-width:380px}
 
   .drop{display:block;max-width:400px;margin:28px auto 0;border:1.5px dashed rgba(180,160,255,.32);border-radius:24px;background:var(--glass);backdrop-filter:blur(14px);
@@ -78,8 +79,10 @@
     background:linear-gradient(100deg,var(--aura2),var(--aura));border-radius:15px;padding:16px;box-shadow:0 10px 30px rgba(160,107,255,.35);transition:transform .12s,box-shadow .2s}
   .btn:hover{transform:translateY(-1px);box-shadow:0 14px 40px rgba(160,107,255,.5)}
   .btn:active{transform:translateY(0)}
-  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);box-shadow:none;font-size:14px;padding:13px}
-  .btn.ghost:hover{border-color:var(--aura2)}
+  .btn.share{background:linear-gradient(100deg,#2a2540,#151022);color:#fff;border:1px solid rgba(200,170,255,.4);box-shadow:0 8px 24px rgba(0,0,0,.35)}
+  .btn.share:hover{border-color:var(--aura2)}
+  .btn.alt{background:linear-gradient(100deg,rgba(160,107,255,.34),rgba(255,107,208,.24));color:#fff;border:1px solid rgba(205,165,255,.5);box-shadow:0 8px 22px rgba(120,80,200,.28);font-size:14px;padding:14px}
+  .btn.alt:hover{transform:translateY(-1px);border-color:var(--aura2)}
 
   /* ---------- scanning ---------- */
   .scanwrap{min-height:74vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
@@ -215,9 +218,9 @@
 
     <div class="actions">
       <button class="btn" id="dlBtn">⬇ Download Card</button>
-      <button class="btn ghost" id="shareBtn">𝕏 Share on X</button>
+      <button class="btn share" id="shareBtn">𝕏 Share on X</button>
     </div>
-    <button class="btn ghost" id="againBtn" style="margin-top:10px;max-width:460px">↺ Score another NFT</button>
+    <button class="btn alt" id="againBtn" style="margin-top:10px;max-width:460px">↺ Score another NFT</button>
 
     <div class="links">
       <a class="wide" id="mintLink" href="#" target="_blank" rel="noopener">🌿 Mint Adam's Aura (free) on OpenSea</a>
@@ -414,7 +417,7 @@ document.getElementById("shareBtn").addEventListener("click",()=>{
     "My Favorite NFT's Aura Score: "+LAST.score+" ✨\n\n"+
     "Aura Class: "+LAST.cls+" "+(CLASS_EMOJI[LAST.cls]||"✨")+"\n\n"+
     "Its dream home is "+LAST.city[0]+" "+LAST.city[2]+"\n\n"+
-    "Score your JPEG's aura with @mememaxxers 👇\n\n"+
+    "Score your aura with @mememaxxers 👇\n\n"+
     CONFIG.shareUrl;
   window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(txt),"_blank");
 });
