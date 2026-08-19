@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="format-detection" content="telephone=no" />
+<title>Aura Score — Rate your NFT's aura</title>
+<meta name="description" content="Upload your favorite NFT to rate its aura and reveal where it belongs. A shareable aura reading by Adam's Aura." />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content="proofofreal" />
+<meta property="og:title" content="✨ Aura Score — Rate your NFT's aura" />
+<meta property="og:description" content="Upload an NFT to rate its aura and reveal the city it should live in. Scan yours." />
+<meta property="og:url" content="https://proofofreal.app/social/aurascore" />
+<meta property="og:image" content="https://proofofreal.app/social/aurascore/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content="@mememaxxers" />
+<meta name="twitter:title" content="✨ Aura Score — Rate your NFT's aura" />
+<meta name="twitter:description" content="Upload an NFT to rate its aura and reveal the city it should live in." />
+<meta name="twitter:image" content="https://proofofreal.app/social/aurascore/og-image.png" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,500;1,9..144,600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --bg:#07060d; --ink:#f3f0ff; --ash:#9a94b8; --line:rgba(180,160,255,.14);
+    --glass:rgba(24,20,44,.55); --glass2:rgba(30,25,55,.62);
+    --aura:#a06bff; --aura2:#ff6bd0; --aura3:#5bd6ff;   /* dynamic, set from your NFT */
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{font-family:'Space Grotesk',system-ui,sans-serif;color:var(--ink);min-height:100%;overflow-x:hidden;background:var(--bg);-webkit-font-smoothing:antialiased;position:relative}
+  button,label,input{outline:none}
+  .aurora{position:fixed;inset:-20% -10% -10% -10%;z-index:0;pointer-events:none;filter:blur(64px);opacity:.72}
+  .aurora i{position:absolute;border-radius:50%;mix-blend-mode:screen;animation:drift 22s ease-in-out infinite}
+  .aurora i:nth-child(1){width:52vw;height:52vw;left:-8vw;top:-6vw;background:radial-gradient(circle,var(--aura),transparent 62%)}
+  .aurora i:nth-child(2){width:46vw;height:46vw;right:-10vw;top:8vh;background:radial-gradient(circle,var(--aura2),transparent 62%);animation-delay:-7s}
+  .aurora i:nth-child(3){width:50vw;height:50vw;left:12vw;bottom:-14vh;background:radial-gradient(circle,var(--aura3),transparent 62%);animation-delay:-13s}
+  @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(6vw,4vh) scale(1.12)}66%{transform:translate(-5vw,-3vh) scale(.94)}}
+  .grain{position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+  .wrap{position:relative;z-index:2;max-width:540px;margin:0 auto;padding:44px 22px 60px}
+  .screen{display:none}
+  .screen.active{display:block;animation:fadein .55s cubic-bezier(.2,.8,.2,1)}
+  @keyframes fadein{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+  /* ---------- intro ---------- */
+  .head{text-align:center;margin-bottom:26px;padding-bottom:2px}
+  .kicker{font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--ash);font-weight:600}
+  h1{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:clamp(44px,13vw,72px);line-height:1.06;margin:10px 0 0;padding-bottom:.09em;
+    background:linear-gradient(120deg,#fff 20%,var(--aura2) 55%,var(--aura3));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 0 26px rgba(160,107,255,.4))}
+  .tag{color:#cfc7ea;font-size:15px;margin:14px auto 0;line-height:1.65;max-width:380px}
+
+  .drop{display:block;max-width:400px;margin:28px auto 0;border:1.5px dashed rgba(180,160,255,.32);border-radius:24px;background:var(--glass);backdrop-filter:blur(14px);
+    padding:32px 22px;text-align:center;cursor:pointer;transition:border-color .2s,background .2s,transform .2s,box-shadow .2s}
+  .drop:hover,.drop.drag{border-color:var(--aura2);background:var(--glass2);box-shadow:0 0 0 4px rgba(255,107,208,.1),0 20px 50px rgba(0,0,0,.4);transform:translateY(-2px)}
+  .drop .orb{width:72px;height:72px;margin:0 auto 15px;border-radius:50%;
+    background:radial-gradient(circle at 32% 30%,#fff6,transparent 42%),conic-gradient(from 0deg,var(--aura),var(--aura2),var(--aura3),var(--aura));
+    box-shadow:0 0 44px rgba(160,107,255,.6);animation:spin 7s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .drop h3{font-size:17px;font-weight:600}
+  .drop p{color:var(--ash);font-size:12.5px;margin-top:5px}
+  input[type=file]{display:none}
+
+  .preview{max-width:400px;margin:26px auto 0;text-align:center}
+  .pvframe{position:relative;width:220px;height:220px;margin:0 auto;border-radius:22px;overflow:hidden;box-shadow:0 0 0 1px var(--line),0 22px 54px rgba(0,0,0,.5);background:#100c22}
+  .pvframe img{width:100%;height:100%;object-fit:cover;display:block}
+  .pvframe .ring{position:absolute;inset:-3px;border-radius:24px;padding:3px;pointer-events:none;
+    background:conic-gradient(from 0deg,var(--aura),var(--aura2),var(--aura3),var(--aura));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spin 6s linear infinite}
+  .changelink{display:inline-block;margin-top:12px;color:var(--ash);font-size:12.5px;cursor:pointer;border-bottom:1px dashed rgba(180,160,255,.4)}
+  .changelink:hover{color:var(--aura2)}
+
+  .btn{display:block;width:100%;max-width:400px;margin:20px auto 0;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:16px;letter-spacing:.02em;color:#0a0812;
+    background:linear-gradient(100deg,var(--aura2),var(--aura));border-radius:15px;padding:16px;box-shadow:0 10px 30px rgba(160,107,255,.35);transition:transform .12s,box-shadow .2s}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 14px 40px rgba(160,107,255,.5)}
+  .btn:active{transform:translateY(0)}
+  .btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line);box-shadow:none;font-size:14px;padding:13px}
+  .btn.ghost:hover{border-color:var(--aura2)}
+
+  /* ---------- scanning ---------- */
+  .scanwrap{min-height:74vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .orbit{position:relative;width:290px;height:290px;display:grid;place-items:center}
+  .orbit .core{width:186px;height:186px;border-radius:28px;overflow:hidden;position:relative;box-shadow:0 0 70px var(--aura2),0 0 30px var(--aura3)}
+  .orbit .core img{width:100%;height:100%;object-fit:cover;filter:saturate(1.3) contrast(1.06)}
+  .orbit .core:after{content:"";position:absolute;left:0;right:0;height:46%;top:-46%;
+    background:linear-gradient(180deg,transparent,rgba(150,230,255,.16) 60%,rgba(200,255,255,.7));box-shadow:0 4px 24px 5px rgba(150,230,255,.55);animation:sweep 1.5s ease-in-out infinite}
+  @keyframes sweep{0%{top:-46%}100%{top:104%}}
+  .orbit .r{position:absolute;border-radius:50%;padding:2px;
+    background:conic-gradient(from 0deg,transparent,var(--aura2),transparent 42%,var(--aura3),transparent 72%,var(--aura),transparent);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude}
+  .orbit .r1{inset:22px;animation:spin 3.4s linear infinite}
+  .orbit .r2{inset:0;animation:spin 6s linear infinite reverse}
+  .orbit .r3{inset:-24px;opacity:.6;animation:spin 9s linear infinite}
+  .orbit .halo{position:absolute;inset:-40px;border-radius:50%;background:radial-gradient(circle,var(--aura2),transparent 60%);opacity:.28;animation:breathe 2.2s ease-in-out infinite;pointer-events:none}
+  @keyframes breathe{0%,100%{transform:scale(.92);opacity:.2}50%{transform:scale(1.08);opacity:.4}}
+  .sparks{position:absolute;inset:0;animation:spin 5s linear infinite}
+  .sparks span{position:absolute;top:50%;left:50%;width:7px;height:7px;border-radius:50%;background:#fff;box-shadow:0 0 12px 3px var(--aura3)}
+  .scanttl{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:26px;margin-top:34px;color:#efe9ff}
+  .scanstatus{color:var(--aura3);font-size:12.5px;letter-spacing:.16em;text-transform:uppercase;margin-top:12px;min-height:16px;font-weight:600}
+  .pbar{width:210px;height:4px;border-radius:4px;background:rgba(255,255,255,.08);margin:20px auto 0;overflow:hidden}
+  .pbar i{display:block;height:100%;width:0;border-radius:4px;background:linear-gradient(90deg,var(--aura),var(--aura2),var(--aura3))}
+
+  /* ---------- results ---------- */
+  .rkicker{text-align:center;font-size:11px;letter-spacing:.4em;text-transform:uppercase;color:var(--ash);font-weight:600;margin-bottom:14px}
+  .cardshell{border-radius:26px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 60px rgba(160,107,255,.22);animation:cardin .6s cubic-bezier(.2,.8,.2,1);transition:transform .25s,box-shadow .25s}
+  .cardshell:hover{transform:translateY(-3px);box-shadow:0 36px 90px rgba(0,0,0,.6),0 0 80px rgba(255,107,208,.3)}
+  @keyframes cardin{from{opacity:0;transform:translateY(16px) scale(.98)}to{opacity:1;transform:none}}
+  .cardimg{display:block;width:100%;height:auto;border-radius:26px}
+  .namebox{margin-top:12px}
+  .namebox input{width:100%;text-align:center;font-family:inherit;font-size:14px;font-weight:600;color:var(--ink);
+    background:var(--glass);border:1px solid var(--line);border-radius:13px;padding:13px 14px;transition:border-color .18s,box-shadow .18s;backdrop-filter:blur(10px)}
+  .namebox input::placeholder{color:var(--ash);font-weight:500}
+  .namebox input:focus{border-color:var(--aura2);box-shadow:0 0 0 3px rgba(255,107,208,.14)}
+  .hint{text-align:center;color:var(--ash);font-size:11.5px;margin-top:10px;letter-spacing:.02em}
+  .card{border-radius:28px;background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--line);padding:24px 22px 26px;text-align:center;position:relative;overflow:hidden;box-shadow:0 34px 80px rgba(0,0,0,.5)}
+  .card:before{content:"";position:absolute;inset:0;z-index:0;opacity:.55;pointer-events:none;background:radial-gradient(120% 90% at 50% -10%,var(--aura),transparent 55%)}
+  .card>*{position:relative;z-index:1}
+  .nft{width:132px;height:132px;margin:0 auto 20px;border-radius:20px;overflow:hidden;position:relative;box-shadow:0 0 40px var(--aura2)}
+  .nft img{width:100%;height:100%;object-fit:cover;display:block}
+  .nft .ring{position:absolute;inset:-3px;border-radius:22px;padding:3px;background:conic-gradient(from 0deg,var(--aura),var(--aura2),var(--aura3),var(--aura));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spin 6s linear infinite}
+  .scorewrap{display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap}
+  .ringmeter{--v:0;width:126px;height:126px;border-radius:50%;flex:0 0 auto;display:grid;place-items:center;position:relative;
+    background:conic-gradient(var(--aura2) calc(var(--v)*1%),rgba(255,255,255,.07) 0)}
+  .ringmeter:after{content:"";position:absolute;inset:9px;border-radius:50%;background:rgba(11,8,24,.9)}
+  .ringmeter .val{position:relative;z-index:1;font-weight:700;font-size:38px;line-height:1}
+  .ringmeter .of{position:relative;z-index:1;font-size:10px;color:var(--ash);letter-spacing:.12em;margin-top:2px}
+  .classwrap{text-align:left;min-width:128px}
+  .classlabel{font-size:10.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--ash)}
+  .classname{font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:32px;line-height:1.02;margin-top:3px;
+    background:linear-gradient(120deg,#fff,var(--aura2));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .auracolor{display:inline-flex;align-items:center;gap:8px;margin-top:9px;font-size:12.5px;font-weight:600}
+  .swatch{width:15px;height:15px;border-radius:5px;box-shadow:0 0 12px 1px var(--aura2)}
+  .reading{font-family:'Fraunces',serif;font-style:italic;font-size:17px;line-height:1.5;color:#ece6ff;margin:20px 4px 0}
+  .home{margin-top:20px;border-radius:18px;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:15px 14px;display:flex;align-items:center;justify-content:center;gap:12px}
+  .home .flag{font-size:32px;line-height:1}
+  .home .htxt{text-align:left}
+  .home .hl{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--ash)}
+  .home .hc{font-size:19px;font-weight:600;line-height:1.15;margin-top:2px}
+
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px;max-width:460px;margin-inline:auto}
+  @media(max-width:420px){.actions{grid-template-columns:1fr}}
+
+  .links{margin-top:30px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .links a{display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none;font-weight:600;font-size:13.5px;color:var(--ink);
+    background:var(--glass);border:1px solid var(--line);border-radius:13px;padding:14px 10px;transition:border-color .15s,transform .15s;backdrop-filter:blur(10px)}
+  .links a:hover{border-color:var(--aura2);transform:translateY(-1px)}
+  .links a.wide{grid-column:1/-1;background:linear-gradient(100deg,rgba(160,107,255,.2),rgba(255,107,208,.14));border-color:rgba(200,160,255,.4);font-weight:700;position:relative;overflow:hidden}
+  .links a.wide:after{content:"";position:absolute;top:0;left:-60%;width:42%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.22),transparent);transform:skewX(-18deg);animation:mintshine 4.6s ease-in-out infinite;pointer-events:none}
+  @keyframes mintshine{0%{left:-60%}62%,100%{left:135%}}
+  .foot{text-align:center;color:var(--ash);font-size:11.5px;margin-top:24px}
+  .foot b{color:#cfc6f0}
+  canvas#card{display:none}
+
+  /* reveal burst */
+  .burst{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:visible}
+  .burst span{position:absolute;top:24px;left:50%;width:8px;height:8px;border-radius:2px;opacity:0}
+  .burst.go span{animation:pop .9s ease-out forwards}
+  @keyframes pop{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(.3)}}
+</style>
+</head>
+<body>
+<div class="aurora"><i></i><i></i><i></i></div>
+<div class="grain"></div>
+
+<div class="wrap">
+
+  <!-- ======= SCREEN 1: INTRO ======= -->
+  <section class="screen active" id="s-intro">
+    <div class="head">
+      <div class="kicker">Adam's Aura</div>
+      <h1>Aura Score</h1>
+      <p class="tag">Upload your favorite NFT to rate its aura and reveal where it belongs.</p>
+    </div>
+
+    <label class="drop" id="drop">
+      <div class="orb"></div>
+      <h3>Drop your NFT here</h3>
+      <p>or tap to upload · PNG, JPG, GIF, WebP</p>
+      <input type="file" id="file" accept="image/*" />
+    </label>
+
+    <div class="preview" id="preview" style="display:none">
+      <div class="pvframe"><img id="pvimg" alt="Your NFT" /><div class="ring"></div></div>
+      <div class="changelink" id="changeLink">choose a different image</div>
+      <button class="btn" id="scanBtn">✦ Scan the Aura</button>
+    </div>
+  </section>
+
+  <!-- ======= SCREEN 2: SCANNING ======= -->
+  <section class="screen" id="s-scan">
+    <div class="scanwrap">
+      <div class="orbit">
+        <div class="halo"></div>
+        <div class="sparks" id="sparks"></div>
+        <div class="r r3"></div><div class="r r2"></div><div class="r r1"></div>
+        <div class="core"><img id="scanImg" alt="" /></div>
+      </div>
+      <div class="scanttl">Reading the aura…</div>
+      <div class="scanstatus" id="status">Aligning to the ley grid</div>
+      <div class="pbar"><i id="pbar"></i></div>
+    </div>
+  </section>
+
+  <!-- ======= SCREEN 3: RESULTS ======= -->
+  <section class="screen" id="s-results">
+    <div class="rkicker">✨ Your Aura Card</div>
+    <div class="cardshell"><img id="cardImg" class="cardimg" alt="Your NFT's aura score card" /></div>
+    <div class="namebox"><input id="nftName" type="text" maxlength="28" autocomplete="off" spellcheck="false" placeholder="✎ Name your NFT (shown atop the card)" /></div>
+    <div class="hint">Right-click or long-press the card to copy · or download it below</div>
+
+    <div class="actions">
+      <button class="btn" id="dlBtn">⬇ Download Card</button>
+      <button class="btn ghost" id="shareBtn">𝕏 Share on X</button>
+    </div>
+    <button class="btn ghost" id="againBtn" style="margin-top:10px;max-width:460px">↺ Score another NFT</button>
+
+    <div class="links">
+      <a class="wide" id="mintLink" href="#" target="_blank" rel="noopener">🌿 Mint Adam's Aura (free) on OpenSea</a>
+      <a href="https://opensea.io/collection/jpeg-jokers" target="_blank" rel="noopener">🃏 Genesis Collection</a>
+      <a href="https://opensea.io/token/robinhood/0xa9aa99d0e567de50c006243ceb1c09a98f707777" target="_blank" rel="noopener">🪙 AI Agent Token</a>
+      <a href="https://x.com/mememaxxers" target="_blank" rel="noopener">𝕏 Follow Us</a>
+      <a href="https://discord.gg/krVPuyksQy" target="_blank" rel="noopener">💬 Join the Jokers</a>
+    </div>
+    <div class="foot">powered by <b>Meme Maxxers AI Agents</b></div>
+  </section>
+</div>
+
+<canvas id="card" width="1080" height="1350"></canvas>
+
+<script>
+/* ============ CONFIG — update the mint link when live ============ */
+const CONFIG = {
+  mintUrl: "https://opensea.io/collection/adams-aura",   // TODO: replace with live free-mint URL
+  shareUrl: "https://proofofreal.app/social/aurascore"
+};
+document.getElementById("mintLink").href = CONFIG.mintUrl;
+
+/* ============ DATA ============ */
+const CITIES = [
+  ["New York City","🇺🇸","🗽"],["Tokyo","🇯🇵","🌸"],["London","🇬🇧","🎡"],["Paris","🇫🇷","🗼"],["Dubai","🇦🇪","🕌"],
+  ["Los Angeles","🇺🇸","🎬"],["Hong Kong","🇭🇰","🏙️"],["Singapore","🇸🇬","🦁"],["Seoul","🇰🇷","🎎"],["Bangkok","🇹🇭","🛺"],
+  ["Miami","🇺🇸","🌴"],["Las Vegas","🇺🇸","🎰"],["Rome","🇮🇹","🏛️"],["Barcelona","🇪🇸","🎨"],["Amsterdam","🇳🇱","🌷"],
+  ["Istanbul","🇹🇷","🧿"],["Sydney","🇦🇺","🦘"],["Rio de Janeiro","🇧🇷","🏖️"],["Mexico City","🇲🇽","🌮"],["Shanghai","🇨🇳","🏮"],
+  ["Toronto","🇨🇦","🍁"],["Mumbai","🇮🇳","🛕"],["San Francisco","🇺🇸","🌉"],["Da Nang","🇻🇳","🐉"],["Cape Town","🇿🇦","🐧"]
+];
+const READINGS = [
+  "Serene, untouchable, and glowing like it's never once checked the floor price.",
+  "Radiates soft-launch confidence — effortless, magnetic, impossible to ignore.",
+  "An aura so warm it could onboard your entire timeline in one glance.",
+  "Pure main-character energy. Moisturized, unbothered, thriving.",
+  "Quietly magnetic — the whole room reorganizes itself around this one.",
+  "Calm, luminous, and completely allergic to bad vibes.",
+  "Old-money serenity radiating out of a brand-new wallet.",
+  "The aura of someone who says 'gm' and genuinely means it.",
+  "Cool-toned, collected, and secretly running the entire group chat.",
+  "Golden-hour energy in a JPEG — everything softens when it walks in.",
+  "Feral in the best possible way: chaotic aura, immaculate taste.",
+  "Zen on the surface, degen underneath — perfectly, dangerously balanced.",
+  "Glows like a rare trait the floor will never deserve.",
+  "Effortlessly iconic. Would get past the velvet rope without an invite.",
+  "Big diamond-hand aura — this one does not flinch, ever.",
+  "Soft, dreamy, and quietly convinced it's already the blue chip.",
+  "Electric presence. Sparks conversations it never even joins.",
+  "Grounded, sunlit, and radiating 'everything's going to be okay' energy."
+];
+const CLASSES = [[97,"Transcendent"],[90,"Celestial"],[83,"Radiant"],[76,"Luminous"],[69,"Mystic"],[0,"Emergent"]];
+function classFor(s){for(const [t,n] of CLASSES)if(s>=t)return n;return "Emergent";}
+
+/* ============ PRNG ============ */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+/* ============ image aura analysis ============ */
+function hue2rgb(p,q,t){if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;}
+function hslToRgb(h,s,l){h/=360;let r,g,b;if(s===0){r=g=b=l;}else{const q=l<.5?l*(1+s):l+s-l*s,p=2*l-q;r=hue2rgb(p,q,h+1/3);g=hue2rgb(p,q,h);b=hue2rgb(p,q,h-1/3);}return[Math.round(r*255),Math.round(g*255),Math.round(b*255)];}
+function rgbToHsl(r,g,b){r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h=0,s=0,l=(mx+mn)/2;if(mx!==mn){const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);if(mx===r)h=(g-b)/d+(g<b?6:0);else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;h*=60;}return[h,s,l];}
+function analyze(img){
+  const N=52,c=document.createElement("canvas");c.width=N;c.height=N;
+  const ctx=c.getContext("2d");ctx.drawImage(img,0,0,N,N);
+  const d=ctx.getImageData(0,0,N,N).data;let hash=2166136261>>>0;const buckets={};
+  for(let i=0;i<d.length;i+=4){const r=d[i],g=d[i+1],b=d[i+2],a=d[i+3];if(a<128)continue;
+    hash=Math.imul((hash^r)>>>0,16777619)>>>0;hash=Math.imul((hash^g)>>>0,16777619)>>>0;hash=Math.imul((hash^b)>>>0,16777619)>>>0;
+    const key=(r>>4)+"_"+(g>>4)+"_"+(b>>4);const bk=buckets[key]||(buckets[key]={r:0,g:0,b:0,c:0});bk.r+=r;bk.g+=g;bk.b+=b;bk.c++;}
+  const list=Object.values(buckets).map(bk=>{const r=bk.r/bk.c,g=bk.g/bk.c,b=bk.b/bk.c;const[h,s,l]=rgbToHsl(r,g,b);return{r,g,b,h,s,l,score:bk.c*(0.25+s)*(l>.12&&l<.95?1:0.4)};}).sort((a,b)=>b.score-a.score);
+  const top=list[0]||{r:150,g:110,b:255,h:265,s:.6,l:.6};const pal=[top];
+  for(const cand of list){if(pal.length>=3)break;if(pal.every(p=>Math.abs(((p.h-cand.h+540)%360)-180)>28))pal.push(cand);}
+  while(pal.length<3){const p=pal[pal.length-1];pal.push({h:(p.h+40)%360,s:Math.max(.5,p.s),l:.6});}
+  return{hash,pal,top};
+}
+function auraColorName(h,s,l){
+  if(s<0.16)return l>0.62?"Ivory Halo":(l<0.28?"Obsidian Veil":"Silver Static");
+  const map=[[16,"Infernal Ember"],[42,"Amber Sunfire"],[66,"Golden Ascendant"],[95,"Chartreuse Surge"],[150,"Verdant Oracle"],[186,"Seafoam Mirage"],[212,"Cyan Current"],[246,"Azure Depths"],[282,"Cosmic Violet"],[312,"Amethyst Dream"],[338,"Neon Orchid"],[360,"Crimson Pulse"]];
+  for(const [t,n] of map)if(h<=t)return n;return "Crimson Pulse";
+}
+function derive(a){
+  const rng=mulberry32(a.hash);const[h,s,l]=[a.top.h,a.top.s,a.top.l];
+  let score=Math.round(66+rng()*30+(s*6)-(Math.abs(l-.55)*8));score=Math.max(66,Math.min(99,score));
+  return{score,cls:classFor(score),city:CITIES[Math.floor(rng()*CITIES.length)],reading:READINGS[Math.floor(rng()*READINGS.length)],colorName:auraColorName(h,s,l)};
+}
+function cssColor(p){const[r,g,b]=hslToRgb(p.h,Math.min(.92,Math.max(.5,p.s)),Math.min(.72,Math.max(.5,p.l)));return "rgb("+r+","+g+","+b+")";}
+function applyTheme(pal){const st=document.documentElement.style;st.setProperty("--aura",cssColor(pal[0]));st.setProperty("--aura2",cssColor(pal[1]||pal[0]));st.setProperty("--aura3",cssColor(pal[2]||pal[0]));}
+
+/* ============ state + screens ============ */
+let IMG=null,LAST=null,PAL=null,IMGURL=null,CARDNAME="";
+function go(id){document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));document.getElementById(id).classList.add("active");window.scrollTo({top:0,behavior:"smooth"});}
+function renderCard(){ if(!LAST||!PAL)return;
+  (document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(()=>{
+    drawCard(LAST,PAL);document.getElementById("cardImg").src=document.getElementById("card").toDataURL("image/png");
+  });
+}
+
+/* ============ upload ============ */
+const drop=document.getElementById("drop"),fileInput=document.getElementById("file"),
+  preview=document.getElementById("preview"),pvimg=document.getElementById("pvimg");
+function loadFile(f){
+  if(!f||!f.type.startsWith("image/"))return;
+  if(IMGURL)URL.revokeObjectURL(IMGURL);IMGURL=URL.createObjectURL(f);
+  const im=new Image();im.onload=()=>{IMG=im;pvimg.src=IMGURL;preview.style.display="block";
+    try{PAL=analyze(im).pal;applyTheme(PAL);}catch(e){}
+    preview.scrollIntoView({behavior:"smooth",block:"center"});};im.src=IMGURL;
+}
+fileInput.addEventListener("change",e=>loadFile(e.target.files[0]));
+document.getElementById("changeLink").addEventListener("click",e=>{e.preventDefault();fileInput.click();});
+["dragenter","dragover"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add("drag");}));
+["dragleave","drop"].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove("drag");}));
+drop.addEventListener("drop",e=>{if(e.dataTransfer.files[0])loadFile(e.dataTransfer.files[0]);});
+
+/* ============ scanning ============ */
+const STATUS=["Reading light signature","Measuring chroma resonance","Aligning to the ley grid","Calibrating the aura field","Consulting the oracle","Sealing the reading"];
+// scatter orbiting sparks
+(function(){const s=document.getElementById("sparks");for(let i=0;i<6;i++){const el=document.createElement("span");const ang=i/6*Math.PI*2;const R=150;el.style.transform="translate(-50%,-50%) translate("+Math.cos(ang)*R+"px,"+Math.sin(ang)*R+"px)";el.style.opacity=(0.5+Math.random()*0.5);s.appendChild(el);}})();
+
+document.getElementById("scanBtn").addEventListener("click",()=>{
+  if(!IMG)return;
+  document.getElementById("scanImg").src=IMGURL;
+  go("s-scan");
+  const st=document.getElementById("status"),pb=document.getElementById("pbar");
+  let i=0;st.textContent=STATUS[0];pb.style.width="0";
+  requestAnimationFrame(()=>{pb.style.transition="width 3.1s cubic-bezier(.4,0,.2,1)";pb.style.width="100%";});
+  const iv=setInterval(()=>{i=(i+1)%STATUS.length;st.textContent=STATUS[i];},540);
+  setTimeout(()=>{clearInterval(iv);
+    const a=analyze(IMG);PAL=a.pal;LAST=derive(a);applyTheme(PAL);
+    renderCard();go("s-results");
+  },3200);
+});
+const nameInput=document.getElementById("nftName");
+nameInput.addEventListener("input",()=>{CARDNAME=nameInput.value;renderCard();});
+document.getElementById("againBtn").addEventListener("click",()=>{CARDNAME="";nameInput.value="";go("s-intro");});
+
+/* ============ share card (canvas, image auto-embedded) ============ */
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function fitBrand(ctx,t,cx,y,maxW,px){let f=px;ctx.font="600 "+f+"px 'Space Grotesk',sans-serif";while(ctx.measureText(t).width>maxW&&f>14){f-=1;ctx.font="600 "+f+"px 'Space Grotesk',sans-serif";}ctx.fillText(t,cx,y);}
+function drawCard(r,pal){
+  const cv=document.getElementById("card"),ctx=cv.getContext("2d"),W=cv.width,H=cv.height;
+  const c0=cssColor(pal[0]),c1=cssColor(pal[1]||pal[0]),c2=cssColor(pal[2]||pal[0]);
+  ctx.fillStyle="#07060d";ctx.fillRect(0,0,W,H);
+  let g=ctx.createRadialGradient(W*.2,H*.04,60,W*.2,H*.04,W*1.1);g.addColorStop(0,c1);g.addColorStop(.55,"rgba(10,8,20,0)");ctx.globalAlpha=.6;ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  g=ctx.createRadialGradient(W*.9,H*.96,60,W*.9,H*.96,W*1.1);g.addColorStop(0,c2);g.addColorStop(.55,"rgba(10,8,20,0)");ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.globalAlpha=1;
+  const vg=ctx.createRadialGradient(W/2,H*.46,H*.32,W/2,H*.5,H*.76);vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(0,0,0,.34)");ctx.fillStyle=vg;ctx.fillRect(0,0,W,H);
+  ctx.textAlign="center";ctx.textBaseline="alphabetic";
+  const brand=(CARDNAME&&CARDNAME.trim())?CARDNAME.trim().toUpperCase():"A D A M ' S   A U R A";
+  ctx.fillStyle="rgba(224,214,255,.8)";fitBrand(ctx,brand,W/2,100,W-190,30);
+  // BIG NFT
+  const S=580,IX=(W-S)/2,IY=142;
+  ctx.save();ctx.shadowColor=c0;ctx.shadowBlur=85;roundRect(ctx,IX,IY,S,S,48);ctx.fillStyle="#000";ctx.fill();ctx.restore();
+  ctx.save();roundRect(ctx,IX,IY,S,S,48);ctx.clip();
+  if(IMG){const ar=IMG.width/IMG.height;let dw=S,dh=S,dx=IX,dy=IY;if(ar>1){dh=S;dw=S*ar;dx=IX-(dw-S)/2;}else{dw=S;dh=S/ar;dy=IY-(dh-S)/2;}ctx.drawImage(IMG,dx,dy,dw,dh);}
+  ctx.restore();
+  const rg=ctx.createLinearGradient(IX,IY,IX+S,IY+S);rg.addColorStop(0,c0);rg.addColorStop(.5,c1);rg.addColorStop(1,c2);
+  ctx.strokeStyle=rg;ctx.lineWidth=9;roundRect(ctx,IX,IY,S,S,48);ctx.stroke();
+  const lblFont="600 27px 'Space Grotesk',sans-serif",gap=22;
+  // AURA SCORE — label left of number
+  let cy=IY+S+80;
+  ctx.font=lblFont;const l1=ctx.measureText("AURA SCORE").width;
+  ctx.font="700 108px 'Space Grotesk',sans-serif";const nw=ctx.measureText(String(r.score)).width;
+  ctx.font="500 36px 'Space Grotesk',sans-serif";const sw=ctx.measureText(" /100").width;
+  let x=(W-(l1+gap+nw+sw))/2;
+  ctx.textAlign="left";ctx.textBaseline="middle";
+  ctx.font=lblFont;ctx.fillStyle="rgba(208,198,244,.72)";ctx.fillText("AURA SCORE",x,cy);x+=l1+gap;
+  ctx.save();ctx.shadowColor=c1;ctx.shadowBlur=28;ctx.font="700 108px 'Space Grotesk',sans-serif";ctx.fillStyle="#fff";ctx.fillText(String(r.score),x,cy);ctx.restore();x+=nw;
+  ctx.font="500 36px 'Space Grotesk',sans-serif";ctx.fillStyle="rgba(220,210,255,.6)";ctx.fillText(" /100",x,cy);
+  // AURA CLASS — label left of class
+  cy+=110;
+  ctx.font=lblFont;const l2=ctx.measureText("AURA CLASS").width;
+  ctx.font="italic 600 66px 'Fraunces',serif";const cwid=ctx.measureText(r.cls).width;
+  x=(W-(l2+gap+cwid))/2;
+  ctx.font=lblFont;ctx.fillStyle="rgba(208,198,244,.72)";ctx.fillText("AURA CLASS",x,cy);x+=l2+gap;
+  ctx.font="italic 600 66px 'Fraunces',serif";ctx.fillStyle=c1;ctx.fillText(r.cls,x,cy);
+  ctx.textAlign="center";
+  // Dream home — bigger pill
+  let y=cy+94;const chip=(r.city[2]||"🌆")+"  Dream home · "+r.city[0];ctx.font="600 40px 'Space Grotesk',sans-serif";
+  const cw=ctx.measureText(chip).width+66,hgt=88,cx=(W-cw)/2;
+  roundRect(ctx,cx,y-hgt/2,cw,hgt,hgt/2);ctx.fillStyle="rgba(255,255,255,.08)";ctx.fill();ctx.strokeStyle="rgba(200,180,255,.3)";ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle="#fff";ctx.fillText(chip,W/2,y);
+  // reading — bigger
+  ctx.textBaseline="alphabetic";y+=110;ctx.fillStyle="rgba(233,227,255,.93)";ctx.font="italic 500 43px 'Fraunces',serif";wrap(ctx,"“"+r.reading+"”",W/2,y,W-130,54);
+  // aesthetic aura border
+  const bg=ctx.createLinearGradient(0,0,W,H);bg.addColorStop(0,c0);bg.addColorStop(.5,c1);bg.addColorStop(1,c2);
+  ctx.globalAlpha=.6;ctx.strokeStyle=bg;ctx.lineWidth=4;roundRect(ctx,26,26,W-52,H-52,46);ctx.stroke();ctx.globalAlpha=1;
+}
+function wrap(ctx,text,cx,y,maxW,lh){const words=text.split(" ");let line="",lines=[];for(const w of words){const t=line?line+" "+w:w;if(ctx.measureText(t).width>maxW&&line){lines.push(line);line=w;}else line=t;}if(line)lines.push(line);lines.forEach((l,i)=>ctx.fillText(l,cx,y+i*lh));}
+
+document.getElementById("dlBtn").addEventListener("click",()=>{
+  document.getElementById("card").toBlob(b=>{const u=URL.createObjectURL(b);const a=document.createElement("a");a.href=u;a.download="aura-score.png";a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);},"image/png");
+});
+const CLASS_EMOJI={Transcendent:"🌌",Celestial:"⭐",Radiant:"🌟",Luminous:"💫",Mystic:"🔮",Emergent:"🌱"};
+document.getElementById("shareBtn").addEventListener("click",()=>{
+  if(!LAST)return;
+  const txt=
+    "My Favorite NFT's Aura Score: "+LAST.score+" ✨\n\n"+
+    "Aura Class: "+LAST.cls+" "+(CLASS_EMOJI[LAST.cls]||"✨")+"\n\n"+
+    "Its dream home is "+LAST.city[0]+" "+LAST.city[2]+"\n\n"+
+    "Score your JPEG's aura with @mememaxxers 👇\n\n"+
+    CONFIG.shareUrl;
+  window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(txt),"_blank");
+});
+</script>
+</body>
+</html>
