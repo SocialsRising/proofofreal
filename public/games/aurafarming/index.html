@@ -394,7 +394,7 @@ function handleTitleClick(x,y){ const hit=b=>b&&x>=b.x&&x<=b.x+b.w&&y>=b.y&&y<=b
 
 /* ---------------- Game over ---------------- */
 function shareText(){ const p=plant(); const url=CONFIG.SITE_URL;
-  return `I farmed ${aura.toLocaleString()} AURA 🌟\n\nGrew a ${p[1]} ${p[2]}\n\nCome farm some aura with @mememaxxers 👇\n\n${url}`; }
+  return `I farmed ${aura.toLocaleString()} AURA 🌟\n\nGrew a ${p[1]} ${p[2]}\n\nCome farm aura with @mememaxxers 👇\n\n${url}`; }
 function shareNow(){ const web='https://twitter.com/intent/tweet?text='+encodeURIComponent(shareText());
   if(isTouch){ const app='twitter://post?message='+encodeURIComponent(shareText()); let opened=false; const oh=()=>{opened=true;}; document.addEventListener('visibilitychange',oh,{once:true}); window.location.href=app; setTimeout(()=>{ document.removeEventListener('visibilitychange',oh); if(!opened) window.open(web,'_blank'); },800); } else window.open(web,'_blank'); }
 function drawOver(){ drawBG(); ctx.fillStyle='rgba(8,4,18,0.86)'; ctx.fillRect(0,0,VW,VH);
