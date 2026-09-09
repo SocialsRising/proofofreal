@@ -2,79 +2,80 @@
 import { use, useState } from "react";
 import Link from "next/link";
 import { erc20Abi, formatEther } from "viem";
-import { useAccount, usePublicClient, useReadContract, useReadContracts, useWalletClient } from "wagmi";
-import { useQuery } from "@tanstack/react-query";
+import { useAccount, usePublicClient, useReadContract, useReadContracts, useSwitchChain, useWriteContract } from "wagmi";
 import { Art } from "../../_components/Art";
 import { NightCard, Stat } from "../../_components/Cards";
 import { useToast } from "../../_components/Toast";
 import { WalletButton } from "../../_components/Wallet";
 import { useToken } from "../../_lib/useTokens";
 import { EXAMPLE_NIGHTS } from "../../_lib/mock";
-import { CHAIN, CHAIN_ID, EXPLORER, IS_TESTNET, SITE } from "../../_lib/config";
-import { MULTIPLIERS, feeSummary } from "../../_lib/presets";
+import { SITE, TOTAL_SUPPLY } from "../../_lib/config";
+import { CHAINS, chainById } from "../../_lib/chains";
+import { FeeLockerAbi, FounderVaultAbi, LaunchFactoryAbi } from "../../_lib/abi";
+import { HOLD_TIERS, STREAK_BOOST, feeSummary } from "../../_lib/presets";
 import { fmt, isAddress, short, usd } from "../../_lib/format";
-import { makeClanker } from "../../_lib/clanker";
+import { readable } from "../../_lib/launchpad";
 
-type Tab = "stake" | "game" | "chart" | "share";
+type Tab = "hold" | "game" | "chart" | "share";
 
 export default function TokenPage({ params }: { params: Promise<{ address: string }> }) {
   const { address: id } = use(params);
   const { data: t, isLoading } = useToken(id);
-  const [tab, setTab] = useState<Tab>("stake");
-  const { address: me } = useAccount();
+  const [tab, setTab] = useState<Tab>("hold");
+  const { address: me, chainId: myChain } = useAccount();
+  const { switchChainAsync } = useSwitchChain();
+  const { writeContractAsync } = useWriteContract();
   const toast = useToast();
   const onchain = isAddress(id);
   const addr = id as `0x${string}`;
+  const chain = chainById(t?.chainId) ?? CHAINS.base;
+  const factory = chain.factory;
+  const publicClient = usePublicClient({ chainId: chain.id });
 
   const { data: reads } = useReadContracts({
     allowFailure: true, query: { enabled: onchain },
     contracts: [
-      { address: addr, abi: erc20Abi, functionName: "name", chainId: CHAIN_ID },
-      { address: addr, abi: erc20Abi, functionName: "symbol", chainId: CHAIN_ID },
-      { address: addr, abi: erc20Abi, functionName: "totalSupply", chainId: CHAIN_ID },
+      { address: addr, abi: erc20Abi, functionName: "name", chainId: chain.id },
+      { address: addr, abi: erc20Abi, functionName: "symbol", chainId: chain.id },
     ],
   });
-  const { data: myBal } = useReadContract({ address: addr, abi: erc20Abi, functionName: "balanceOf", args: me ? [me] : undefined, chainId: CHAIN_ID, query: { enabled: onchain && !!me } });
-  const chainName = reads?.[0]?.result as string | undefined;
-  const chainSymbol = reads?.[1]?.result as string | undefined;
+  const { data: myBal } = useReadContract({ address: addr, abi: erc20Abi, functionName: "balanceOf", args: me ? [me] : undefined, chainId: chain.id, query: { enabled: onchain && !!me } });
+  const { data: lockerAddr } = useReadContract({ address: factory, abi: LaunchFactoryAbi, functionName: "feeLocker", chainId: chain.id, query: { enabled: onchain && !!factory } });
+  const { data: vaultAddr } = useReadContract({ address: factory, abi: LaunchFactoryAbi, functionName: "vault", chainId: chain.id, query: { enabled: onchain && !!factory } });
+  const tokenId = t?.tokenId ? BigInt(t.tokenId) : undefined;
+  const { data: position, refetch: refetchPos } = useReadContract({ address: lockerAddr, abi: FeeLockerAbi, functionName: "positions", args: tokenId !== undefined ? [tokenId] : undefined, chainId: chain.id, query: { enabled: !!lockerAddr && tokenId !== undefined } });
+  const { data: vaultLock } = useReadContract({ address: vaultAddr, abi: FounderVaultAbi, functionName: "locks", args: t ? [addr, t.creator as `0x${string}`] : undefined, chainId: chain.id, query: { enabled: !!vaultAddr && onchain && !!t } });
 
-  // Creator's claimable trading fees, straight from Clanker.
-  const publicClient = usePublicClient({ chainId: CHAIN_ID });
-  const { data: wallet } = useWalletClient();
-  const isCreator = !!t && !!me && t.creator.toLowerCase() === me.toLowerCase();
-  const { data: claimable, refetch } = useQuery({
-    queryKey: ["claimable", id, me],
-    enabled: onchain && !!me && !!publicClient && !!wallet && isCreator,
-    queryFn: async () => {
-      const c = makeClanker({ ...wallet!, chain: CHAIN }, publicClient!);
-      const [paired] = await Promise.all([c.availableRewards({ token: addr, rewardRecipient: me! })]);
-      return paired as bigint;
-    },
-  });
-  const [claiming, setClaiming] = useState(false);
-  async function claim() {
-    if (!wallet || !publicClient || !me) return;
-    setClaiming(true);
+  const [collecting, setCollecting] = useState(false);
+  async function collect() {
+    if (!lockerAddr || tokenId === undefined || !publicClient) return;
+    setCollecting(true);
     try {
-      const c = makeClanker({ ...wallet, chain: CHAIN }, publicClient);
-      const r = await c.claimRewards({ token: addr, rewardRecipient: me });
-      if (r.error) throw new Error(r.error.message);
-      toast("Claim sent"); refetch();
-    } catch (e) { toast(e instanceof Error ? e.message : "Claim failed"); } finally { setClaiming(false); }
+      if (myChain !== chain.id) await switchChainAsync({ chainId: chain.id });
+      const hash = await writeContractAsync({ address: lockerAddr, abi: FeeLockerAbi, functionName: "collect", args: [tokenId], chainId: chain.id });
+      await publicClient.waitForTransactionReceipt({ hash });
+      toast("Fees collected and paid out"); refetchPos();
+    } catch (e) { toast(readable(e)); } finally { setCollecting(false); }
   }
 
   if (isLoading) return <div className="empty" style={{ marginTop: 40 }}>Loading…</div>;
-  if (!t) return <div className="empty" style={{ marginTop: 40 }}>Token not found. {onchain && <span>It may not have been launched here — <a href={`${EXPLORER}/token/${id}`} style={{ textDecoration: "underline" }}>view on Basescan</a>.</span>}</div>;
+  if (!t) return <div className="empty" style={{ marginTop: 40 }}>Token not found. {onchain && <span>It may not have been launched here — <a href={`${chain.explorer}/token/${id}`} style={{ textDecoration: "underline" }}>view on the explorer</a>.</span>}</div>;
 
   const ex = t.example;
-  const fee = feeSummary(t.creatorFee, t.split);
+  const fee = feeSummary(t.split);
   const nights = EXAMPLE_NIGHTS.filter((n) => n.token === t.address);
-  const name = chainName ?? t.name, symbol = chainSymbol ?? t.symbol;
-  const shareText = `${short(me) || "I"} just found $${symbol} on Meme Maxxers Launchpad — ${t.lockPct ? `founder locked ${t.lockPct}% for ${t.lockDays} days.` : "fees go to stakers."}`;
+  const name = (reads?.[0]?.result as string | undefined) ?? t.name, symbol = (reads?.[1]?.result as string | undefined) ?? t.symbol;
+  const wethIs0 = position && (position[0] as string).toLowerCase() === chain.weth.toLowerCase();
+  const collectedEth = position ? Number(formatEther((wethIs0 ? position[3] : position[4]) as bigint)) : 0;
+  const isCreator = !!me && t.creator.toLowerCase() === me.toLowerCase();
+  const myTokens = myBal !== undefined ? Number(formatEther(myBal)) : 0;
+  const myTier = HOLD_TIERS.filter((x) => myTokens >= x).length; // 0..9
+  const nextTier = HOLD_TIERS[myTier];
+  const shareText = `${short(me) || "I"} just found $${symbol} on Meme Maxxers Launchpad — ${t.lockPct ? `founder locked ${t.lockPct}% for ${t.lockDays} days.` : `${fee.stakerPct}% of every trade goes to holders.`}`;
   const shareUrl = `${SITE}/launchpad/token/${t.address}`;
   const xIntent = `https://x.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`;
   const castIntent = `https://warpcast.com/~/compose?text=${encodeURIComponent(shareText)}&embeds[]=${encodeURIComponent(shareUrl)}`;
-  const swapUrl = IS_TESTNET ? `${EXPLORER}/token/${t.address}` : `https://app.uniswap.org/swap?chain=base&outputCurrency=${t.address}`;
+  const nextSunday = (() => { const d = new Date(); d.setUTCDate(d.getUTCDate() + ((7 - d.getUTCDay()) % 7 || 7)); return d.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" }); })();
 
   return (
     <>
@@ -82,7 +83,7 @@ export default function TokenPage({ params }: { params: Promise<{ address: strin
         <div><Art symbol={symbol} image={t.image} size="xl" className="big" /></div>
         <div style={{ display: "grid", gap: 16 }}>
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-            <span className="tag soft">{IS_TESTNET && onchain ? "Base Sepolia" : "Base"}</span>
+            <span className="tag soft">{chain.short}</span>
             {!ex && <span className="tag lemon">Live</span>}
             {ex && <span className="tag soft">Example</span>}
             {t.gameName && <span className="tag grape">🎮 {ex?.gameKind ?? t.gameName}</span>}
@@ -94,55 +95,63 @@ export default function TokenPage({ params }: { params: Promise<{ address: strin
             {t.socials.x && <a className="tag" href={/^https?:/.test(t.socials.x) ? t.socials.x : `https://x.com/${t.socials.x.replace(/^@/, "")}`} target="_blank" rel="noreferrer">𝕏 {t.socials.x.replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//, "@")}</a>}
             {t.socials.chat && <a className="tag" href={/^https?:/.test(t.socials.chat) ? t.socials.chat : `https://${t.socials.chat}`} target="_blank" rel="noreferrer">💬 Community</a>}
             {t.socials.web && <a className="tag" href={/^https?:/.test(t.socials.web) ? t.socials.web : `https://${t.socials.web}`} target="_blank" rel="noreferrer">🌐 {t.socials.web}</a>}
-            {onchain && <a className="tag mono" href={`${EXPLORER}/token/${t.address}`} target="_blank" rel="noreferrer">{short(t.address)}</a>}
+            {onchain && <a className="tag mono" href={`${chain.explorer}/token/${t.address}`} target="_blank" rel="noreferrer">{short(t.address)}</a>}
           </div>
           <div className="ctarow">
-            <a className="btn primary lg" href={swapUrl} target="_blank" rel="noreferrer">{IS_TESTNET ? "View on Basescan" : "Buy"}</a>
-            <button className="btn mint lg" onClick={() => setTab("stake")}>Stake</button>
+            <a className="btn primary lg" href={onchain ? chain.swapUrl(t.address) : "#"} target="_blank" rel="noreferrer">{chain.testnet ? "View on explorer" : "Buy"}</a>
+            <button className="btn mint lg" onClick={() => setTab("hold")}>Hold &amp; earn</button>
             {t.socials.game ? <a className="btn lg" href={t.socials.game} target="_blank" rel="noreferrer">Play</a> : t.gameName ? <Link className="btn lg" href={`/launchpad/night/${nights[0]?.id ?? "n1"}`}>Play</Link> : <Link className="btn lg" href="/launchpad/build">Add a game</Link>}
           </div>
           <div className="stats">
             <Stat v={ex ? usd(ex.mcap) : "—"} k="Market cap" />
             <Stat v={ex ? usd(ex.vol24) : "—"} k="24h volume" />
             <Stat v={ex ? fmt(ex.holders) : onchain ? "new" : "—"} k="Holders" />
-            <Stat v={ex ? `${ex.rewardsEth.toFixed(2)} ETH` : "0.00 ETH"} k="Paid to stakers" />
+            <Stat v={ex ? `${ex.rewardsEth.toFixed(2)} ETH` : `${(collectedEth * fee.stakerPct / fee.total).toFixed(4)} ETH`} k="Fees to holders" />
           </div>
         </div>
       </div>
 
       <div className="grid g2" style={{ marginTop: 10 }}>
-        <div className="trust"><div className="badge">{t.lockPct ? "🔒" : "!"}</div><div style={{ flex: 1 }}><div className="eyebrow">Founder alignment</div><div style={{ fontWeight: 800, fontSize: "1.05rem" }}>{t.lockPct ? `Founder has ${t.lockPct}% of supply locked for ${t.lockDays} days.` : "Founder has not locked any supply."}{t.devBuyEth ? ` Dev buy: ${t.devBuyEth} ETH.` : ""}</div></div></div>
-        <div className="trust"><div className="badge">%</div><div style={{ flex: 1 }}><div className="eyebrow">Fees on every trade · {fee.total}% total</div><div style={{ fontWeight: 800, fontSize: "1.05rem" }}>{fee.stakerPct}% to stakers · {fee.creatorPct}% to creator · 1% launchpad{t.split === "diamond" ? " · creator earns only by staking their own lock" : ""}</div></div></div>
+        <div className="trust"><div className="badge">{t.lockPct ? "🔒" : "!"}</div><div style={{ flex: 1 }}><div className="eyebrow">Founder alignment</div><div style={{ fontWeight: 800, fontSize: "1.05rem" }}>{t.lockPct ? `Founder has ${t.lockPct}% of supply locked for ${t.lockDays} days${vaultLock && Number(vaultLock[1]) ? ` (until ${new Date(Number(vaultLock[1]) * 1000).toLocaleDateString()})` : ""}.` : "Founder has not locked any supply."}{t.devBuyEth ? ` Dev buy: ${t.devBuyEth} ETH.` : ""}</div></div></div>
+        <div className="trust"><div className="badge">%</div><div style={{ flex: 1 }}><div className="eyebrow">Fee on every trade · {fee.total}%</div><div style={{ fontWeight: 800, fontSize: "1.05rem" }}>{fee.stakerPct}% to holders · {fee.creatorPct}% to creator · {fee.platformPct}% launchpad{t.split === "diamond" ? " · creator earns only by holding" : ""}</div></div></div>
       </div>
 
-      {isCreator && onchain && (
+      {onchain && tokenId !== undefined && (
         <div className="card pad" style={{ marginTop: 16, display: "flex", gap: 14, alignItems: "center", flexWrap: "wrap" }}>
-          <div style={{ flex: 1 }}><div className="eyebrow">Creator · your trading fees</div><div style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", fontWeight: 700 }}>{claimable !== undefined ? `${Number(formatEther(claimable)).toFixed(5)} ETH` : "…"}</div></div>
-          <button className="btn primary" onClick={claim} disabled={claiming || !claimable}>{claiming ? "Claiming…" : "Claim fees"}</button>
+          <div style={{ flex: 1 }}><div className="eyebrow">Trading fees collected so far</div><div style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem", fontWeight: 700 }}>{collectedEth.toFixed(5)} ETH</div><div className="muted" style={{ fontSize: ".85rem" }}>Anyone can trigger a payout; fees go straight to the creator, the holders pool and the launchpad.</div></div>
+          <button className="btn primary" onClick={collect} disabled={collecting || !me}>{collecting ? "Collecting…" : isCreator ? "Collect my fees" : "Collect & pay out"}</button>
         </div>
       )}
 
-      <div className="tabs">{([["stake", "Staking"], ["game", "Game & nights"], ["chart", "Chart & holders"], ["share", "Share"]] as [Tab, string][]).map(([k, l]) => <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{l}</button>)}</div>
+      <div className="tabs">{([["hold", "Hold & earn"], ["game", "Game & nights"], ["chart", "Chart & holders"], ["share", "Share"]] as [Tab, string][]).map(([k, l]) => <button key={k} className={tab === k ? "on" : ""} onClick={() => setTab(k)}>{l}</button>)}</div>
 
-      {tab === "stake" && (
+      {tab === "hold" && (
         <div className="grid g2">
           <div className="card pad" style={{ display: "grid", gap: 14 }}>
-            <h3>Community staking</h3>
-            <div className="kv"><span>Supply staked</span><b>{ex ? `${ex.stakedPct}%` : `${t.lockPct}% (founder lock)`}</b></div>
-            <div className="bar"><i style={{ width: `${ex ? ex.stakedPct : t.lockPct}%` }} /></div>
-            <div className="kv"><span>Creator locked</span><b>{t.lockPct}% · {t.lockDays}d</b></div>
-            <div className="kv"><span>Rewards paid so far</span><b>{ex ? `${ex.rewardsEth.toFixed(2)} ETH` : "0.00 ETH"}</b></div>
-            <div className="kv"><span>Est. reward rate</span><b>{ex?.apr ? `~${ex.apr}% / yr in ETH` : "—"}</b></div>
-            <div className="kv"><span>Payouts</span><b>Sunday · weekly</b></div>
-            <p className="muted" style={{ fontSize: ".85rem" }}>Rewards are {fee.stakerPct}% of every trade, paid in ETH, split by stake × time weight. Longer locks, bigger weight.</p>
-            {ex ? <button className="btn mint full" onClick={() => toast("Staking opens with the LMEOW launch")}>Stake {symbol}</button>
-              : <button className="btn full" disabled>Staking opens week 3</button>}
+            <h3>Hold &amp; earn</h3>
+            <p className="muted" style={{ fontSize: ".93rem" }}>No staking, no lockup. Every Sunday we snapshot every wallet holding {symbol}. Hit a tier, get paid in ETH from {fee.stakerPct}% of the week&apos;s trades. Hold across weeks for a streak boost up to 3×.</p>
+            <div className="kv"><span>Next snapshot</span><b>{nextSunday} · 00:00 UTC</b></div>
+            <div className="kv"><span>Paid so far</span><b>{ex ? `${ex.rewardsEth.toFixed(2)} ETH` : "first payout after week 1"}</b></div>
+            <div className="kv"><span>Supply in qualifying wallets</span><b>{ex ? `${ex.stakedPct}%` : "—"}</b></div>
+            <div className="bar"><i style={{ width: `${ex ? ex.stakedPct : 0}%` }} /></div>
+            {me ? (
+              <div className="note" style={{ display: "grid", gap: 4 }}>
+                <div className="kv"><span>You hold</span><b>{fmt(myTokens)} {symbol} · {(myTokens / TOTAL_SUPPLY * 100).toFixed(3)}%</b></div>
+                <div className="kv"><span>Your tier</span><b>{myTier ? `Tier ${myTier} · ${fmt(HOLD_TIERS[myTier - 1])}+` : "Below tier 1"}</b></div>
+                {nextTier && <div className="kv"><span>Next tier at</span><b>{fmt(nextTier)} {symbol}</b></div>}
+              </div>
+            ) : <WalletButton />}
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><a className="btn mint" href={onchain ? chain.swapUrl(t.address) : "#"} target="_blank" rel="noreferrer">Buy {symbol}</a><Link className="btn" href="/launchpad/profile">My rewards</Link></div>
           </div>
           <div style={{ display: "grid", gap: 14 }}>
-            <div className="card pad" style={{ display: "grid", gap: 10 }}><h3>Time weights</h3><div className="mult">{MULTIPLIERS.map(([d, m]) => <div key={d} className="chip"><b>{m}×</b><small>{d} days</small></div>)}</div></div>
             <div className="card pad" style={{ display: "grid", gap: 10 }}>
-              <h3>Your position</h3>
-              {me ? <p className="muted">{onchain && myBal !== undefined ? `You hold ${fmt(Number(formatEther(myBal)))} ${symbol}.` : "No positions yet."}</p> : <WalletButton />}
+              <h3>Tiers</h3>
+              <div className="mult">{HOLD_TIERS.map((x, i) => <div key={x} className={`chip ${myTier === i + 1 ? "on" : ""}`}><b>{fmt(x)}</b><small>tier {i + 1}</small></div>)}</div>
+              <p className="muted" style={{ fontSize: ".82rem" }}>Weight = balance × tier bonus × streak. Bigger tiers earn a larger share of the pool; LP, vault and exchange wallets are excluded.</p>
+            </div>
+            <div className="card pad" style={{ display: "grid", gap: 10 }}>
+              <h3>Streak boost</h3>
+              <div className="mult">{[1, 2, 4, 8, 11].map((w) => <div key={w} className="chip"><b>{STREAK_BOOST(w).toFixed(1)}×</b><small>{w === 1 ? "week 1" : `${w} weeks`}</small></div>)}</div>
             </div>
           </div>
         </div>
@@ -164,14 +173,14 @@ export default function TokenPage({ params }: { params: Promise<{ address: strin
       {tab === "chart" && (
         <div className="grid g2">
           <div style={{ display: "grid", gap: 12 }}>
-            {onchain && !IS_TESTNET ? (
-              <div className="chart" style={{ height: 420 }}><iframe title="chart" src={`https://dexscreener.com/base/${t.address}?embed=1&theme=dark&trades=0&info=0`} style={{ width: "100%", height: "100%", border: 0 }} /></div>
-            ) : <div className="empty" style={{ height: 200, display: "grid", placeItems: "center" }}>{IS_TESTNET && onchain ? "Charts are mainnet-only. Trades on Base Sepolia show on Basescan." : "Example token — no live chart."}</div>}
+            {onchain && chain.chartUrl ? (
+              <div className="chart" style={{ height: 420 }}><iframe title="chart" src={chain.chartUrl(t.address)} style={{ width: "100%", height: "100%", border: 0 }} /></div>
+            ) : <div className="empty" style={{ height: 200, display: "grid", placeItems: "center" }}>{chain.testnet && onchain ? "Charts are mainnet-only. Trades show on the explorer." : "Example token — no live chart."}</div>}
           </div>
           <div className="card pad holders">
             <h3>Distribution</h3>
-            {[["Founder lock (vault)", t.lockPct || 0], ["Liquidity pool", Math.max(0, 100 - (t.lockPct || 0) - (ex?.stakedPct ?? 0)).toFixed(1)], ["Community staking", ex ? Math.max(0, ex.stakedPct - t.lockPct).toFixed(1) : 0]].map(([n, p]) => <div key={String(n)} className="kv"><span>{n}</span><b>{p}%</b></div>)}
-            {onchain && <a className="btn sm" href={`${EXPLORER}/token/${t.address}#balances`} target="_blank" rel="noreferrer">Holders on Basescan</a>}
+            {[["Founder lock (vault)", t.lockPct || 0], ["Liquidity pool", Math.max(0, 100 - (t.lockPct || 0) - (ex?.stakedPct ?? 0)).toFixed(1)], ["Holders", ex ? ex.stakedPct.toFixed(1) : "—"]].map(([n, p]) => <div key={String(n)} className="kv"><span>{n}</span><b>{p}%</b></div>)}
+            {onchain && <a className="btn sm" href={`${chain.explorer}/token/${t.address}${chain.key === "robinhood" ? "?tab=holders" : "#balances"}`} target="_blank" rel="noreferrer">Holders on explorer</a>}
           </div>
         </div>
       )}
@@ -179,14 +188,14 @@ export default function TokenPage({ params }: { params: Promise<{ address: strin
       {tab === "share" && (
         <div className="grid g2">
           <div className="share">
-            <div className="eyebrow">mememaxxers · Base</div>
-            <div className="big" style={{ margin: "12px 0 16px" }}>{t.lockPct ? `${short(t.creator) || t.creator} locked ${t.lockPct}% of $${symbol} for ${t.lockDays} days.` : `$${symbol} is live. ${fee.stakerPct}% of every trade goes to stakers.`}</div>
-            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><span className="tag">{fee.total}% fee · {fee.stakerPct}% to stakers</span>{t.devBuyEth ? <span className="tag">Dev buy {t.devBuyEth} ETH</span> : null}</div>
+            <div className="eyebrow">mememaxxers · {chain.short}</div>
+            <div className="big" style={{ margin: "12px 0 16px" }}>{t.lockPct ? `${short(t.creator) || t.creator} locked ${t.lockPct}% of $${symbol} for ${t.lockDays} days.` : `$${symbol} is live. ${fee.stakerPct}% of every trade goes to holders.`}</div>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><span className="tag">{fee.total}% fee · {fee.stakerPct}% to holders</span>{t.devBuyEth ? <span className="tag">Dev buy {t.devBuyEth} ETH</span> : null}</div>
             <div className="paw">🐾</div>
           </div>
           <div className="card pad" style={{ display: "grid", gap: 12 }}>
             <h3>Share it</h3>
-            <p className="muted">Every launch, stake and game-night win gets a card like this. Post it, tag the token, flex a little.</p>
+            <p className="muted">Every launch, payout and game-night win gets a card like this. Post it, tag the token, flex a little.</p>
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
               <a className="btn primary" href={xIntent} target="_blank" rel="noreferrer">Post to X</a>
               <a className="btn" href={castIntent} target="_blank" rel="noreferrer">Cast it</a>

@@ -27,8 +27,8 @@ export async function POST(req: Request) {
   }
   const token = { ...body, address: body.address.toLowerCase(), creator: body.creator.toLowerCase(), createdAt: body.createdAt ?? new Date().toISOString() };
   // Only whitelisted fields are stored; anything on-chain is re-read from the chain, so a bad row can't lie about fees.
-  const clean = (({ address, chainId, name, symbol, image, description, creator, creatorFee, split, lockPct, lockDays, devBuyEth, socials, gameName, txHash, createdAt }) =>
-    ({ address, chainId, name, symbol, image, description, creator, creatorFee, split, lockPct, lockDays, devBuyEth, socials, gameName, txHash, createdAt }))(token);
+  const clean = (({ address, chainId, name, symbol, image, description, creator, split, pool, tokenId, lockPct, lockDays, devBuyEth, socials, gameName, txHash, referrer, createdAt }) =>
+    ({ address, chainId, name, symbol, image, description, creator, split, pool, tokenId, lockPct, lockDays, devBuyEth, socials, gameName, txHash, referrer, createdAt }))(token);
   const client = db();
   if (client) {
     const { error } = await client.from(TABLE).upsert({ id: clean.address, data: clean, created_at: clean.createdAt });

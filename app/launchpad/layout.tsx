@@ -4,8 +4,9 @@ import "./launchpad.css";
 import { Providers } from "./_components/Providers";
 import { Nav } from "./_components/Nav";
 import { ToastProvider } from "./_components/Toast";
+import { RefCapture } from "./_components/RefCapture";
+import { Suspense } from "react";
 import Link from "next/link";
-import { IS_TESTNET } from "./_lib/config";
 
 const syne = Syne({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-syne" });
 const manrope = Manrope({ subsets: ["latin"], weight: ["500", "600", "700", "800"], variable: "--font-manrope" });
@@ -21,13 +22,14 @@ export default function LaunchpadLayout({ children }: { children: React.ReactNod
     <div className={`mm ${syne.variable} ${manrope.variable} ${jb.variable}`}>
       <Providers>
         <ToastProvider>
+          <Suspense fallback={null}><RefCapture /></Suspense>
           <Nav />
           <main className="wrap">{children}</main>
           <footer>
             <div className="wrap">
               <div>Meme Maxxers Launchpad · an experiment on Base · <Link href="/launchpad/updates">Build-in-public log</Link></div>
               <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-                <span className="proto">{IS_TESTNET ? "Testnet · Base Sepolia" : "Live · Base"}</span>
+                <span className="proto">Base · Robinhood · Arc soon</span>
                 <Link href="/launchpad/profile">My Profile</Link>
               </div>
             </div>

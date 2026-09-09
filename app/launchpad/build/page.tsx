@@ -46,6 +46,14 @@ export default function Build() {
         <p className="muted" style={{ fontSize: ".85rem", marginTop: 10 }}>The builder integration is modular. New tools get added as they show up.</p>
       </section>
       <section className="blk">
+        <div className="case" style={{ gridTemplateColumns: "1fr" }}>
+          <div style={{ display: "flex", gap: 20, flexWrap: "wrap", alignItems: "center", justifyContent: "space-between" }}>
+            <div><div className="eyebrow" style={{ color: "var(--fg-2)" }}>NFT collections</div><div className="big" style={{ marginTop: 8 }}>Have an OpenSea collection? Attach a token to it.</div><p style={{ marginTop: 8, maxWidth: "54ch", color: "var(--fg-2)" }}>Anvil&apos;s NFT AMM gives a collection its own ERC-20 at a fixed tokens-per-NFT rate, on Base and Robinhood. Create the market there, then paste the token here so it gets a token page, holder rewards and game nights like any launch.</p></div>
+            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}><a className="btn primary lg" href="https://anvil.clutch.market/create-market" target="_blank" rel="noreferrer">Create NFT market</a><Link className="btn lg" href="/launchpad/incubate">Ask us to set it up</Link></div>
+          </div>
+        </div>
+      </section>
+      <section className="blk">
         <div className="split">
           <div className="card pad" style={{ display: "grid", gap: 14 }}>
             <h3>Connect a game to your token</h3>

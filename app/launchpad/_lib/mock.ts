@@ -1,28 +1,28 @@
 import type { GameNight, LaunchToken } from "./types";
 
-const ex = (o: Partial<LaunchToken> & Pick<LaunchToken, "address" | "name" | "symbol" | "creator" | "creatorFee" | "split" | "lockPct" | "lockDays" | "example">): LaunchToken => ({
+const ex = (o: Partial<LaunchToken> & Pick<LaunchToken, "address" | "name" | "symbol" | "creator" | "split" | "lockPct" | "lockDays" | "example">): LaunchToken => ({
   chainId: 8453, devBuyEth: 0, socials: {}, createdAt: "2026-09-02T00:00:00Z", ...o,
 });
 
 /** Example tokens shown until real launches exist. Marked as examples in the UI. */
 export const EXAMPLE_TOKENS: LaunchToken[] = [
-  ex({ address: "lmeow", name: "LMEOW", symbol: "LMEOW", creator: "memeMaxxers.eth", creatorFee: 4, split: "community", lockPct: 7.8, lockDays: 180,
+  ex({ address: "lmeow", name: "LMEOW", symbol: "LMEOW", creator: "memeMaxxers.eth", split: "community", lockPct: 7.8, lockDays: 180,
     description: "LMEOW is the first token launched through this launchpad and the live case study for it. Meme Maxxers run weekly game nights, sponsors put up prizes, and builders ship AI-generated games around a shared token.",
     socials: { x: "lmeow", web: "lmeow.gg", chat: "t.me/lmeowgames" }, gameName: "Cat Royale",
     example: { holders: 2184, vol24: 184200, mcap: 2410000, change: 12.4, stakedPct: 31.4, rewardsEth: 9.42, apr: 38, tagline: "Weekly multiplayer game nights. Play, win, get paid.", gameKind: "Multiplayer arena · 16 players" } }),
-  ex({ address: "pixl", name: "Pixel Pals", symbol: "PIXL", creator: "pixelpals.base.eth", creatorFee: 3, split: "equal", lockPct: 5, lockDays: 90,
+  ex({ address: "pixl", name: "Pixel Pals", symbol: "PIXL", creator: "pixelpals.base.eth", split: "equal", lockPct: 5, lockDays: 90,
     description: "A retro pixel-art IP community giving its fans a sub-economy. Skins and lobbies unlock with PIXL.", socials: { x: "pixelpals" }, gameName: "Pals Dungeon",
     example: { holders: 640, vol24: 32800, mcap: 410000, change: -3.1, stakedPct: 18.2, rewardsEth: 1.12, apr: 22, tagline: "Co-op pixel dungeon for a retro art community.", gameKind: "Co-op dungeon · 4 players" } }),
-  ex({ address: "dngn", name: "Dungeo", symbol: "DNGN", creator: "0x8f2a…c41e", creatorFee: 2, split: "diamond", lockPct: 10, lockDays: 180,
+  ex({ address: "dngn", name: "Dungeo", symbol: "DNGN", creator: "0x8f2a…c41e", split: "diamond", lockPct: 10, lockDays: 180,
     description: "A text-and-tiles roguelike where an AI runs the dungeon. Party tickets are paid in DNGN.", socials: { x: "dungeo_game", chat: "t.me/dungeo" }, gameName: "Dungeo",
     example: { holders: 312, vol24: 12100, mcap: 150000, change: 41, stakedPct: 44.9, rewardsEth: 0.44, apr: 61, tagline: "AI dungeon master. Bring your party.", gameKind: "Roguelike · 5 players" } }),
-  ex({ address: "bonk", name: "Bonkball", symbol: "BONK", creator: "bonkboss.eth", creatorFee: 4, split: "equal", lockPct: 0, lockDays: 0,
+  ex({ address: "bonk", name: "Bonkball", symbol: "BONK", creator: "bonkboss.eth", split: "equal", lockPct: 0, lockDays: 0,
     description: "A meme community that wanted something to actually do together on Fridays.", socials: { x: "bonkball" }, gameName: "Bonkball",
     example: { holders: 1020, vol24: 58900, mcap: 620000, change: 5.5, stakedPct: 6.1, rewardsEth: 2.05, apr: 17, tagline: "Dodgeball, but the ball is a meme.", gameKind: "Party game · 8 players" } }),
-  ex({ address: "orbt", name: "Orbital", symbol: "ORBT", creator: "orbitalstudio.eth", creatorFee: 1, split: "community", lockPct: 12, lockDays: 180,
+  ex({ address: "orbt", name: "Orbital", symbol: "ORBT", creator: "orbitalstudio.eth", split: "community", lockPct: 12, lockDays: 180,
     description: "A physics puzzler by a two-person studio. Weekly courses, community-designed levels.", socials: { web: "orbital.games" }, gameName: "Orbital",
     example: { holders: 228, vol24: 6400, mcap: 88000, change: -1.2, stakedPct: 27.7, rewardsEth: 0.21, apr: 29, tagline: "Gravity golf across a shared solar system.", gameKind: "Physics puzzle · async" } }),
-  ex({ address: "mosh", name: "Moshpit", symbol: "MOSH", creator: "moshpit.eth", creatorFee: 3, split: "community", lockPct: 4, lockDays: 30,
+  ex({ address: "mosh", name: "Moshpit", symbol: "MOSH", creator: "moshpit.eth", split: "community", lockPct: 4, lockDays: 30,
     description: "A music NFT collective giving holders a rhythm game and a reason to show up every week.", socials: { x: "moshpitwav" },
     example: { holders: 410, vol24: 9900, mcap: 120000, change: 8.8, stakedPct: 12.3, rewardsEth: 0.33, apr: 24, tagline: "Rhythm brawler for a music collective." } }),
 ];
@@ -36,7 +36,7 @@ export const EXAMPLE_NIGHTS: GameNight[] = [
 
 export const UPDATES = [
   { w: "Week 1", built: "Prototype of every page. Fee presets, staking multipliers, founder lock + dev buy, share cards. Restyled to chrome.", learned: "Nobody reads tokenomics. Everybody reads \"founder locked 7.8% for 180 days.\"", next: "Wire the launch page to Clanker on Base Sepolia. Launch LMEOW for real." },
-  { w: "Week 2", built: "Real wallet connect. Real launches through Clanker v4 on Base Sepolia: fees, creator/staker split, founder vault and dev buy all in one transaction. Token pages read the chain.", learned: "Clanker fixes supply at 100B, so percentages are the language, not token counts.", next: "Mainnet. LMEOW launch. Staking lock contract + first weekly ETH drop." },
+  { w: "Week 2", built: "Real wallet connect. Own launch factory: 1B token + Uniswap V3 pool + permanent LP lock + fee split + founder vault + dev buy in one transaction, on Base and Robinhood Chain. Soft staking with weekly snapshots.", learned: "No existing protocol did 1B supply on both Base and Robinhood, so we built a small Pons-style factory on Uniswap V3 instead of forking a tax-token launcher.", next: "Mainnet. LMEOW launch. Staking lock contract + first weekly ETH drop." },
 ];
 
 export const PALETTES: Record<string, [string, string, string]> = {

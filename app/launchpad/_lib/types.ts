@@ -6,14 +6,16 @@ export type LaunchToken = {
   image?: string | null;
   description?: string | null;
   creator: string;            // wallet
-  creatorFee: number;         // 1–4
   split: "equal" | "community" | "diamond";
+  pool?: string | null;
+  tokenId?: string | null;    // LP position id in FeeLocker
   lockPct: number;            // 0 if none
   lockDays: number;
   devBuyEth: number;
   socials: { x?: string; chat?: string; web?: string; game?: string };
   gameName?: string | null;
   txHash?: string | null;
+  referrer?: string | null;   // ?ref= that brought the creator here
   createdAt: string;
   /** example rows carry display-only numbers so the site looks alive before real volume exists */
   example?: { holders: number; vol24: number; mcap: number; change: number; stakedPct: number; rewardsEth: number; apr: number; tagline: string; gameKind?: string };
