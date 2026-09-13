@@ -22,7 +22,7 @@ module.exports = {
     hardhat: { allowUnlimitedContractSize: false },
     baseSepolia: { url: process.env.BASE_SEPOLIA_RPC || "https://sepolia.base.org", chainId: 84532, accounts },
     base: { url: process.env.BASE_RPC || "https://mainnet.base.org", chainId: 8453, accounts },
-    robinhood: { url: process.env.ROBINHOOD_RPC || "https://rpc.robinhood.com", chainId: 4663, accounts },
+    robinhood: { url: process.env.ROBINHOOD_RPC || "https://rpc.mainnet.chain.robinhood.com", chainId: 4663, accounts },
   },
   paths: { sources: "./src", tests: "./test" },
 };

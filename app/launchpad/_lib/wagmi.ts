@@ -11,7 +11,7 @@ export const wagmiConfig = createConfig({
   ssr: true,
   transports: {
     [base.id]: http(process.env.NEXT_PUBLIC_BASE_RPC),
-    [robinhood.id]: http(process.env.NEXT_PUBLIC_ROBINHOOD_RPC ?? "https://rpc.robinhood.com"),
+    [robinhood.id]: http(process.env.NEXT_PUBLIC_ROBINHOOD_RPC ?? "https://rpc.mainnet.chain.robinhood.com"),
     [baseSepolia.id]: http(process.env.NEXT_PUBLIC_BASE_SEPOLIA_RPC),
   },
 });

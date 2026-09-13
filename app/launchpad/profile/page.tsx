@@ -36,7 +36,10 @@ export default function Profile() {
           <span className="tag soft">X sign-in for @handle links · next week</span>
         </div>
       </section>
-      <section className="blk"><div className="sechead"><h2>Holder rewards</h2><span className="muted">Snapshots every Sunday · paid in ETH</span></div><Rewards /><div className="empty" style={{ marginTop: 10 }}>Hold any launched token above a tier at the Sunday snapshot and your payout appears here to claim.</div></section>
+      {/* Weekly holder payouts ship after launch; the claim UI stays hidden until NEXT_PUBLIC_REWARDS_LIVE=1. */}
+      {process.env.NEXT_PUBLIC_REWARDS_LIVE === "1" && (
+  <section className="blk"><div className="sechead"><h2>Holder rewards</h2><span className="muted">Snapshots every Sunday · paid in ETH</span></div><Rewards /><div className="empty" style={{ marginTop: 10 }}>Hold any launched token above a tier at the Sunday snapshot and your payout appears here to claim.</div></section>
+      )}
       <section className="blk"><div className="sechead"><h2>Game nights</h2></div><div className="grid"><NightCard n={EXAMPLE_NIGHTS[0]} t={EXAMPLE_TOKENS[0]} /></div></section>
     </>
   );

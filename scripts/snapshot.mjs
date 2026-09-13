@@ -24,7 +24,7 @@ const chainId = Number(args.chain ?? 8453);
 const CFG = {
   8453:  { chain: base, rpc: process.env.BASE_RPC ?? "https://mainnet.base.org", weth: "0x4200000000000000000000000000000000000006", factory: process.env.NEXT_PUBLIC_FACTORY_8453, distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR_8453 },
   84532: { chain: baseSepolia, rpc: process.env.BASE_SEPOLIA_RPC ?? "https://sepolia.base.org", weth: "0x4200000000000000000000000000000000000006", factory: process.env.NEXT_PUBLIC_FACTORY_84532, distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR_84532 },
-  4663:  { chain: { id: 4663, name: "Robinhood Chain", nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 }, rpcUrls: { default: { http: [process.env.ROBINHOOD_RPC ?? "https://rpc.robinhood.com"] } } }, rpc: process.env.ROBINHOOD_RPC ?? "https://rpc.robinhood.com", weth: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73", factory: process.env.NEXT_PUBLIC_FACTORY_4663, distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR_4663 },
+  4663:  { chain: { id: 4663, name: "Robinhood Chain", nativeCurrency: { name: "Ether", symbol: "ETH", decimals: 18 }, rpcUrls: { default: { http: [process.env.ROBINHOOD_RPC ?? "https://rpc.mainnet.chain.robinhood.com"] } } }, rpc: process.env.ROBINHOOD_RPC ?? "https://rpc.mainnet.chain.robinhood.com", weth: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73", factory: process.env.NEXT_PUBLIC_FACTORY_4663, distributor: process.env.NEXT_PUBLIC_DISTRIBUTOR_4663 },
 }[chainId];
 if (!CFG?.factory) throw new Error(`No factory configured for chain ${chainId}`);
 
