@@ -142,3 +142,57 @@ describe("RewardsDistributor", () => {
     await expect(d.claim(1, b.address, ethers.parseEther("0.6"), tree.getProof(1))).to.be.revertedWith("bad proof");
   });
 });
+
+describe("RewardsDistributor — cross-epoch safety", () => {
+  const E = (n) => ethers.parseEther(n);
+  async function twoEpochs() {
+    const [owner, a, b] = await ethers.getSigners();
+    const weth = await (await ethers.getContractFactory("MockWETH")).deploy();
+    const d = await (await ethers.getContractFactory("RewardsDistributor")).deploy(owner.address);
+    const { StandardMerkleTree } = require("@openzeppelin/merkle-tree");
+    const mk = (rows) => StandardMerkleTree.of(rows.map(r => [r[0].toString(), r[1], r[2].toString()]), ["uint256", "address", "uint256"]);
+    const t1 = mk([[1n, a.address, E("0.6")], [1n, b.address, E("0.4")]]);
+    const t2 = mk([[2n, a.address, E("1")]]);
+    await weth.deposit({ value: E("2") });
+    await weth.approve(d.target, E("2"));
+    await d.publish(weth.target, t1.root, E("1"), "ipfs://epoch1");
+    await d.publish(weth.target, t2.root, E("1"), "ipfs://epoch2");
+    return { owner, a, b, weth, d, t1, t2 };
+  }
+
+  it("a swept epoch cannot be claimed afterwards out of a later epoch's funds", async () => {
+    const { owner, a, b, weth, d, t1, t2 } = await twoEpochs();
+    await d.claim(1, a.address, E("0.6"), t1.getProof(0));      // a claims epoch 1, 0.4 left unclaimed
+    await ethers.provider.send("evm_increaseTime", [181 * 24 * 60 * 60]);
+    await ethers.provider.send("evm_mine", []);
+    await d.sweep(1, owner.address);                             // epoch 1 closed, its 0.4 swept
+    expect(await weth.balanceOf(d.target)).to.equal(E("1"));     // exactly epoch 2 left
+
+    // the straggler must NOT be able to take epoch 2 money
+    await expect(d.claim(1, b.address, E("0.4"), t1.getProof(1))).to.be.revertedWith("no epoch");
+
+    // epoch 2 is still fully payable
+    await d.claim(2, a.address, E("1"), t2.getProof(0));
+    expect(await weth.balanceOf(d.target)).to.equal(0n);
+    await expect(d.sweep(1, owner.address)).to.be.revertedWith("no epoch");  // no double sweep
+  });
+
+  it("an epoch can never pay out more than it was funded with", async () => {
+    const [owner, a, b] = await ethers.getSigners();
+    const weth = await (await ethers.getContractFactory("MockWETH")).deploy();
+    const d = await (await ethers.getContractFactory("RewardsDistributor")).deploy(owner.address);
+    const { StandardMerkleTree } = require("@openzeppelin/merkle-tree");
+    // root promises 1 ETH of leaves but the epoch is only funded with 0.5 — a bad snapshot run
+    const tree = StandardMerkleTree.of([[ "1", a.address, E("0.6").toString() ], [ "1", b.address, E("0.4").toString() ]], ["uint256", "address", "uint256"]);
+    await weth.deposit({ value: E("0.5") });
+    await weth.approve(d.target, E("0.5"));
+    await d.publish(weth.target, tree.root, E("0.5"), "ipfs://bad");
+    await expect(d.claim(1, a.address, E("0.6"), tree.getProof(0))).to.be.revertedWith("epoch exhausted");
+  });
+
+  it("rejects an epoch published with a zero reward token", async () => {
+    const [owner, a] = await ethers.getSigners();
+    const d = await (await ethers.getContractFactory("RewardsDistributor")).deploy(owner.address);
+    await expect(d.publish(ethers.ZeroAddress, ethers.id("r"), E("1"), "x")).to.be.revertedWith("bad epoch");
+  });
+});

@@ -95,13 +95,14 @@ contract LaunchFactory is Ownable {
         // 4. lock LP forever with the fee split
         _registerSplit(tokenId, msg.sender, p.creatorShareBps);
 
-        // 5. launch fee → treasury, dev buy → creator
+        // 5. record the launch before any value leaves the contract (checks-effects-interactions)
+        launches[token] = Launch(token, pool, tokenId, msg.sender, poolFee, uint64(block.timestamp));
+        allTokens.push(token);
+
+        // 6. launch fee → treasury, dev buy → creator
         (bool ok, ) = treasury.call{value: launchFee}("");
         require(ok, "fee transfer failed");
         if (devBuyWei > 0) _devBuy(token, devBuyWei, p.minDevBuyOut, msg.sender);
-
-        launches[token] = Launch(token, pool, tokenId, msg.sender, poolFee, uint64(block.timestamp));
-        allTokens.push(token);
         emit Launched(token, msg.sender, pool, tokenId, p.creatorShareBps, p.lockBps, p.lockDays, devBuyWei, p.metadataURI);
     }
 
@@ -121,11 +122,13 @@ contract LaunchFactory is Ownable {
         int24 lower; int24 upper;
         if (tokenIs0) {
             // token is token0: buys push the tick up, so the sell-side range sits strictly above the current tick
-            lower = _ceilTick(tick, spacing) + spacing; upper = maxTick;
+            lower = _floorTick(tick, spacing) + spacing; upper = maxTick;
         } else {
             // token is token1: buys push the tick down, so the range sits at or below the current tick
             lower = -maxTick; upper = _floorTick(tick, spacing);
         }
+
+        require(lower < upper, "bad range");
 
         t.approve(address(positionManager), amount);
         (tokenId, , , ) = positionManager.mint(INonfungiblePositionManager.MintParams({
@@ -173,5 +176,4 @@ contract LaunchFactory is Ownable {
         return 1;
     }
     function _floorTick(int24 tick, int24 spacing) internal pure returns (int24) { int24 c = tick / spacing; if (tick < 0 && tick % spacing != 0) c--; return c * spacing; }
-    function _ceilTick(int24 tick, int24 spacing) internal pure returns (int24) { int24 f = _floorTick(tick, spacing); return f == tick ? tick : f + spacing; }
 }
