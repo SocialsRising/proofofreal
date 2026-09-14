@@ -14,7 +14,7 @@ const jb = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "700"], variable
 
 export const metadata: Metadata = {
   title: "Meme Maxxers Launchpad",
-  description: "Launch a Base token for your game, IP, or community in minutes. Stakers earn a cut of real trading fees.",
+  description: "Launch a token for your game, IP, or community in minutes. Holders are paid every Sunday with a variety of stock tokens, experimental AI agents, and new exciting NFTs.",
 };
 
 export default function LaunchpadLayout({ children }: { children: React.ReactNode }) {

@@ -104,7 +104,7 @@ export default function LaunchPage() {
           <div className="card pad" style={{ display: "grid", gap: 18 }}>
             <div><h3>Who gets the trading fees?</h3><p className="muted" style={{ fontSize: ".93rem" }}>Every trade pays a {POOL_FEE_PCT}% fee. {PROTOCOL_SHARE}% runs the launchpad; the rest is yours to split with your holders. Holders always get at least half.</p></div>
             <div className="chips">{SPLITS.map((s) => <button key={s.key} className={`chip big ${f.split === s.key ? "on" : ""}`} onClick={() => set("split", s.key)}><b>{s.label}</b><small>{s.creator}% you · {s.stakers}% holders</small></button>)}</div>
-            <p className="muted" style={{ fontSize: ".85rem" }}>Holders are paid every Sunday in ETH based on how much they hold and for how long. No staking contract, no lockup — just hold.</p>
+            <p className="muted" style={{ fontSize: ".85rem" }}>Holders are paid every Sunday with a variety of stock tokens, experimental AI agents, and new exciting NFTs, based on how much they hold and for how long. No staking contract, no lockup — just hold.</p>
           </div>
 
           <div className="card pad" style={{ display: "grid", gap: 16 }}>
@@ -158,7 +158,7 @@ export default function LaunchPage() {
             </div>
             <div>
               <div className="kv"><span>→ to you</span><b>{fee.creatorPct}%</b></div>
-              <div className="kv"><span>→ to holders, in ETH</span><b>{fee.stakerPct}%</b></div>
+              <div className="kv"><span>→ to holders</span><b>{fee.stakerPct}%</b></div>
               <div className="kv"><span>→ launchpad</span><b>{fee.platformPct}%</b></div>
               <div className="kv"><span>Supply</span><b>1B</b></div>
               <div className="kv"><span>Starting market cap</span><b>{INITIAL_MCAP_ETH} ETH</b></div>

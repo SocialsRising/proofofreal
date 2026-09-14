@@ -21,7 +21,7 @@ export default function Home() {
       <div className="hero">
         <div>
           <h1>Launch a token.<br />Build a game.<br /><span className="chrome-text">Grow your community.</span></h1>
-          <p className="sub">Launch a Base token for your game, IP, or community in minutes. Stakers earn a cut of real trading fees.</p>
+          <p className="sub">Launch a token for your game, IP, or community in minutes. Holders are paid every Sunday with a variety of stock tokens, experimental AI agents, and new exciting NFTs.</p>
           <div className="ctas"><Link className="btn primary lg" href="/launchpad/launch">Launch Token</Link><Link className="btn lg" href="/launchpad/explore">Explore Games</Link></div>
         </div>
         <div className="pile">
@@ -34,7 +34,7 @@ export default function Home() {
       <div className="stats">
         <Stat v={tokens.length} k="Tokens launched" />
         <Stat v={usd(vol)} k="24h volume" />
-        <Stat v={`${paid.toFixed(2)} ETH`} k="Paid to stakers" />
+        <Stat v={`${paid.toFixed(2)} ETH`} k="Paid to holders" />
         <Stat v={upcoming.length} k="Game nights this week" />
       </div>
 
@@ -57,7 +57,7 @@ export default function Home() {
             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 22 }}><Link className="btn primary" href="/launchpad/token/lmeow">See LMEOW</Link><Link className="btn" href="/launchpad/night/n0">Last game night results</Link></div>
           </div>
           <div style={{ display: "grid", gap: 10 }}>
-            {[["Founder locked", `${lm.lockPct}% · ${lm.lockDays} days`], ["Supply staked", `${lm.example!.stakedPct}%`], ["Paid to stakers", `${lm.example!.rewardsEth} ETH`], ["Game nights run", "1 (next: Fri)"]].map(([k, v]) => <div key={k} className="kvbox"><span>{k}</span><b className="mono">{v}</b></div>)}
+            {[["Founder locked", `${lm.lockPct}% · ${lm.lockDays} days`], ["Supply staked", `${lm.example!.stakedPct}%`], ["Paid to holders", `${lm.example!.rewardsEth} ETH`], ["Game nights run", "1 (next: Fri)"]].map(([k, v]) => <div key={k} className="kvbox"><span>{k}</span><b className="mono">{v}</b></div>)}
           </div>
         </div>
       </section>
