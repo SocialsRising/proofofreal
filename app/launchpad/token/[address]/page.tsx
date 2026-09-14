@@ -129,7 +129,7 @@ export default function TokenPage({ params }: { params: Promise<{ address: strin
         <div className="grid g2">
           <div className="card pad" style={{ display: "grid", gap: 14 }}>
             <h3>Hold &amp; earn</h3>
-            <p className="muted" style={{ fontSize: ".93rem" }}>No staking, no lockup. Every Sunday we snapshot every wallet holding {symbol}. Hit a tier, get paid in ETH from {fee.stakerPct}% of the week&apos;s trades. Hold across weeks for a streak boost up to 3×.</p>
+            <p className="muted" style={{ fontSize: ".93rem" }}>No staking, no lockup. Every Sunday we snapshot every wallet holding {symbol}. Hit a tier and get paid with a variety of stock tokens, experimental AI agents, and new exciting NFTs, funded by {fee.stakerPct}% of the week&apos;s trades. Hold across weeks for a streak boost up to 3×.</p>
             <div className="kv"><span>Next snapshot</span><b>{nextSunday} · 00:00 UTC</b></div>
             <div className="kv"><span>Paid so far</span><b>{ex ? `${ex.rewardsEth.toFixed(2)} ETH` : "first payout after week 1"}</b></div>
             <div className="kv"><span>Supply in qualifying wallets</span><b>{ex ? `${ex.stakedPct}%` : "—"}</b></div>
