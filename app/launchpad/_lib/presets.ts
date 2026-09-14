@@ -1,10 +1,11 @@
-/** Uniswap V3 1% pool fee — the highest tier available without a V4 hook. Every trade pays this. */
+/** Uniswap V3 1% pool fee — the highest tier available without a V4 hook. Every buy and sell pays this. */
 export const POOL_FEE_PCT = 1;
 /** Launchpad share of every trading fee (LaunchFactory.protocolBps = 3000). */
 export const PROTOCOL_SHARE = 30;
 export const CREATOR_ECONOMY_SHARE = 100 - PROTOCOL_SHARE;
 
 export type SplitKey = "equal" | "community" | "diamond";
+/** How the creator-economy 70% of the fee is split between the founder and the holder rewards pool. Holders never get less than half. */
 export const SPLITS: { key: SplitKey; label: string; creator: number; stakers: number; creatorShareBps: number; blurb: string }[] = [
   { key: "equal", label: "Equal", creator: 50, stakers: 50, creatorShareBps: 5000, blurb: "Half to you, half to the people who hold." },
   { key: "community", label: "Community", creator: 20, stakers: 80, creatorShareBps: 2000, blurb: "Most of it goes back to holders." },
@@ -14,12 +15,9 @@ export const splitFromBps = (bps: number) => SPLITS.find((s) => s.creatorShareBp
 
 export const LOCK_PCTS = [2, 5, 10] as const;
 export const LOCK_DAYS = [90, 180, 365] as const;
-export const DEV_BUYS = [0, 0.05, 0.1, 0.25, 0.5] as const;
-
-/** Soft-staking tiers: hold at least this many tokens (of 1B) at the Sunday snapshot to qualify. */
-export const HOLD_TIERS = [100_000, 500_000, 1_000_000, 2_500_000, 5_000_000, 10_000_000, 25_000_000, 50_000_000, 100_000_000];
-/** Consecutive-week streak boost, capped. */
-export const STREAK_BOOST = (weeks: number) => Math.min(3, 1 + Math.max(0, weeks - 1) * 0.2);
+/** Quick picks for the dev buy; any amount up to MAX_DEV_BUY_ETH can be typed. */
+export const DEV_BUYS = [0, 0.1, 0.5, 1, 5, 10, 25, 50, 100] as const;
+export const MAX_DEV_BUY_ETH = 100;
 
 /** Percent-of-trade view of the fee for a given split. */
 export function feeSummary(split: SplitKey) {
