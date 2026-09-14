@@ -121,7 +121,7 @@ console.log(`epoch ${epochId}: ${leaves.length} wallets · ${formatEther(total)}
 if (args.publish && tree && process.env.DEPLOYER_PRIVATE_KEY && CFG.distributor) {
   const account = privateKeyToAccount(process.env.DEPLOYER_PRIVATE_KEY);
   const wallet = createWalletClient({ account, chain: CFG.chain, transport: http(CFG.rpc) });
-  const uri = `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://proofofreal.vercel.app"}/launchpad/epochs/${chainId}/${epochId}.json`;
+  const uri = `${process.env.NEXT_PUBLIC_SITE_URL ?? "https://proofofreal.app"}/launchpad/epochs/${chainId}/${epochId}.json`;
   const h1 = await wallet.writeContract({ address: CFG.weth, abi: erc20Abi, functionName: "approve", args: [CFG.distributor, total] });
   await client.waitForTransactionReceipt({ hash: h1 });
   const h2 = await wallet.writeContract({ address: CFG.distributor, abi: RewardsDistributorAbi, functionName: "publish", args: [CFG.weth, tree.root, total, uri] });
