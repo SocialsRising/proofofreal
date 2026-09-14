@@ -18,27 +18,27 @@ export type ChainInfo = {
   swapUrl: (token: string) => string; chartUrl?: (token: string) => string;
 };
 
-const env = (k: string) => (process.env[k] as `0x${string}` | undefined) || undefined;
+// NEXT_PUBLIC_* vars must be read as literal `process.env.NAME` — Next only inlines literal member access into client bundles.
 
 export const CHAINS: Record<ChainKey, ChainInfo> = {
   base: {
     key: "base", id: base.id, label: "Base", short: "Base", testnet: false, explorer: "https://basescan.org",
     weth: "0x4200000000000000000000000000000000000006",
-    factory: env("NEXT_PUBLIC_FACTORY_8453"), distributor: env("NEXT_PUBLIC_DISTRIBUTOR_8453"),
+    factory: (process.env.NEXT_PUBLIC_FACTORY_8453 as `0x${string}` | undefined) || undefined, distributor: (process.env.NEXT_PUBLIC_DISTRIBUTOR_8453 as `0x${string}` | undefined) || undefined,
     swapUrl: (t) => `https://app.uniswap.org/swap?chain=base&outputCurrency=${t}`,
     chartUrl: (t) => `https://dexscreener.com/base/${t}?embed=1&theme=dark&trades=0&info=0`,
   },
   robinhood: {
     key: "robinhood", id: robinhood.id, label: "Robinhood Chain", short: "Robinhood", testnet: false, explorer: "https://robinhoodchain.blockscout.com",
     weth: "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73",
-    factory: env("NEXT_PUBLIC_FACTORY_4663"), distributor: env("NEXT_PUBLIC_DISTRIBUTOR_4663"),
+    factory: (process.env.NEXT_PUBLIC_FACTORY_4663 as `0x${string}` | undefined) || undefined, distributor: (process.env.NEXT_PUBLIC_DISTRIBUTOR_4663 as `0x${string}` | undefined) || undefined,
     swapUrl: (t) => `https://app.uniswap.org/swap?chain=robinhood&outputCurrency=${t}`,
     chartUrl: (t) => `https://dexscreener.com/robinhood/${t}?embed=1&theme=dark&trades=0&info=0`,
   },
   "base-sepolia": {
     key: "base-sepolia", id: baseSepolia.id, label: "Base Sepolia (testnet)", short: "Base Sepolia", testnet: true, explorer: "https://sepolia.basescan.org",
     weth: "0x4200000000000000000000000000000000000006",
-    factory: env("NEXT_PUBLIC_FACTORY_84532"), distributor: env("NEXT_PUBLIC_DISTRIBUTOR_84532"),
+    factory: (process.env.NEXT_PUBLIC_FACTORY_84532 as `0x${string}` | undefined) || undefined, distributor: (process.env.NEXT_PUBLIC_DISTRIBUTOR_84532 as `0x${string}` | undefined) || undefined,
     swapUrl: (t) => `https://sepolia.basescan.org/token/${t}`,
   },
 };
