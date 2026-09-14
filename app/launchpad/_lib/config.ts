@@ -1,5 +1,5 @@
 export const BRAND = "Meme Maxxers";
-export const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://proofofreal.vercel.app";
+export const SITE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://proofofreal.app";
 /** Every token launched here has exactly 1,000,000,000 supply. */
 export const TOTAL_SUPPLY = 1_000_000_000;
 export const ETH_USD_FALLBACK = 3400;
