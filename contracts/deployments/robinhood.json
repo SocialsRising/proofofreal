@@ -14,5 +14,7 @@
     "weth": "0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73"
   },
   "treasury": "0xAA3E15AA3e2aeF82acF28fECd83383f9dDC198f0",
-  "stakersPool": "0xAA3E15AA3e2aeF82acF28fECd83383f9dDC198f0"
+  "stakersPool": "0xAA3E15AA3e2aeF82acF28fECd83383f9dDC198f0",
+  "owner": "0xAA3E15AA3e2aeF82acF28fECd83383f9dDC198f0",
+  "ownershipTransferredAt": "2026-09-14T03:13:29.488Z"
 }
