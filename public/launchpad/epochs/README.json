@@ -1,0 +1,1 @@
+{ "note": "One folder per chain id. index.json lists epochs; <id>.json holds the public payout sheet + Merkle proofs." }
