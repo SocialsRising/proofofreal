@@ -6,19 +6,19 @@ import { useAccount, usePublicClient, useReadContract, useSwitchChain, useWriteC
 import { Art } from "../_components/Art";
 import { WalletButton } from "../_components/Wallet";
 import { useToast } from "../_components/Toast";
-import { DEV_BUYS, LOCK_DAYS, LOCK_PCTS, MAX_DEV_BUY_ETH, SPLITS, feeSummary, POOL_FEE_PCT, PROTOCOL_SHARE, type SplitKey } from "../_lib/presets";
+import { CREATOR_FEE_STEP, CREATOR_SPLITS, DEFAULT_CREATOR_FEE_PCT, DEV_BUYS, LOCK_DAYS, LOCK_PCTS, MAX_CREATOR_FEE_PCT, MAX_DEV_BUY_ETH, SPLITS, V4_PROTOCOL_FEE_PCT, feeSummary, feeSummaryV4, pctToPips, POOL_FEE_PCT, PROTOCOL_SHARE, type SplitKey } from "../_lib/presets";
 import { INITIAL_MCAP_ETH, LAUNCH_FEE_ETH, TOTAL_SUPPLY } from "../_lib/config";
-import { DEFAULT_CHAIN, LAUNCH_CHAINS, type ChainInfo } from "../_lib/chains";
-import { LaunchFactoryAbi } from "../_lib/abi";
-import { buildLaunchArgs, parseLaunched, readable } from "../_lib/launchpad";
+import { DEFAULT_CHAIN, LAUNCH_CHAINS, isV4Chain, type ChainInfo } from "../_lib/chains";
+import { LaunchFactoryAbi, LaunchFactoryV4Abi } from "../_lib/abi";
+import { buildLaunchArgs, buildLaunchArgsV4, parseLaunched, parseLaunchedV4, readable } from "../_lib/launchpad";
 import { registerToken, uploadImage } from "../_lib/registry";
 import { getRef } from "../_components/RefCapture";
 import { simulateDevBuy } from "../_lib/curve";
 import { useEthPrice } from "../_lib/useEthPrice";
 import { fmt, price, usd, usdFull } from "../_lib/format";
 
-type Form = { chain: ChainInfo; name: string; symbol: string; desc: string; file: File | null; preview: string | null; split: SplitKey; lock: boolean; lockPct: number; lockDays: number; devBuy: number; x: string; chat: string; business: string };
-const initial: Form = { chain: DEFAULT_CHAIN, name: "", symbol: "", desc: "", file: null, preview: null, split: "community", lock: true, lockPct: 5, lockDays: 180, devBuy: 0.1, x: "", chat: "", business: "" };
+type Form = { chain: ChainInfo; name: string; symbol: string; desc: string; file: File | null; preview: string | null; creatorFeePct: number; split: SplitKey; lock: boolean; lockPct: number; lockDays: number; devBuy: number; x: string; chat: string; business: string };
+const initial: Form = { chain: DEFAULT_CHAIN, name: "", symbol: "", desc: "", file: null, preview: null, creatorFeePct: DEFAULT_CREATOR_FEE_PCT, split: "equal", lock: true, lockPct: 5, lockDays: 180, devBuy: 0.1, x: "", chat: "", business: "" };
 type Busy = "uploading" | "signing" | "confirming" | "saving" | null;
 
 const ethFmt = (n: number) => n >= 1000 ? fmt(n) : n >= 10 ? n.toFixed(1) : n.toFixed(n >= 1 ? 2 : 3);
@@ -40,14 +40,20 @@ export default function LaunchPage() {
   const toast = useToast();
   const { eth: ethUsd, live: priceLive } = useEthPrice();
 
-  const factory = f.chain.factory;
-  const { data: launchFeeWei } = useReadContract({ address: factory, abi: LaunchFactoryAbi, functionName: "launchFee", chainId: f.chain.id, query: { enabled: !!factory } });
+  const v4 = isV4Chain(f.chain);
+  const factory = v4 ? f.chain.factoryV4 : f.chain.factory;
+  const { data: launchFeeWei } = useReadContract({ address: factory, abi: v4 ? LaunchFactoryV4Abi : LaunchFactoryAbi, functionName: "launchFee", chainId: f.chain.id, query: { enabled: !!factory } });
   const launchFeeEth = launchFeeWei !== undefined ? Number(formatEther(launchFeeWei)) : LAUNCH_FEE_ETH;
 
-  const fee = feeSummary(f.split);
+  // Fee picture: V4 = launchpad 1% + founder's own fee split with their community; V3 = fixed 1% split by preset.
+  const split = v4 ? (CREATOR_SPLITS.find((s) => s.key === f.split) ?? CREATOR_SPLITS[0]) : null;
+  const fee = v4
+    ? feeSummaryV4(f.creatorFeePct, split!.creatorShareBps)
+    : (() => { const s = feeSummary(f.split); return { total: s.total, launchpad: s.platformPct, founder: s.creatorPct, community: s.stakerPct, creatorFeePct: 0 }; })();
+
   const gasEth = 0.0008;
   const lockPct = f.lock ? f.lockPct : 0;
-  const est = useMemo(() => simulateDevBuy(f.devBuy, lockPct), [f.devBuy, lockPct]);
+  const est = useMemo(() => simulateDevBuy(f.devBuy, lockPct, fee.total), [f.devBuy, lockPct, fee.total]);
   const buyFee = f.devBuy * fee.total / 100;
   const totalEth = f.devBuy + launchFeeEth + gasEth;
   const missing = useMemo(() => [!f.name.trim() && "name", !f.symbol && "ticker"].filter(Boolean) as string[], [f.name, f.symbol]);
@@ -69,17 +75,33 @@ export default function LaunchPage() {
       const socials = { x: f.x.trim() || undefined, chat: f.chat.trim() || undefined, business: f.business.trim() || undefined };
       // Small JSON blob emitted in the Launched event so the token is self-describing even if our registry is down.
       const metadata = { name: f.name, symbol: f.symbol.toUpperCase(), description: f.desc.slice(0, 280), image, socials };
-      const { params, value } = buildLaunchArgs({ name: f.name, symbol: f.symbol, split: f.split, lock: f.lock, lockPct: f.lockPct, lockDays: f.lockDays, devBuyEth: f.devBuy, metadataURI: JSON.stringify(metadata) }, launchFeeWei ?? BigInt(0));
+      const common = { name: f.name, symbol: f.symbol, split: f.split, lock: f.lock, lockPct: f.lockPct, lockDays: f.lockDays, devBuyEth: f.devBuy, metadataURI: JSON.stringify(metadata) };
+      const base = { chainId: f.chain.id, name: f.name, symbol: f.symbol.toUpperCase(), image, description: f.desc, creator: address, split: f.split, lockPct: f.lock ? f.lockPct : 0, lockDays: f.lock ? f.lockDays : 0, devBuyEth: f.devBuy, socials, gameName: null, referrer: getRef(), createdAt: new Date().toISOString() };
+
       setBusy("signing");
-      const hash = await writeContractAsync({ address: factory, abi: LaunchFactoryAbi, functionName: "launch", args: [params], value, chainId: f.chain.id });
-      setBusy("confirming");
-      const receipt = await publicClient.waitForTransactionReceipt({ hash });
-      const launched = parseLaunched(receipt);
-      if (!launched) throw new Error("Launched, but the event was not found. Check the transaction on the explorer.");
-      setBusy("saving");
-      await registerToken({ address: launched.token, chainId: f.chain.id, name: f.name, symbol: f.symbol.toUpperCase(), image, description: f.desc, creator: address, split: f.split, pool: launched.pool, tokenId: launched.tokenId.toString(), lockPct: f.lock ? f.lockPct : 0, lockDays: f.lock ? f.lockDays : 0, devBuyEth: f.devBuy, socials, gameName: null, txHash: hash, referrer: getRef(), createdAt: new Date().toISOString() });
-      toast("Launched 🎉");
-      router.push(`/launchpad/token/${launched.token}`);
+      if (v4) {
+        const { params, value } = buildLaunchArgsV4({ ...common, creatorFeePct: f.creatorFeePct }, launchFeeWei ?? BigInt(0));
+        const hash = await writeContractAsync({ address: factory, abi: LaunchFactoryV4Abi, functionName: "launch", args: [params], value, chainId: f.chain.id });
+        setBusy("confirming");
+        const receipt = await publicClient.waitForTransactionReceipt({ hash });
+        const ev = parseLaunchedV4(receipt);
+        if (!ev) throw new Error("Launched, but the event was not found. Check the transaction on the explorer.");
+        setBusy("saving");
+        await registerToken({ ...base, address: ev.token, pool: null, tokenId: ev.tokenId.toString(), txHash: hash, version: "v4", poolId: ev.poolId, creatorFeePips: pctToPips(f.creatorFeePct), creatorShareBps: split!.creatorShareBps, hook: f.chain.hook ?? null });
+        toast("Launched 🎉");
+        router.push(`/launchpad/token/${ev.token}`);
+      } else {
+        const { params, value } = buildLaunchArgs(common, launchFeeWei ?? BigInt(0));
+        const hash = await writeContractAsync({ address: factory, abi: LaunchFactoryAbi, functionName: "launch", args: [params], value, chainId: f.chain.id });
+        setBusy("confirming");
+        const receipt = await publicClient.waitForTransactionReceipt({ hash });
+        const ev = parseLaunched(receipt);
+        if (!ev) throw new Error("Launched, but the event was not found. Check the transaction on the explorer.");
+        setBusy("saving");
+        await registerToken({ ...base, address: ev.token, pool: ev.pool, tokenId: ev.tokenId.toString(), txHash: hash, version: "v3" });
+        toast("Launched 🎉");
+        router.push(`/launchpad/token/${ev.token}`);
+      }
     } catch (e) { setErr(readable(e)); } finally { setBusy(null); }
   }
 
@@ -112,11 +134,34 @@ export default function LaunchPage() {
             <div className="note" style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}><span>Total supply</span><b className="mono" style={{ color: "var(--fg)" }}>{TOTAL_SUPPLY.toLocaleString()} · same for every launch</b></div>
           </div>
 
-          <div className="card pad" style={{ display: "grid", gap: 18 }}>
-            <div><h3>Trading fee &amp; split</h3><p className="muted" style={{ fontSize: ".93rem" }}>Every buy and sell pays a {POOL_FEE_PCT}% fee. {PROTOCOL_SHARE}% runs the launchpad. You choose how the other {100 - PROTOCOL_SHARE}% splits between you and the holder rewards pool — holders never get less than half.</p></div>
-            <div className="chips">{SPLITS.map((s) => <button key={s.key} className={`chip big ${f.split === s.key ? "on" : ""}`} onClick={() => set("split", s.key)}><b>{s.label}</b><small>{s.creator}% you · {s.stakers}% holders</small></button>)}</div>
-            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}><span className="tag soft">Next release · set your own 1–10% creator fee on top</span></div>
-          </div>
+          {v4 ? (
+            <div className="card pad" style={{ display: "grid", gap: 18 }}>
+              <div><h3>Your creator fee</h3><p className="muted" style={{ fontSize: ".93rem" }}>Every buy and sell pays the launchpad&apos;s {V4_PROTOCOL_FEE_PCT}% plus whatever you set here — {0}–{MAX_CREATOR_FEE_PCT}%. Your fee is yours to split with your holders.</p></div>
+              <div className="feeslider">
+                <div className="row" style={{ justifyContent: "space-between", alignItems: "baseline" }}>
+                  <span className="muted" style={{ fontSize: ".85rem" }}>Creator fee</span>
+                  <span className="mono" style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "1.7rem", letterSpacing: "-.03em" }}>{f.creatorFeePct}%</span>
+                </div>
+                <input type="range" className="range" min={0} max={MAX_CREATOR_FEE_PCT} step={CREATOR_FEE_STEP} value={f.creatorFeePct} onChange={(e) => set("creatorFeePct", parseFloat(e.target.value))} aria-label="Creator fee percent" />
+                <div className="row" style={{ justifyContent: "space-between" }}><span className="muted mono" style={{ fontSize: ".74rem" }}>0% · no creator fee</span><span className="muted mono" style={{ fontSize: ".74rem" }}>{MAX_CREATOR_FEE_PCT}% · max</span></div>
+              </div>
+              <div className="field"><label>Where your {f.creatorFeePct}% goes</label>
+                <div className="chips">{CREATOR_SPLITS.map((s) => <button key={s.key} className={`chip big ${f.split === s.key ? "on" : ""}`} onClick={() => set("split", s.key)}><b>{s.label}</b><small>{s.founder}% you · {s.community}% holders</small></button>)}</div>
+                <span className="hint">{split!.blurb} The holder share funds Sunday payouts for your token.</span>
+              </div>
+              <div className="note" style={{ display: "grid", gap: 0 }}>
+                <div className="kv"><span>Total fee on every trade</span><b>{fee.total}%</b></div>
+                <div className="kv"><span>→ launchpad</span><b>{fee.launchpad}%</b></div>
+                <div className="kv"><span>→ you</span><b>{fee.founder}%</b></div>
+                <div className="kv"><span>→ your holders (Sunday payouts)</span><b>{fee.community}%</b></div>
+              </div>
+            </div>
+          ) : (
+            <div className="card pad" style={{ display: "grid", gap: 18 }}>
+              <div><h3>Trading fee &amp; split</h3><p className="muted" style={{ fontSize: ".93rem" }}>Every buy and sell pays a {POOL_FEE_PCT}% fee. {PROTOCOL_SHARE}% runs the launchpad. You choose how the other {100 - PROTOCOL_SHARE}% splits between you and the holder rewards pool — holders never get less than half.</p></div>
+              <div className="chips">{SPLITS.map((s) => <button key={s.key} className={`chip big ${f.split === s.key ? "on" : ""}`} onClick={() => set("split", s.key)}><b>{s.label}</b><small>{s.creator}% you · {s.stakers}% holders</small></button>)}</div>
+            </div>
+          )}
 
           <div className="card pad" style={{ display: "grid", gap: 16 }}>
             <div><h3>Founder lock <span className="tag lemon" style={{ verticalAlign: "middle", marginLeft: 6 }}>Trust signal</span></h3><p className="muted" style={{ fontSize: ".93rem" }}>Lock part of the supply in a vault nobody can open early. It shows on your token page and every share card.</p></div>
@@ -130,7 +175,7 @@ export default function LaunchPage() {
           </div>
 
           <div className="card pad" style={{ display: "grid", gap: 16 }}>
-            <div><h3>Dev buy <span className="req">optional · up to {MAX_DEV_BUY_ETH} ETH</span></h3><p className="muted" style={{ fontSize: ".93rem" }}>Buy {symbol} from the pool the moment it exists, in the same transaction, before anyone else can. Starts at a {INITIAL_MCAP_ETH} ETH market cap.</p></div>
+            <div><h3>Dev buy <span className="req">optional · up to {MAX_DEV_BUY_ETH} ETH</span></h3><p className="muted" style={{ fontSize: ".93rem" }}>Buy {symbol} from the pool the moment it exists, in the same transaction, before anyone else can. Starts at a {INITIAL_MCAP_ETH} ETH market cap.{v4 ? ` Your buy pays the full ${fee.total}% fee like any trade.` : ""}</p></div>
             <div className="chips">{DEV_BUYS.map((v) => <button key={v} className={`chip ${f.devBuy === v ? "on" : ""}`} onClick={() => setBuy(v)}>{v === 0 ? "None" : `${v} ETH`}</button>)}</div>
             <div className="buyrow">
               <input type="range" className="range" min={0} max={MAX_DEV_BUY_ETH} step={0.01} value={f.devBuy} onChange={(e) => setBuy(parseFloat(e.target.value))} aria-label="Dev buy in ETH" />
@@ -149,7 +194,8 @@ export default function LaunchPage() {
                 <div className="kvs">
                   <div className="kv"><span>Dev buy</span><b>{f.devBuy} ETH</b></div>
                   <div className="kv"><span>Trading fee on it ({fee.total}%)</span><b>{buyFee.toFixed(4)} ETH</b></div>
-                  <div className="kv"><span>→ {fee.stakerPct}% of it goes to holders (you too, if you lock)</span><b>{(f.devBuy * fee.stakerPct / 100).toFixed(4)} ETH</b></div>
+                  {fee.community > 0 && <div className="kv"><span>→ {fee.community}% of it goes to your holders</span><b>{(f.devBuy * fee.community / 100).toFixed(4)} ETH</b></div>}
+                  {fee.founder > 0 && <div className="kv"><span>→ {fee.founder}% of it comes back to you</span><b>{(f.devBuy * fee.founder / 100).toFixed(4)} ETH</b></div>}
                   <div className="kv"><span>Launch fee</span><b>{launchFeeEth} ETH</b></div>
                   <div className="kv"><span>Network fee (est.)</span><b>~{gasEth} ETH</b></div>
                   <div className="kv total"><span>Total from your wallet</span><b>{totalEth.toFixed(4)} ETH · {usd(totalEth * ethUsd)}</b></div>
@@ -174,17 +220,18 @@ export default function LaunchPage() {
             <div>
               <div className="eyebrow" style={{ marginBottom: 8 }}>Fee on every trade · {fee.total}%</div>
               <div className="feebar">
-                {fee.creatorPct > 0 && <div className="f-you" style={{ flex: fee.creatorPct }}>{fee.creatorPct}%</div>}
-                <div className="f-stk" style={{ flex: fee.stakerPct }}>{fee.stakerPct}%</div>
-                <div className="f-pad" style={{ flex: fee.platformPct }}>{fee.platformPct}%</div>
+                <div className="f-pad" style={{ flex: fee.launchpad }}>{fee.launchpad}%</div>
+                {fee.founder > 0 && <div className="f-you" style={{ flex: fee.founder }}>{fee.founder}%</div>}
+                {fee.community > 0 && <div className="f-stk" style={{ flex: fee.community }}>{fee.community}%</div>}
               </div>
-              <div className="legend"><span><i style={{ background: "#E6E7EC" }} />You</span><span><i style={{ background: "#8F93A1" }} />Holders</span><span><i style={{ background: "#3A3A45" }} />Launchpad</span></div>
+              <div className="legend"><span><i style={{ background: "#3A3A45" }} />Launchpad</span><span><i style={{ background: "#E6E7EC" }} />You</span><span><i style={{ background: "#8F93A1" }} />Holders</span></div>
             </div>
             <div>
               <div className="kv"><span>Supply</span><b>1B</b></div>
               <div className="kv"><span>Starting market cap</span><b>{INITIAL_MCAP_ETH} ETH · {usd(INITIAL_MCAP_ETH * ethUsd)}</b></div>
               {f.devBuy > 0 && <div className="kv"><span>After dev buy</span><b>≈{ethFmt(est.mcapEth)} ETH · {usd(est.mcapEth * ethUsd)}</b></div>}
               {f.devBuy > 0 && <div className="kv"><span>You would own</span><b>≈{est.pctSupply.toFixed(est.pctSupply < 10 ? 2 : 1)}%</b></div>}
+              {v4 && <div className="kv"><span>Creator fee</span><b>{f.creatorFeePct}% · {split!.label}</b></div>}
               <div className="kv"><span>Founder lock</span><b>{f.lock ? `${f.lockPct}% · ${f.lockDays}d` : "None"}</b></div>
               <div className="kv"><span>Dev buy</span><b>{f.devBuy ? `${f.devBuy} ETH` : "None"}</b></div>
               <div className="kv total"><span>Cost to launch</span><b>{totalEth.toFixed(4)} ETH</b></div>

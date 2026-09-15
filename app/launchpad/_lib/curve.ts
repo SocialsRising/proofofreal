@@ -13,23 +13,29 @@ export type DevBuyEstimate = {
 /**
  * Simulates the dev buy against the pool the factory creates.
  *
- * All unlocked supply sits in ONE single-sided Uniswap V3 position that starts at the initial price
- * and runs to the max tick, so its liquidity L is constant across the whole range and
- * L = amount · √P0. Buying with y ETH (after the pool fee) moves √P by exactly y / L, and the tokens
- * received are L · (1/√P0 − 1/√P1). Market cap = P1 · total supply.
+ * All unlocked supply sits in ONE single-sided position that starts at the initial price and runs to the far
+ * end of the range, so its liquidity L is constant across the whole range and L = amount · √P0. Buying with
+ * y ETH (after the pool fee) moves √P by exactly y / L, and the tokens received are L · (1/√P0 − 1/√P1).
+ * Market cap = P1 · total supply. Holds for both the V3 factory (1% fee) and the V4 factory (1% + creator fee).
  *
- * The only thing this ignores is the ≤ 1 tick-spacing gap the factory leaves above spot (≤ 2%),
- * which is why figures are shown as "≈".
+ * The only thing this ignores is the ≤ 1 tick-spacing rounding of the start price (≤ 2%), hence "≈".
  */
-export function simulateDevBuy(ethIn: number, lockPct: number): DevBuyEstimate {
-  const p0 = INITIAL_MCAP_ETH / TOTAL_SUPPLY;
+export function simulateDevBuy(ethIn: number, lockPct: number, feePct: number = POOL_FEE_PCT, startMcapEth: number = INITIAL_MCAP_ETH): DevBuyEstimate {
+  const p0 = startMcapEth / TOTAL_SUPPLY;
   const inPool = TOTAL_SUPPLY * (1 - Math.min(Math.max(lockPct, 0), 100) / 100);
   const sqrtP0 = Math.sqrt(p0);
   const L = inPool * sqrtP0;
-  const y = Math.max(0, ethIn) * (1 - POOL_FEE_PCT / 100);
-  if (y <= 0 || L <= 0) return { tokensOut: 0, pctSupply: 0, mcapEth: INITIAL_MCAP_ETH, priceEth: p0, avgPriceEth: p0, multiple: 1 };
+  const y = Math.max(0, ethIn) * (1 - feePct / 100);
+  if (y <= 0 || L <= 0) return { tokensOut: 0, pctSupply: 0, mcapEth: startMcapEth, priceEth: p0, avgPriceEth: p0, multiple: 1 };
   const sqrtP1 = sqrtP0 + y / L;
   const tokensOut = L * (1 / sqrtP0 - 1 / sqrtP1);
   const p1 = sqrtP1 * sqrtP1;
   return { tokensOut, pctSupply: (tokensOut / TOTAL_SUPPLY) * 100, mcapEth: p1 * TOTAL_SUPPLY, priceEth: p1, avgPriceEth: ethIn / tokensOut, multiple: p1 / p0 };
+}
+
+/** ETH per token from a V4 sqrtPriceX96 where ETH is currency0 and the token is currency1 (price = token per ETH). */
+export function ethPerTokenFromSqrtX96(sqrtPriceX96: bigint): number {
+  const sqrt = Number(sqrtPriceX96) / 2 ** 96;
+  const tokenPerEth = sqrt * sqrt;
+  return tokenPerEth > 0 ? 1 / tokenPerEth : 0;
 }

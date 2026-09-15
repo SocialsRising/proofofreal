@@ -302,4 +302,17 @@ footer .foot{display:grid;gap:26px;grid-template-columns:1fr 1fr}
 details summary{list-style:none}
 details summary::-webkit-details-marker{display:none}
 @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}.reveal{opacity:1;transform:none}}
+/* swap widget + creator fee slider */
+.swap{display:grid;gap:12px}
+.swap-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.swap-head .tabs button{padding:8px 14px;border-radius:999px;border:1px solid var(--line);margin:0}
+.swap-head .tabs button.on{background:var(--fg);color:#000;border-color:transparent}
+.swap-box{display:grid;gap:8px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2)}
+.swap-box .row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.swap-inp{font-size:1.5rem;font-weight:700;background:transparent;border:0;outline:none;width:100%;min-width:0;color:var(--fg);letter-spacing:-.02em}
+.swap-inp::placeholder{color:var(--fg-3)}
+.swap-arrow{text-align:center;color:var(--fg-3);margin:-6px 0;font-size:1.1rem}
+.feeslider{display:grid;gap:8px;padding:16px;border-radius:14px;border:1px solid var(--line-hi);background:linear-gradient(160deg,#16161d,#0d0d12)}
+.feeslider .row{display:flex}
+
 }

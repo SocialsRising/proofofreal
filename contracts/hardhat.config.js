@@ -19,7 +19,15 @@ const accounts = PK ? [PK] : [];
 module.exports = {
   solidity: { version: "0.8.36", settings: { optimizer: { enabled: true, runs: 200 }, viaIR: true, evmVersion: "cancun" } },
   networks: {
-    hardhat: { allowUnlimitedContractSize: false },
+    hardhat: {
+      allowUnlimitedContractSize: false,
+      // FORK_ROBINHOOD=1 runs the hardhat network as a fork of Robinhood Chain mainnet (real Uniswap V4 contracts).
+      ...(process.env.FORK_ROBINHOOD ? {
+        hardfork: "cancun",
+        forking: { url: process.env.ROBINHOOD_RPC || "https://rpc.mainnet.chain.robinhood.com" },
+        chains: { 4663: { hardforkHistory: { cancun: 0 } } },
+      } : {}),
+    },
     baseSepolia: { url: process.env.BASE_SEPOLIA_RPC || "https://sepolia.base.org", chainId: 84532, accounts },
     base: { url: process.env.BASE_RPC || "https://mainnet.base.org", chainId: 8453, accounts },
     robinhood: { url: process.env.ROBINHOOD_RPC || "https://rpc.mainnet.chain.robinhood.com", chainId: 4663, accounts },
