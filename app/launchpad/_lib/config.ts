@@ -14,7 +14,7 @@ export const LAUNCH_FEE_ETH = 0.0005;
  */
 export const LINKS = {
   docs: process.env.NEXT_PUBLIC_DOCS_URL || "/launchpad/docs",
-  x: process.env.NEXT_PUBLIC_X_URL || "",
-  discord: process.env.NEXT_PUBLIC_DISCORD_URL || "",
+  x: process.env.NEXT_PUBLIC_X_URL || "https://x.com/mememaxxers",
+  discord: process.env.NEXT_PUBLIC_DISCORD_URL || "https://discord.gg/krVPuyksQy",
   telegram: process.env.NEXT_PUBLIC_TELEGRAM_URL || "",
 };

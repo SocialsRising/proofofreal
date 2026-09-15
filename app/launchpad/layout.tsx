@@ -51,15 +51,20 @@ export default function LaunchpadLayout({ children }: { children: React.ReactNod
                 <FootLink href={LINKS.docs}>Docs</FootLink>
                 {rh.factory && <a href={`${rh.explorer}/address/${rh.factory}`} target="_blank" rel="noreferrer">Factory contract ↗</a>}
                 <Link href="/launchpad/docs#soft-staking">How Sunday payouts work</Link>
-                <Link href="/launchpad/docs#risks">Risk notice</Link>
+                <Link href="/launchpad/updates">Build log</Link>
               </div>
               <div className="foot-col"><div className="eyebrow">Community</div>
                 {community.length ? community.map(([l, h]) => <a key={l} href={h} target="_blank" rel="noreferrer">{l} ↗</a>) : <span className="muted" style={{ fontSize: ".9rem" }}>Links coming soon.</span>}
               </div>
+              <div className="foot-col"><div className="eyebrow">Legal</div>
+                <Link href="/launchpad/terms">Terms of Use</Link>
+                <Link href="/launchpad/privacy">Privacy</Link>
+                <Link href="/launchpad/risk">Risk Notice</Link>
+              </div>
             </div>
             <div className="wrap foot-bottom">
               <span>© {new Date().getFullYear()} Meme Maxxers</span>
-              <span className="muted">Tokens are volatile and can go to zero. Nothing here is financial advice.</span>
+              <span className="muted">Speculative assets. Not financial advice. Do your own research — <Link href="/launchpad/risk" style={{ textDecoration: "underline" }}>read the risk notice</Link>.</span>
             </div>
           </footer>
         </ToastProvider>

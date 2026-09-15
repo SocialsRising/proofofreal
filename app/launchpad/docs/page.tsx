@@ -97,6 +97,7 @@ export default function Docs() {
           <li>Large dev buys concentrate supply in the founder&apos;s wallet. The launch page and token page show the exact share so nobody has to guess.</li>
           <li>Sunday payouts depend on the snapshot process we run off-chain and on the assets available that week.</li>
         </ul>
+        <p>The full <Link href="/launchpad/risk">Risk Notice</Link>, <Link href="/launchpad/terms">Terms of Use</Link> and <Link href="/launchpad/privacy">Privacy Policy</Link> are separate pages.</p>
       </section>
     </div>
   );

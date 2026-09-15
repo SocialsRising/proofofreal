@@ -195,6 +195,7 @@ export default function LaunchPage() {
             {err && <p style={{ fontSize: ".88rem", color: "var(--down)" }}>{err}</p>}
             {!ready && touched ? <p style={{ fontSize: ".85rem", color: "var(--down)", textAlign: "center" }}>Still needed: {missing.join(" and ")}.</p>
               : <p className="muted" style={{ fontSize: ".8rem", textAlign: "center" }}>{noFactory ? `The ${f.chain.short} factory is not deployed yet.` : `Liquidity is created on Uniswap and locked forever. Your wallet approves one transaction.`}</p>}
+            <p className="muted" style={{ fontSize: ".74rem", textAlign: "center" }}>By launching you agree to the <a href="/launchpad/terms" style={{ textDecoration: "underline" }}>Terms</a> and confirm you have read the <a href="/launchpad/risk" style={{ textDecoration: "underline" }}>Risk Notice</a>.</p>
           </div>
         </div>
       </div>
