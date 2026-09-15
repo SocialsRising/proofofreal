@@ -2,7 +2,8 @@ import Link from "next/link";
 import { CHAINS } from "../_lib/chains";
 import { DEPLOYMENTS } from "../_lib/deployments";
 import { INITIAL_MCAP_ETH, LAUNCH_FEE_ETH, TOTAL_SUPPLY } from "../_lib/config";
-import { POOL_FEE_PCT, PROTOCOL_SHARE, SPLITS } from "../_lib/presets";
+import { CREATOR_SPLITS, MAX_CREATOR_FEE_PCT, POOL_FEE_PCT, PROTOCOL_SHARE, SPLITS, V4_PROTOCOL_FEE_PCT } from "../_lib/presets";
+import { isV4Chain } from "../_lib/chains";
 
 export const metadata = { title: "Docs · Meme Maxxers Launchpad" };
 
@@ -17,6 +18,7 @@ function Addr({ a, label, explorer }: { a?: string; label: string; explorer: str
 export default function Docs() {
   const rh = CHAINS.robinhood;
   const d = DEPLOYMENTS[rh.id];
+  const v4 = isV4Chain(rh);
   return (
     <div className="doc">
       <section className="blk" style={{ paddingTop: 34, paddingBottom: 0 }}>
@@ -40,13 +42,23 @@ export default function Docs() {
       </section>
 
       <section id="fees"><h2>Fees</h2>
-        <p>Every buy and sell pays the {POOL_FEE_PCT}% pool fee. Fees accrue inside the locked position; anyone can call <code>collect()</code> and the contract pushes them out in one go:</p>
-        <ul>
-          <li><b>{PROTOCOL_SHARE}%</b> of the fee to the launchpad treasury.</li>
-          <li><b>{100 - PROTOCOL_SHARE}%</b> split between the founder and the holder rewards pool, using the preset the founder picked at launch: {SPLITS.map((s) => `${s.label} (${s.creator}/${s.stakers})`).join(", ")}. Holders never receive less than half of this share.</li>
-        </ul>
-        <p>The split is written on-chain at launch and cannot be changed by anyone, including us. The founder can re-point <em>where</em> their share is paid (for example to a multisig), never <em>how much</em>.</p>
-        <p><b>Coming next:</b> a founder-chosen 1–10% creator fee on top of the launchpad&apos;s 1%, charged on every buy and sell through a Uniswap V4 hook. Tokens launched on the current factory keep the fee they launched with.</p>
+        {v4 ? (<>
+          <p>Every buy and sell pays one pool fee made of two parts, set on-chain at launch and never changed:</p>
+          <ul>
+            <li><b>Launchpad: {V4_PROTOCOL_FEE_PCT}%</b> of every trade, to the launchpad treasury. It funds the weekly Sunday payouts, buybacks and platform assets.</li>
+            <li><b>Creator: 0–{MAX_CREATOR_FEE_PCT}%</b>, chosen by the founder with a slider. The founder also chooses how it is routed: {CREATOR_SPLITS.map((s) => `${s.label} (${s.founder}% founder / ${s.community}% holders)`).join(", ")}. The holder share goes to the community rewards pool for that token&apos;s Sunday payouts.</li>
+          </ul>
+          <p>Technically the total is the pool&apos;s dynamic LP fee on Uniswap V4, set by the launchpad&apos;s hook when the pool is created. Buys pay the fee in ETH, sells pay it in the token; both accrue to the locked position and are pushed out by <code>collect()</code>, which anyone can call, in the proportions above. The founder can re-point <em>where</em> their share is paid (for example to a multisig), never <em>how much</em>.</p>
+          <p>Tokens launched on the earlier V3 factory keep the fixed 1% fee they launched with.</p>
+        </>) : (<>
+          <p>Every buy and sell pays the {POOL_FEE_PCT}% pool fee. Fees accrue inside the locked position; anyone can call <code>collect()</code> and the contract pushes them out in one go:</p>
+          <ul>
+            <li><b>{PROTOCOL_SHARE}%</b> of the fee to the launchpad treasury.</li>
+            <li><b>{100 - PROTOCOL_SHARE}%</b> split between the founder and the holder rewards pool, using the preset the founder picked at launch: {SPLITS.map((s) => `${s.label} (${s.creator}/${s.stakers})`).join(", ")}. Holders never receive less than half of this share.</li>
+          </ul>
+          <p>The split is written on-chain at launch and cannot be changed by anyone, including us. The founder can re-point <em>where</em> their share is paid (for example to a multisig), never <em>how much</em>.</p>
+          <p><b>Coming next:</b> a founder-chosen 1–10% creator fee on top of the launchpad&apos;s 1%, charged on every buy and sell through a Uniswap V4 hook. Tokens launched on the current factory keep the fee they launched with.</p>
+        </>)}
       </section>
 
       <section id="trust"><h2>Founder lock &amp; dev buy</h2>
@@ -72,7 +84,9 @@ export default function Docs() {
       <section id="contracts"><h2>Contracts · {rh.label}</h2>
         <p>Source is in the repository&apos;s <code>contracts/</code> folder. Verify deployed bytecode against it before trusting an address.</p>
         <div className="card pad" style={{ display: "grid", gap: 0 }}>
-          <Addr a={rh.factory} label="LaunchFactory" explorer={rh.explorer} />
+          <Addr a={rh.factoryV4} label="LaunchFactoryV4" explorer={rh.explorer} />
+          <Addr a={rh.hook} label="LaunchHook" explorer={rh.explorer} />
+          <Addr a={rh.factory} label="LaunchFactory (V3)" explorer={rh.explorer} />
           <Addr a={d?.feeLocker} label="FeeLocker" explorer={rh.explorer} />
           <Addr a={d?.founderVault} label="FounderVault" explorer={rh.explorer} />
           <Addr a={rh.distributor} label="RewardsDistributor" explorer={rh.explorer} />

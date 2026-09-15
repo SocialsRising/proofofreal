@@ -9,6 +9,7 @@ const ADDR = {
   positionManager: "0x58daec3116aae6d93017baaea7749052e8a04fa7",
   permit2: "0x000000000022D473030F116dDEE9F6B43aC78BA3",
   stateView: "0xf3334192d15450cdd385c8b70e03f9a6bd9e673b",
+  quoter: "0x8dc178efb8111bb0973dd9d722ebeff267c98f94",
   universalRouter: "0x8876789976decbfcbbbe364623c63652db8c0904",
   create2Deployer: "0x4e59b44847b379578588920cA78FbF26c0B4956C",
 };

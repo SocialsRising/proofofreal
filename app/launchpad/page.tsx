@@ -94,10 +94,17 @@ export default function Home() {
 
       <section className="blk">
         <Reveal>
-          <div className="cta-band">
-            <div><div className="eyebrow" style={{ color: "rgba(0,0,0,.55)" }}>Next release</div><div className="big">Pick your own 1–10% creator fee, on top of our 1%.</div></div>
-            <Link className="btn lg dark" href="/launchpad/updates">Follow the build</Link>
-          </div>
+          {rh.factoryV4 ? (
+            <div className="cta-band">
+              <div><div className="eyebrow" style={{ color: "rgba(0,0,0,.55)" }}>Your token, your fee</div><div className="big">Set your own 0–10% creator fee, on top of our 1%. Split it with your holders or keep it all.</div></div>
+              <Link className="btn lg dark" href="/launchpad/launch">Launch Token</Link>
+            </div>
+          ) : (
+            <div className="cta-band">
+              <div><div className="eyebrow" style={{ color: "rgba(0,0,0,.55)" }}>Next release</div><div className="big">Pick your own 1–10% creator fee, on top of our 1%.</div></div>
+              <Link className="btn lg dark" href="/launchpad/updates">Follow the build</Link>
+            </div>
+          )}
         </Reveal>
       </section>
     </>
