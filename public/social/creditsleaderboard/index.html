@@ -6,185 +6,121 @@
 <title>Credits Leaderboard · Meme Maxxers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;600;700;800;900&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#050505;--bg2:#0b0b0b;--card:#0f0f0f;--card2:#151515;--line:#222;--line2:#333;--hi:rgba(255,255,255,.12);
-  --fg:#f4f4f2;--fg2:#a9a9a4;--fg3:#6b6b67;--up:#b9f5c8;--warn:#f3d38a;
-  --display:"Inter Tight","Helvetica Neue",Arial,sans-serif;--body:"Inter","Helvetica Neue",Arial,sans-serif;--mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
-  --r:16px;
+  --bg:#050505;--card:#0e0e0e;--card2:#161616;--line:#222;--line2:#333;
+  --fg:#f4f4f2;--fg2:#a6a6a1;--fg3:#6b6b67;--warn:#f3d38a;
+  --font:"Inter Tight","Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
-  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:64px 64px;opacity:.22;
-  -webkit-mask-image:radial-gradient(ellipse at 50% 0%,#000 0%,transparent 70%);mask-image:radial-gradient(ellipse at 50% 0%,#000 0%,transparent 70%)}
+body{margin:0;background:var(--bg);color:var(--fg);font:500 16px/1.5 var(--font);-webkit-font-smoothing:antialiased}
 a{color:inherit}
-.wrap{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 20px}
-@media(min-width:760px){.wrap{padding:0 32px}}
+.wrap{max-width:720px;margin:0 auto;padding:0 18px}
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.eyebrow{font-family:var(--mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg3);font-weight:700}
+.eyebrow{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fg3);font-weight:700}
 .muted{color:var(--fg2)}
-h1,h2,h3{font-family:var(--display);margin:0;letter-spacing:-.03em;line-height:1}
-h2{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:800}
-h3{font-size:1.1rem;font-weight:700;letter-spacing:-.01em}
+h1,h2,h3{margin:0;letter-spacing:-.03em;line-height:1.05;font-weight:800}
+h2{font-size:1.6rem}
+h3{font-size:1.02rem;font-weight:700;letter-spacing:-.01em}
 p{margin:0}
 
-/* top bar */
-.top{position:sticky;top:0;z-index:30;background:rgba(5,5,5,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;align-items:center;gap:14px;height:58px}
-.brand{font-family:var(--display);font-weight:800;letter-spacing:.02em;text-transform:uppercase;font-size:.9rem;display:flex;align-items:center;gap:10px;text-decoration:none}
-.brand i{width:22px;height:22px;border:1.5px solid var(--fg);display:grid;place-items:center;font-style:normal;font-size:.6rem;font-family:var(--mono)}
-.top nav{display:none;gap:4px;margin-left:auto}
-.top nav a{text-decoration:none;color:var(--fg2);font-weight:600;font-size:.88rem;padding:7px 12px;border-radius:999px}
-.top nav a:hover{color:var(--fg);background:var(--card2)}
-.top .cta{margin-left:auto}
-@media(min-width:860px){.top nav{display:flex}.top .cta{margin-left:6px}}
+.top{position:sticky;top:0;z-index:10;background:rgba(5,5,5,.9);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:54px}
+.brand{font-weight:800;text-transform:uppercase;font-size:.82rem;letter-spacing:.04em;text-decoration:none;display:flex;align-items:center;gap:9px}
+.brand i{width:20px;height:20px;border:1.5px solid var(--fg);display:grid;place-items:center;font:700 .55rem var(--mono);font-style:normal}
 
-/* buttons */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:12px;border:1px solid var(--line2);background:var(--card2);color:var(--fg);font-weight:700;font-size:.92rem;text-decoration:none;cursor:pointer;white-space:nowrap;transition:transform .15s,background .15s,border-color .15s;font-family:var(--body)}
-.btn:hover{transform:translateY(-1px);border-color:#555;background:#1b1b1b}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:11px;border:1px solid var(--line2);background:var(--card2);color:var(--fg);font:700 .88rem var(--font);text-decoration:none;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:#555}
 .btn.primary{background:var(--fg);color:#000;border-color:var(--fg)}
-.btn.primary:hover{background:#fff}
-.btn.sm{padding:7px 12px;font-size:.82rem;border-radius:10px}
+.btn.sm{padding:7px 12px;font-size:.8rem;border-radius:9px}
 .btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
 
+section{padding:40px 0;border-bottom:1px solid var(--line)}
+section:last-of-type{border-bottom:0}
+.head{margin-bottom:18px;display:grid;gap:6px}
+
 /* hero */
-.hero{padding:64px 0 36px;display:grid;gap:34px}
-@media(min-width:960px){.hero{grid-template-columns:1.25fr .75fr;align-items:end;padding:90px 0 48px}}
-.hero h1{font-size:clamp(3rem,10vw,7.2rem);font-weight:900;letter-spacing:-.055em;line-height:.88}
-/* silver gradient fill (a text-stroke outline would trace this variable font's overlapping contours) */
-.hero h1 .outline{color:transparent;background:linear-gradient(180deg,#fafaf8 0%,#9a9a95 55%,#4a4a47 100%);-webkit-background-clip:text;background-clip:text;padding-bottom:.06em}
-.hero .lede{font-size:clamp(1.05rem,2vw,1.25rem);color:var(--fg2);max-width:46ch;margin-top:22px}
-.hero .ctas{display:flex;gap:10px;flex-wrap:wrap;margin-top:26px}
-.pool{border:1px solid var(--line2);border-radius:var(--r);background:linear-gradient(160deg,#141414,#080808);padding:22px;display:grid;gap:14px;position:relative;overflow:hidden}
-.pool::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,transparent 40%,rgba(255,255,255,.07) 50%,transparent 60%);transform:translateX(-100%);animation:sheen 6s ease-in-out infinite}
-@keyframes sheen{0%,60%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-.pool .big{font-family:var(--display);font-weight:900;font-size:clamp(2.2rem,5vw,3.2rem);letter-spacing:-.04em;line-height:1}
-.pool .row{display:flex;justify-content:space-between;gap:10px;border-top:1px solid var(--line);padding-top:10px;font-size:.9rem}
-.pool .row b{font-family:var(--mono);font-weight:700}
-.live{display:inline-flex;align-items:center;gap:8px;color:var(--up);font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;font-weight:700}
-.live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--up);animation:pulse 2s infinite}
-@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(185,245,200,.55)}70%{box-shadow:0 0 0 9px rgba(185,245,200,0)}100%{box-shadow:0 0 0 0 rgba(185,245,200,0)}}
+.hero{padding-top:44px;padding-bottom:36px}
+.hero h1{font-size:clamp(2.7rem,12vw,4.6rem);letter-spacing:-.05em;line-height:.92;margin-top:14px}
+.hero h1 span{color:transparent;background:linear-gradient(180deg,#fafaf8,#8a8a85);-webkit-background-clip:text;background-clip:text}
+.hero .lede{font-size:1.08rem;color:var(--fg2);margin-top:16px;max-width:38ch}
+.pool{margin-top:26px;border:1px solid var(--line2);border-radius:16px;background:var(--card);padding:18px 18px 8px}
+.pool .big{font-size:2.3rem;font-weight:800;letter-spacing:-.04em;line-height:1;margin:6px 0 2px}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:.9rem}
+.kv:first-of-type{margin-top:12px}
+.kv b{font-family:var(--mono);font-weight:700;text-align:right}
 
-/* ticker */
-.ticker{border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap;position:relative;z-index:1}
-.ticker div{display:inline-block;padding:12px 0;animation:tick 40s linear infinite;font-family:var(--display);font-weight:800;font-size:.95rem;letter-spacing:.06em;text-transform:uppercase;color:var(--fg2)}
-.ticker span{margin:0 22px}.ticker em{font-style:normal;color:var(--fg)}
-@keyframes tick{to{transform:translateX(-50%)}}
-
-section{padding:56px 0}
-.sec-head{display:flex;justify-content:space-between;align-items:end;gap:14px;flex-wrap:wrap;margin-bottom:24px}
-
-/* story */
-.story{display:grid;gap:18px}
-@media(min-width:900px){.story{grid-template-columns:repeat(3,1fr)}}
-.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:22px;display:grid;gap:10px;align-content:start;transition:border-color .2s,transform .2s}
-.card:hover{border-color:var(--line2);transform:translateY(-2px)}
-.card .n{font-family:var(--mono);font-size:.75rem;color:var(--fg3);font-weight:700}
-.mission{margin-top:18px;display:grid;gap:14px;border:1px solid var(--line2);border-radius:var(--r);padding:26px;background:var(--bg2)}
-@media(min-width:900px){.mission{grid-template-columns:.8fr 1.2fr;align-items:start}}
-.mission ul{margin:0;padding:0;list-style:none;display:grid;gap:12px}
-.mission li{display:grid;grid-template-columns:28px 1fr;gap:10px;color:var(--fg2)}
-.mission li b{color:var(--fg)}
-.mission li i{font-style:normal;width:24px;height:24px;border:1px solid var(--line2);border-radius:7px;display:grid;place-items:center;font-family:var(--mono);font-size:.72rem;color:var(--fg)}
-.links-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
-
-/* steps */
-.steps{display:grid;gap:14px}
-@media(min-width:760px){.steps{grid-template-columns:repeat(2,1fr)}}
-@media(min-width:1080px){.steps{grid-template-columns:repeat(4,1fr)}}
-.step .k{width:40px;height:40px;border-radius:12px;background:var(--fg);color:#000;display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:1.1rem}
-.step.soon{border-style:dashed}
-.step.soon .k{background:transparent;color:var(--fg);border:1px dashed var(--fg2)}
-.tagline{display:flex;gap:8px;flex-wrap:wrap}
-.tag{display:inline-flex;padding:4px 10px;border-radius:999px;border:1px solid var(--line2);font-size:.74rem;font-weight:600;color:var(--fg2);background:var(--card2)}
+/* numbered lists (story, earn) */
+.list{display:grid;gap:10px}
+.item{display:grid;grid-template-columns:34px 1fr;gap:12px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+.item .n{width:30px;height:30px;border-radius:9px;background:var(--fg);color:#000;display:grid;place-items:center;font-weight:800;font-size:.9rem}
+.item p{color:var(--fg2);margin-top:4px;font-size:.93rem}
+.item .act{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+.dots{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.dots li{padding-left:18px;position:relative;color:var(--fg2);font-size:.93rem}
+.dots li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--fg)}
+.dots b{color:var(--fg)}
+.note{margin-top:12px;font-size:.85rem;color:var(--fg3)}
 
 /* leaderboard */
-.boards{display:grid;gap:18px}
-@media(min-width:980px){.boards{grid-template-columns:1fr 1fr;align-items:start}}
-.switch{display:flex;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:5px}
-.switch button{flex:1;border:0;background:transparent;color:var(--fg2);font:700 .9rem var(--body);padding:10px 12px;border-radius:10px;cursor:pointer}
-.switch button.on{background:var(--fg);color:#000}
-@media(min-width:980px){.switch{display:none}}
-@media(max-width:979px){.board[data-hidden="true"]{display:none}}
-.board{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
-.board-head{padding:18px 18px 14px;display:grid;gap:12px;border-bottom:1px solid var(--line)}
-.board-head .t{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.search{width:100%;padding:11px 14px;border-radius:11px;border:1px solid var(--line);background:var(--bg2);color:var(--fg);font:500 .92rem var(--body);outline:none}
-.search:focus{border-color:#666}
-.weeksel{padding:8px 10px;border-radius:10px;border:1px solid var(--line2);background:var(--card2);color:var(--fg);font:600 .85rem var(--body)}
-.table{max-height:760px;overflow:auto}
-.rowl{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;padding:11px 18px;border-bottom:1px solid var(--line);transition:background .15s}
-.rowl:hover{background:#131313}
-@media(max-width:600px){.rowl{grid-template-columns:32px 1fr auto;gap:8px;padding:10px 12px}.table{max-height:none}.av{width:30px;height:30px}.amt b{font-size:.9rem}}
-.rowl .rk{font-family:var(--display);font-weight:800;font-size:1.05rem;color:var(--fg2)}
-.rowl.top3 .rk{color:var(--fg)}
-.rowl .who{display:flex;align-items:center;gap:10px;min-width:0}
-.av{width:34px;height:34px;border-radius:50%;background:var(--card2);border:1px solid var(--line2);display:grid;place-items:center;font:700 .72rem var(--mono);color:var(--fg2);overflow:hidden;flex-shrink:0}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border:1px solid var(--line);border-radius:13px;background:var(--card)}
+.tabs button{border:0;background:transparent;color:var(--fg2);font:700 .86rem var(--font);padding:10px 8px;border-radius:9px;cursor:pointer;line-height:1.2}
+.tabs button.on{background:var(--fg);color:#000}
+.tools{display:flex;gap:8px;margin:12px 0}
+.search{flex:1;min-width:0;padding:10px 13px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:500 .9rem var(--font);outline:none}
+.search:focus{border-color:#555}
+.weeksel{padding:9px 10px;border-radius:10px;border:1px solid var(--line2);background:var(--card2);color:var(--fg);font:700 .82rem var(--font)}
+.meta{font-size:.82rem;color:var(--fg3);margin-bottom:8px}
+.board{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}
+.row{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line)}
+.row:last-child{border-bottom:0}
+.rk{font-weight:800;color:var(--fg2);font-size:.95rem}
+.row.top .rk{color:var(--fg)}
+.who{display:flex;align-items:center;gap:10px;min-width:0}
+.av{width:30px;height:30px;border-radius:50%;background:var(--card2);border:1px solid var(--line2);display:grid;place-items:center;font:700 .62rem var(--mono);color:var(--fg2);overflow:hidden;flex-shrink:0}
 .av img{width:100%;height:100%;object-fit:cover}
-.who .h{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-decoration:none}
-.who .h:hover{text-decoration:underline}
-.who .s{font-size:.76rem;color:var(--fg3)}
+.h{font-weight:700;text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sub{font-size:.74rem;color:var(--fg3)}
+.share{border:0;background:none;color:var(--fg3);cursor:pointer;font:inherit;padding:0;margin-left:6px;text-decoration:underline}
 .amt{text-align:right}
-.amt b{font-family:var(--mono);font-weight:700;display:block}
-.amt small{font-size:.74rem;color:var(--fg3);font-family:var(--mono)}
+.amt b{font-family:var(--mono);font-size:.9rem;display:block}
+.amt small{font:.7rem var(--mono);color:var(--fg3)}
 .amt .dec{color:var(--warn)}
-.medal{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;font-size:.8rem;font-weight:800;color:#000}
-.m1{background:linear-gradient(135deg,#fff,#bdbdbd)}.m2{background:linear-gradient(135deg,#dcdcdc,#8c8c8c)}.m3{background:linear-gradient(135deg,#b9b9b9,#5f5f5f)}
-.empty{padding:40px 22px;text-align:center;display:grid;gap:10px;justify-items:center;color:var(--fg2)}
-.empty .big{font-family:var(--display);font-weight:800;font-size:1.3rem;color:var(--fg);letter-spacing:-.02em}
-.foot-note{padding:12px 18px;font-size:.78rem;color:var(--fg3);border-top:1px solid var(--line)}
-.share{border:0;background:none;color:var(--fg3);cursor:pointer;font-size:.74rem;padding:0;margin-left:6px;text-decoration:underline}
-.share:hover{color:var(--fg)}
+.empty{padding:34px 18px;text-align:center;display:grid;gap:10px;justify-items:center;color:var(--fg2);font-size:.93rem}
+.empty b{color:var(--fg);font-size:1.12rem;letter-spacing:-.02em}
 
-/* tiers */
-.tiers{display:grid;gap:10px;grid-template-columns:repeat(2,1fr)}
-@media(min-width:760px){.tiers{grid-template-columns:repeat(4,1fr)}}
-@media(min-width:1080px){.tiers{grid-template-columns:repeat(7,1fr)}}
-.tier{border:1px solid var(--line);border-radius:14px;padding:14px;background:var(--card);display:grid;gap:4px}
-.tier .r{font-family:var(--mono);font-size:.72rem;color:var(--fg3);font-weight:700;letter-spacing:.08em;text-transform:uppercase}
-.tier .v{font-family:var(--display);font-weight:800;font-size:1.25rem;letter-spacing:-.02em}
-.tier .e{font-size:.74rem;color:var(--fg3)}
-.tier.first{background:var(--fg);color:#000;border-color:var(--fg)}
-.tier.first .r,.tier.first .e{color:rgba(0,0,0,.6)}
+/* payouts */
+.tiers{border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.tiers .kv{margin:0;padding:11px 14px;background:var(--card)}
+.tiers .kv:first-child{border-top:0;background:var(--fg);color:#000}
+.tiers .kv span small{color:var(--fg3);margin-left:6px;font-size:.78rem}
+.tiers .kv:first-child span small{color:rgba(0,0,0,.55)}
 
-/* rules */
-.rules{display:grid;gap:14px}
-@media(min-width:900px){.rules{grid-template-columns:repeat(3,1fr)}}
-.rule .big{font-family:var(--display);font-weight:900;font-size:2rem;letter-spacing:-.04em}
+/* links */
+.links{display:grid;gap:8px}
+.lk{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card);text-decoration:none;font-weight:700}
+.lk:hover{border-color:#555}
+.lk small{font:.74rem var(--mono);color:var(--fg3);font-weight:500}
+.lk.off{opacity:.5;border-style:dashed;pointer-events:none}
 
-/* link grid */
-.lgrid{display:grid;gap:12px}
-@media(min-width:700px){.lgrid{grid-template-columns:repeat(2,1fr)}}
-@media(min-width:1080px){.lgrid{grid-template-columns:repeat(5,1fr)}}
-.lk{text-decoration:none;border:1px solid var(--line);border-radius:14px;padding:18px;background:var(--card);display:grid;gap:6px;transition:border-color .2s,transform .2s}
-.lk:hover{border-color:#555;transform:translateY(-2px)}
-.lk .a{font-size:.78rem;color:var(--fg3);font-family:var(--mono)}
-.lk.off{opacity:.5;pointer-events:none;border-style:dashed}
-
-footer{border-top:1px solid var(--line);padding:40px 0 60px;position:relative;z-index:1}
-footer .grid{display:grid;gap:20px}
-@media(min-width:900px){footer .grid{grid-template-columns:1.3fr 1fr}}
-.disc{font-size:.8rem;color:var(--fg3);max-width:70ch}
-
-.reveal{opacity:0;transform:translateY(14px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
-.reveal.in{opacity:1;transform:none}
-@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.reveal{opacity:1;transform:none}}
+footer{padding:34px 0 48px;border-top:1px solid var(--line)}
+footer p{font-size:.88rem;color:var(--fg2);margin-top:10px}
+footer .disc{font-size:.74rem;color:var(--fg3);margin-top:16px}
 </style>
 </head>
 <body>
 <script>
 /* ==================================================================================================
    EDIT HERE. Everything the page shows comes from CONFIG, TIERS and WEEKS below.
-   Weekly routine: add rankings to the current week (ordered, #1 first), set status "final" when the
-   week closes, then add the next week with status "live". Ranks and payouts are computed from TIERS.
+   Weekly routine: add rankings to the current week (ordered, #1 first) or fill the Google Sheet, set the
+   week's status to "final" when it closes, then add the next week. Payouts, totals and decay are computed.
    ================================================================================================== */
 const CONFIG = {
-  updated: "Sep 26",                      // shown in the header card
-  weekEndsISO: "",                        // e.g. "2026-10-03T00:00:00Z" → shows a countdown; "" hides it
+  updated: "Sep 27",
+  weekEndsISO: "",                        // e.g. "2026-10-05T00:00:00Z" → shows a countdown; "" hides it
   avatars: true,                          // pull X profile pictures via unavatar.io (falls back to initials)
   // Google Sheet feed (optional). File → Share → Publish to web → pick the tab → "Comma-separated values" → copy link.
   // Columns (header row required): week, handle, points, pfp   — handle can be "name", "@name" or an x.com link;
@@ -194,166 +130,121 @@ const CONFIG = {
   minJackoff: 1000000,                    // …or at least this many $JACKOFF (raised as the price goes up)
   decayPerMissedWeek: 0.25,               // each missed week removes 25% of an award's original amount
   bountyAccount: "tradesgiving",          // X handle that posts the official bounty posts
-  bountyPosts: [                          // newest first; leave url "" until it exists
-    { label: "Bounty post · goes live Monday", url: "" },
+  bountyPost: { label: "Bounty post · live Monday", url: "" },
+  article: { label: "Read: price targets & the vision", url: "" },
+  links: [
+    { label: "Credits NFTs", sub: "OpenSea", url: "https://opensea.io/collection/credits" },
+    { label: "$JACKOFF Token", sub: "Pons", url: "https://www.ponsfamily.com/launchpad/0x5458B19214CaBa7eBbD550D1514a674c3BbFe2B1" },
+    { label: "Meme Maxxers Discord", sub: "Discord", url: "https://discord.gg/krVPuyksQy" },
+    { label: "Credits Crew Telegram", sub: "Telegram", url: "https://t.me/+5cklAMkPu2I0ZTFh" },
+    { label: "Credits Crew X List", sub: "X", url: "https://x.com/i/lists/2102950612350668872" },
   ],
-  articles: {
-    thesis: { label: "Read: Credits to 1 ETH, Statements to 80+ ETH — price targets & the vision", url: "" },
-  },
-  links: {
-    credits:  { label: "Credits NFTs", sub: "opensea.io/collection/credits", url: "https://opensea.io/collection/credits" },
-    jackoff:  { label: "$JACKOFF Token", sub: "on Pons", url: "https://www.ponsfamily.com/launchpad/0x5458B19214CaBa7eBbD550D1514a674c3BbFe2B1" },
-    discord:  { label: "Meme Maxxers Discord", sub: "discord.gg/krVPuyksQy", url: "https://discord.gg/krVPuyksQy" },
-    telegram: { label: "Credits Crew Telegram", sub: "coming soon", url: "" },
-    xlist:    { label: "Credits Crew X List", sub: "x.com list", url: "https://x.com/i/lists/2102950612350668872" },
-  },
 };
 
 /* Payout tiers as a share of each week's pool. With a 10,000,000 pool these are exact whole numbers:
-   #1 1,000,000 · #2 700,000 · #3 500,000 · #4–10 250,000 · #11–25 150,000 · #26–50 80,000 · #51–100 36,000 */
+   #1 1,000,000 · #2 750,000 · #3 500,000 · #4–10 250,000 · #11–25 150,000 · #26–50 70,000 · #51–100 40,000 */
 const TIERS = [
   { from: 1,  to: 1,   share: 0.10 },
-  { from: 2,  to: 2,   share: 0.07 },
+  { from: 2,  to: 2,   share: 0.075 },
   { from: 3,  to: 3,   share: 0.05 },
   { from: 4,  to: 10,  share: 0.025 },
   { from: 11, to: 25,  share: 0.015 },
-  { from: 26, to: 50,  share: 0.008 },
-  { from: 51, to: 100, share: 0.0036 },
+  { from: 26, to: 50,  share: 0.007 },
+  { from: 51, to: 100, share: 0.004 },
 ];
 
-/* status: "upcoming" → "live" → "final". rankings: ordered best first (or leave empty and use the sheet). { handle: "name" (no @), points: 120 }. Optional: pfp: "https://…" */
+/* status: "upcoming" → "live" → "final". rankings: ordered best first (or leave empty and use the sheet).
+   Entry: { handle: "name", points: 120 }, optional pfp: "https://…" */
 const WEEKS = [
   { week: 1, dates: "Starts Mon, Sep 28", pool: 10000000, status: "upcoming", rankings: [
   ]},
 ];
 </script>
 
-<div class="top">
-  <div class="wrap">
-    <a class="brand" href="#"><i>CR</i>Credits Leaderboard</a>
-    <nav><a href="#mission">Mission</a><a href="#earn">How to earn</a><a href="#board">Leaderboard</a><a href="#rules">Rules</a><a href="#links">Links</a></nav>
-    <a class="btn sm primary cta" id="topJoin" href="#" target="_blank" rel="noreferrer">Opt in</a>
-  </div>
-</div>
+<div class="top"><div class="wrap">
+  <a class="brand" href="#"><i>CR</i>Credits Leaderboard</a>
+  <a class="btn sm primary" id="topJoin" href="#" target="_blank" rel="noreferrer">Opt in</a>
+</div></div>
 
 <main>
-  <div class="wrap">
-    <div class="hero">
-      <div class="reveal">
-        <div class="eyebrow">An initiative by Meme Maxxers</div>
-        <h1 style="margin-top:18px">Credits<br><span class="outline">Leaderboard</span></h1>
-        <p class="lede">Uniting Jack Butcher's Credits and Statements community — organized, rewarded, and pushing the movement forward together.</p>
-        <div class="ctas"><a class="btn primary" href="#earn">Start earning</a><a class="btn" href="#board">See the rankings</a></div>
-      </div>
-      <div class="pool reveal" style="transition-delay:120ms">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px"><span class="live" id="liveLabel">Week 1 live</span><span class="eyebrow" id="updatedLabel"></span></div>
-        <div><div class="eyebrow">This week's pool</div><div class="big mono" id="poolBig">—</div><div class="muted" style="font-size:.9rem">$JACKOFF to the top 100</div></div>
-        <div class="row"><span>#1 takes</span><b id="firstTakes">—</b></div>
-        <div class="row"><span>Participants</span><b id="participants">—</b></div>
-        <div class="row" id="countRow" hidden><span>Week closes in</span><b id="countdown">—</b></div>
-      </div>
+  <div class="wrap hero">
+    <div class="eyebrow">An initiative by Meme Maxxers</div>
+    <h1>Credits<br><span>Leaderboard</span></h1>
+    <p class="lede">Uniting the Credits &amp; Statements community. Contribute every week, earn $JACKOFF.</p>
+    <div class="pool">
+      <div class="eyebrow" id="poolLabel">This week's pool</div>
+      <div class="big mono" id="poolBig">—</div>
+      <div class="muted" style="font-size:.88rem">$JACKOFF to the weekly top 100</div>
+      <div class="kv"><span>#1 takes</span><b id="firstTakes">—</b></div>
+      <div class="kv" id="rankedRow" hidden><span>Ranked this week</span><b id="ranked">—</b></div>
+      <div class="kv" id="countRow" hidden><span>Week closes in</span><b id="countdown">—</b></div>
     </div>
   </div>
 
-  <div class="ticker" aria-hidden="true"><div id="tickerText"></div></div>
-
-  <section id="mission">
-    <div class="wrap">
-      <div class="sec-head reveal"><div><div class="eyebrow">The story so far</div><h2 style="margin-top:8px">Together we rise.</h2></div></div>
-      <div class="story">
-        <div class="card reveal"><span class="n">01</span><h3>Jack started it</h3><p class="muted">The Credits mint didn't just sell NFTs — it gathered a core community of Web3's finest from day one.</p></div>
-        <div class="card reveal" style="transition-delay:80ms"><span class="n">02</span><h3>Ethos set the tone</h3><p class="muted">US KYC'd holders shared their allocations with international friends. That's the spirit we're carrying forward.</p></div>
-        <div class="card reveal" style="transition-delay:160ms"><span class="n">03</span><h3>Now it's on us</h3><p class="muted">Take it to the next level and cement Credits and Statements as the next blue chip — with the best cohort of people who want to build together.</p></div>
-      </div>
-      <div class="mission reveal">
-        <div style="display:grid;gap:12px">
-          <div class="eyebrow">The mission</div>
-          <h3 style="font-size:1.5rem;font-family:var(--display);font-weight:800;letter-spacing:-.02em">Reward the people who show up — and keep showing up.</h3>
-          <div class="links-row" id="articleLinks"></div>
-        </div>
-        <ul>
-          <li><i>1</i><span><b>A reserved $JACKOFF allocation</b> goes to long-term contributors, tracked here every week and distributed at the end — when we decide as a community.</span></li>
-          <li><i>2</i><span><b>$JACKOFF holders receive SPCX stock tokens</b> based on their holdings.</span></li>
-          <li><i>3</i><span><b>$JACKOFF creator fees sweep the floor</b> — buying as many cheap Credits as possible.</span></li>
-        </ul>
-      </div>
+  <section><div class="wrap">
+    <div class="head"><div class="eyebrow">The story</div><h2>How we got here.</h2></div>
+    <div class="list">
+      <div class="item"><div class="n">1</div><div><h3>Jack Started the Fire</h3><p>The Credits mint brought Web3's finest together from day one.</p></div></div>
+      <div class="item"><div class="n">2</div><div><h3>Together We Rise</h3><p>On Ethos, US citizens gave up personal gains to give Credits allocations to their international friends. That's the spirit we carry forward.</p></div></div>
+      <div class="item"><div class="n">3</div><div><h3>Now We Write the Next Chapter</h3><p>Cement Credits and Statements as the next blue chip, with the best cohort building together.</p></div></div>
     </div>
-  </section>
+    <ul class="dots">
+      <li><b>Contributors earn $JACKOFF</b>, paid at the end when the community decides.</li>
+      <li><b>$JACKOFF holders get SPCX stock tokens</b> based on holdings.</li>
+      <li><b>$JACKOFF creator fees sweep cheap Credits</b> off the floor.</li>
+    </ul>
+    <div style="margin-top:16px" id="articleLink"></div>
+  </div></section>
 
-  <section id="earn" style="padding-top:20px">
-    <div class="wrap">
-      <div class="sec-head reveal"><div><div class="eyebrow">How to earn points</div><h2 style="margin-top:8px">Opt in. Post. Contribute.</h2></div></div>
-      <div class="steps">
-        <div class="card step reveal"><div class="k">1</div><h3>Opt in</h3><p class="muted">Comment on one of the official bounty posts from <a id="bountyHandle" href="#" target="_blank" rel="noreferrer" style="color:var(--fg)">@tradesgiving</a>.</p><div class="links-row" id="bountyLinks"></div></div>
-        <div class="card step reveal" style="transition-delay:70ms"><div class="k">2</div><h3>Post on X</h3><p class="muted">Earn leaderboard points every week by posting about Jack Butcher's Credits NFTs.</p><div class="tagline"><span class="tag">Weekly</span><span class="tag">Quality over volume</span></div></div>
-        <div class="card step reveal" style="transition-delay:140ms"><div class="k">3</div><h3>Go deeper in Discord</h3><p class="muted">Bigger contributions are awarded in our Discord — making memes, buying Credits or $JACKOFF, and more.</p><div class="links-row"><a class="btn sm" id="discordBtn" href="#" target="_blank" rel="noreferrer">Join the Discord</a></div></div>
-        <div class="card step soon reveal" style="transition-delay:210ms"><div class="k">+</div><h3>More coming</h3><p class="muted">New ways to earn points are added as the leaderboard grows. Check back each week.</p></div>
-      </div>
+  <section id="earn"><div class="wrap">
+    <div class="head"><div class="eyebrow">How to earn</div><h2>Opt in. Post. Contribute.</h2></div>
+    <div class="list">
+      <div class="item"><div class="n">1</div><div><h3>Opt in</h3><p>Comment on the official bounty post from <a id="bountyHandle" href="#" target="_blank" rel="noreferrer" style="color:var(--fg)">@tradesgiving</a>.</p><div class="act" id="bountyLink"></div></div></div>
+      <div class="item"><div class="n">2</div><div><h3>Post on X</h3><p>Share Credits or Statements NFTs to earn points every week.</p></div></div>
+      <div class="item"><div class="n">3</div><div><h3>Go deeper in Discord</h3><p>Memes, recruiting friends and holders, building apps, buying Credits or $JACKOFF, and more.</p><div class="act"><a class="btn sm" href="https://discord.gg/krVPuyksQy" target="_blank" rel="noreferrer">Join the Discord ↗</a></div></div></div>
     </div>
-  </section>
+    <p class="note">More ways to earn coming soon.</p>
+  </div></section>
 
-  <section id="board" style="padding-top:20px">
-    <div class="wrap">
-      <div class="sec-head reveal">
-        <div><div class="eyebrow">Leaderboard</div><h2 style="margin-top:8px">Who's building Credits.</h2></div>
-        <input class="search" id="search" placeholder="Find your @handle" style="max-width:280px" aria-label="Search handle">
-      </div>
-      <div class="switch" role="tablist" style="margin-bottom:14px">
-        <button class="on" data-tab="week" role="tab">This week</button>
-        <button data-tab="total" role="tab">All-time owed</button>
-      </div>
-      <div class="boards">
-        <div class="board reveal" id="boardWeek">
-          <div class="board-head">
-            <div class="t"><div><h3>Weekly rankings</h3><div class="muted" style="font-size:.84rem" id="weekMeta">—</div></div><select class="weeksel" id="weekSel" aria-label="Week"></select></div>
-          </div>
-          <div class="table" id="weekTable"></div>
-          <div class="foot-note" id="weekFoot"></div>
-        </div>
-        <div class="board reveal" id="boardTotal" data-hidden="true" style="transition-delay:100ms">
-          <div class="board-head">
-            <div class="t"><div><h3>All-time $JACKOFF owed</h3><div class="muted" style="font-size:.84rem">Every week combined, after decay</div></div><span class="tag" id="totalOwedTag">—</span></div>
-          </div>
-          <div class="table" id="totalTable"></div>
-          <div class="foot-note">Owed amounts lose 25% of their original value for every week you miss after earning them. Holdings are checked at distribution.</div>
-        </div>
-      </div>
-
-      <div style="margin-top:34px" class="reveal">
-        <div class="sec-head" style="margin-bottom:14px"><div><div class="eyebrow">This week's payouts</div><h3 style="margin-top:6px;font-size:1.3rem" id="tierTitle">Top 100 split the pool</h3></div></div>
-        <div class="tiers" id="tiers"></div>
-      </div>
+  <section id="board"><div class="wrap">
+    <div class="head"><div class="eyebrow">Leaderboard</div><h2>Who's building Credits.</h2></div>
+    <div class="tabs" role="tablist">
+      <button class="on" data-tab="week" role="tab" aria-selected="true">Weekly Rankings</button>
+      <button data-tab="total" role="tab" aria-selected="false">All Time $JACKOFF Rewards</button>
     </div>
-  </section>
-
-  <section id="rules" style="padding-top:20px">
-    <div class="wrap">
-      <div class="sec-head reveal"><div><div class="eyebrow">The fine print, in plain words</div><h2 style="margin-top:8px">Rules</h2></div></div>
-      <div class="rules">
-        <div class="card rule reveal"><div class="big mono">−25%</div><h3>Decay for missed weeks</h3><p class="muted">For every week you don't participate or contribute, each award you've earned loses 25% of its original amount. Four missed weeks and an award is gone — stay active.</p></div>
-        <div class="card rule reveal" style="transition-delay:80ms"><div class="big mono" id="eligBig">1 · 1M</div><h3>Hold to claim</h3><p class="muted" id="eligText">To receive rewards at the end you need at least 1 Credit or 1,000,000 $JACKOFF. The $JACKOFF threshold will be adjusted as the price goes up.</p></div>
-        <div class="card rule reveal" style="transition-delay:160ms"><div class="big mono">END</div><h3>Distributed together</h3><p class="muted">Allocations are tracked weekly and distributed at the end, on a date the community decides. Points are awarded by the Meme Maxxers team; spam and bots don't count.</p></div>
-      </div>
+    <div class="tools">
+      <input class="search" id="search" placeholder="Find your @handle" aria-label="Search handle">
+      <select class="weeksel" id="weekSel" aria-label="Week"></select>
     </div>
-  </section>
+    <div class="meta" id="meta"></div>
+    <div class="board" id="table"></div>
+  </div></section>
 
-  <section id="links" style="padding-top:20px">
-    <div class="wrap">
-      <div class="sec-head reveal"><div><div class="eyebrow">Links</div><h2 style="margin-top:8px">Everything in one place.</h2></div></div>
-      <div class="lgrid" id="linkGrid"></div>
-    </div>
-  </section>
+  <section><div class="wrap">
+    <div class="head"><div class="eyebrow">Weekly payouts</div><h2 id="tierTitle">10,000,000 $JACKOFF</h2></div>
+    <div class="tiers" id="tiers"></div>
+  </div></section>
+
+  <section><div class="wrap">
+    <div class="head"><div class="eyebrow">Rules</div><h2>Keep it simple.</h2></div>
+    <ul class="dots" style="margin:0">
+      <li><b>−25% per missed week.</b> Each reward loses 25% of its original amount for every week you don't contribute.</li>
+      <li id="eligRule"><b>Hold to claim.</b> Own at least 1 Credit or 1,000,000 $JACKOFF at distribution. The $JACKOFF amount rises with the price.</li>
+      <li><b>Paid at the end</b>, on a date the community decides. Spam and bots don't count.</li>
+    </ul>
+  </div></section>
+
+  <section><div class="wrap">
+    <div class="head"><div class="eyebrow">Links</div><h2>Join the crew.</h2></div>
+    <div class="links" id="links"></div>
+  </div></section>
 </main>
 
-<footer>
-  <div class="wrap grid">
-    <div style="display:grid;gap:12px">
-      <div class="brand"><i>MM</i>Meme Maxxers</div>
-      <p class="muted" style="max-width:52ch">A collective of founders, creators, builders, guild leaders, investors, and AI lovers focused on supporting the latest innovations and experimenting with the coolest tech.</p>
-    </div>
-    <p class="disc">Community-run initiative. Not affiliated with, sponsored or endorsed by Jack Butcher or Visualize Value. Price predictions are opinions, not promises. $JACKOFF is a speculative memecoin; NFTs and tokens can lose all their value. Nothing here is financial advice — do your own research.</p>
-  </div>
-</footer>
+<footer><div class="wrap">
+  <div class="brand"><i>MM</i>Meme Maxxers</div>
+  <p>A collective of founders, creators, builders, guild leaders, investors, and AI lovers focused on supporting the latest innovations and experimenting with the coolest tech.</p>
+  <p class="disc">Community-run. Not affiliated with or endorsed by Jack Butcher or Visualize Value. Price predictions are opinions. $JACKOFF is a speculative memecoin; NFTs and tokens can lose all value. Not financial advice — do your own research.</p>
+</div></footer>
 
 <script>
 /* Loads the published Google Sheet (if configured) into WEEKS, then renders. A broken sheet never blanks the page. */
@@ -361,8 +252,8 @@ function parseCsv(text) {
   const rows = []; let row = [], cell = "", q = false;
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
-    if (q) { if (c === "\"" && text[i + 1] === "\"") { cell += "\""; i++; } else if (c === "\"") q = false; else cell += c; }
-    else if (c === "\"") q = true;
+    if (q) { if (c === '"' && text[i + 1] === '"') { cell += '"'; i++; } else if (c === '"') q = false; else cell += c; }
+    else if (c === '"') q = true;
     else if (c === ",") { row.push(cell); cell = ""; }
     else if (c === "\n" || c === "\r") { if (c === "\r" && text[i + 1] === "\n") i++; row.push(cell); rows.push(row); row = []; cell = ""; }
     else cell += c;
@@ -385,7 +276,8 @@ async function loadSheet() {
       if (!w || !h) return;
       const entry = { handle: h, points: iP >= 0 ? Number(String(r[iP]).replace(/[^0-9.-]/g, "")) || 0 : 0 };
       if (iF >= 0 && r[iF] && r[iF].trim()) entry.pfp = r[iF].trim();
-      (byWeek.get(w) || byWeek.set(w, []).get(w)).push(entry);
+      if (!byWeek.has(w)) byWeek.set(w, []);
+      byWeek.get(w).push(entry);
     });
     WEEKS.forEach((w) => { const list = byWeek.get(w.week); if (list) w.rankings = list.sort((a, b) => b.points - a.points); });
   } catch (e) { console.warn("Credits leaderboard: sheet not loaded, using WEEKS as-is.", e); }
@@ -396,76 +288,67 @@ function start() {
   const $ = (id) => document.getElementById(id);
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const num = (n) => Math.round(n).toLocaleString("en-US");
-  const short = (n) => n >= 1e6 ? (n / 1e6).toFixed(n % 1e6 ? 2 : 0).replace(/\.?0+$/, "") + "M" : n >= 1e3 ? Math.round(n / 1e3) + "K" : String(Math.round(n));
+  const short = (n) => n >= 1e6 ? +(n / 1e6).toFixed(2) + "M" : n >= 1e3 ? +(n / 1e3).toFixed(1) + "K" : String(Math.round(n));
   const clean = (h) => String(h || "").trim().replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//i, "").replace(/[/?#].*$/, "").replace(/^@/, "");
   const key = (h) => clean(h).toLowerCase();
   const xUrl = (h) => "https://x.com/" + encodeURIComponent(clean(h));
-  const ext = (url, label, cls = "btn sm") => url ? `<a class="${cls}" href="${esc(url)}" target="_blank" rel="noreferrer">${esc(label)} ↗</a>` : `<span class="${cls}" aria-disabled="true">${esc(label)}${/·/.test(label) ? "" : " · soon"}</span>`;
+  const linkBtn = (l, cls) => l.url ? `<a class="${cls}" href="${esc(l.url)}" target="_blank" rel="noreferrer">${esc(l.label)} ↗</a>` : `<span class="${cls}" aria-disabled="true">${esc(l.label)}${/·/.test(l.label) ? "" : " · soon"}</span>`;
 
   const weeks = [...WEEKS].sort((a, b) => a.week - b.week);
   const current = weeks.find((w) => w.status === "live") || weeks.find((w) => w.status === "upcoming") || weeks[weeks.length - 1];
-  const payout = (pool, rank) => { const t = TIERS.find((x) => rank >= x.from && rank <= x.to); return t ? Math.floor(pool * t.share) : 0; };
+  const payout = (pool, rank) => { const t = TIERS.find((x) => rank >= x.from && rank <= x.to); return t ? Math.round(pool * t.share) : 0; };
   const maxRank = Math.max(...TIERS.map((t) => t.to));
+  const bounty = clean(CONFIG.bountyAccount);
+  const optInUrl = CONFIG.bountyPost.url || xUrl(bounty);
 
-  // ------------------------------------------------ header + static bits
-  $("updatedLabel").textContent = CONFIG.updated ? "Updated " + CONFIG.updated : "";
-  $("liveLabel").textContent = current.status === "live" ? `Week ${current.week} live` : current.status === "upcoming" ? `Week ${current.week} · ${current.dates}` : `Week ${current.week} closed`;
+  // ------------------------------------------------ static bits
+  $("topJoin").href = optInUrl;
+  $("poolLabel").textContent = current.status === "live" ? `Week ${current.week} · live` : current.status === "upcoming" ? `Week ${current.week} · ${current.dates}` : `Week ${current.week} · closed`;
   $("poolBig").textContent = num(current.pool);
-  $("firstTakes").textContent = num(payout(current.pool, 1)) + " $JACKOFF";
-  $("participants").textContent = current.rankings.length ? num(current.rankings.length) : "Opt-ins open";
-  $("tierTitle").textContent = `Week ${current.week}: top ${maxRank} split ${num(current.pool)} $JACKOFF`;
-  $("bountyHandle").href = xUrl(CONFIG.bountyAccount); $("bountyHandle").textContent = "@" + clean(CONFIG.bountyAccount);
-  $("bountyLinks").innerHTML = CONFIG.bountyPosts.map((p) => ext(p.url, p.label)).join("");
-  $("articleLinks").innerHTML = Object.values(CONFIG.articles).map((a) => ext(a.url, a.label)).join("");
-  $("discordBtn").href = CONFIG.links.discord.url;
-  const optIn = CONFIG.bountyPosts.find((p) => p.url);
-  $("topJoin").href = optIn ? optIn.url : xUrl(CONFIG.bountyAccount);
-  $("eligBig").textContent = `${CONFIG.minCredits} · ${short(CONFIG.minJackoff)}`;
-  $("eligText").textContent = `To receive rewards at the end you need at least ${CONFIG.minCredits} Credit${CONFIG.minCredits > 1 ? "s" : ""} or ${num(CONFIG.minJackoff)} $JACKOFF. The $JACKOFF threshold will be adjusted as the price goes up.`;
-  const tick = ["Credits", "Statements", "$JACKOFF", "Together we rise", `${short(current.pool)} $JACKOFF this week`, "Top 100 get paid", "Hold · Post · Build"];
-  $("tickerText").innerHTML = [...tick, ...tick, ...tick, ...tick].map((t, i) => `<span>${i % 2 ? "<em>" + esc(t) + "</em>" : esc(t)}</span><span>/</span>`).join("");
-
-  $("tiers").innerHTML = TIERS.map((t, i) => {
-    const each = payout(current.pool, t.from), n = t.to - t.from + 1;
-    return `<div class="tier ${i === 0 ? "first" : ""}"><div class="r">${t.from === t.to ? "#" + t.from : `#${t.from}–${t.to}`}</div><div class="v mono">${short(each)}</div><div class="e">${n > 1 ? `each · ${n} spots` : "$JACKOFF"}</div></div>`;
+  $("firstTakes").textContent = num(payout(current.pool, 1));
+  if (current.rankings.length) { $("rankedRow").hidden = false; $("ranked").textContent = num(current.rankings.length); }
+  $("bountyHandle").href = xUrl(bounty); $("bountyHandle").textContent = "@" + bounty;
+  $("bountyLink").innerHTML = linkBtn(CONFIG.bountyPost, "btn sm");
+  $("articleLink").innerHTML = linkBtn(CONFIG.article, "btn");
+  $("eligRule").innerHTML = `<b>Hold to claim.</b> Own at least ${CONFIG.minCredits} Credit${CONFIG.minCredits > 1 ? "s" : ""} or ${num(CONFIG.minJackoff)} $JACKOFF at distribution. The $JACKOFF amount rises with the price.`;
+  $("tierTitle").textContent = `${num(current.pool)} $JACKOFF`;
+  $("tiers").innerHTML = TIERS.map((t) => {
+    const n = t.to - t.from + 1;
+    return `<div class="kv"><span>${t.from === t.to ? "#" + t.from : `#${t.from}–${t.to}`}${n > 1 ? `<small>${n} spots</small>` : ""}</span><b>${num(payout(current.pool, t.from))}${n > 1 ? " each" : ""}</b></div>`;
   }).join("");
+  $("links").innerHTML = CONFIG.links.map((l) => l.url
+    ? `<a class="lk" href="${esc(l.url)}" target="_blank" rel="noreferrer"><span>${esc(l.label)}</span><small>${esc(l.sub)} ↗</small></a>`
+    : `<div class="lk off"><span>${esc(l.label)}</span><small>soon</small></div>`).join("");
 
-  $("linkGrid").innerHTML = Object.values(CONFIG.links).map((l) => l.url
-    ? `<a class="lk" href="${esc(l.url)}" target="_blank" rel="noreferrer"><h3>${esc(l.label)} ↗</h3><span class="a">${esc(l.sub)}</span></a>`
-    : `<div class="lk off"><h3>${esc(l.label)}</h3><span class="a">${esc(l.sub)}</span></div>`).join("");
-
-  // ------------------------------------------------ countdown
   if (CONFIG.weekEndsISO) {
     const end = new Date(CONFIG.weekEndsISO).getTime();
     if (!isNaN(end)) {
       $("countRow").hidden = false;
-      const tickC = () => { const s = Math.max(0, Math.floor((end - Date.now()) / 1000)); const d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600), m = Math.floor(s % 3600 / 60); $("countdown").textContent = s ? `${d}d ${h}h ${m}m` : "closed"; };
-      tickC(); setInterval(tickC, 30000);
+      const tick = () => { const s = Math.max(0, Math.floor((end - Date.now()) / 1000)); $("countdown").textContent = s ? `${Math.floor(s / 86400)}d ${Math.floor(s % 86400 / 3600)}h ${Math.floor(s % 3600 / 60)}m` : "closed"; };
+      tick(); setInterval(tick, 30000);
     }
   }
 
-  // ------------------------------------------------ aggregate with decay
-  // For each award: value = amount × max(0, 1 − decay × weeks missed after it was earned).
-  // "Missed" = a later week that is already final (or the live week once it has rankings) where the person isn't ranked.
+  // ------------------------------------------------ all-time totals with decay
+  // Each award: amount × max(0, 1 − decay × later counted weeks the person is absent from).
   const counted = weeks.filter((w) => w.status === "final" || w.rankings.length);
   const people = new Map();
-  counted.forEach((w) => w.rankings.slice(0, maxRank).forEach((r, i) => {
+  counted.forEach((w) => w.rankings.forEach((r, i) => {
     const k = key(r.handle); if (!k) return;
     const p = people.get(k) || { handle: clean(r.handle), pfp: r.pfp, awards: [], weeks: new Set() };
-    p.awards.push({ week: w.week, amount: payout(w.pool, i + 1) }); p.weeks.add(w.week); if (r.pfp) p.pfp = r.pfp;
+    const amt = i < maxRank ? payout(w.pool, i + 1) : 0;
+    if (amt) p.awards.push({ week: w.week, amount: amt });
+    p.weeks.add(w.week); if (r.pfp) p.pfp = r.pfp;
     people.set(k, p);
   }));
-  // anyone ranked outside the top 100 still counts as "participated" that week
-  counted.forEach((w) => w.rankings.forEach((r) => { const p = people.get(key(r.handle)); if (p) p.weeks.add(w.week); }));
-  const totals = [...people.values()].map((p) => {
+  const totals = [...people.values()].filter((p) => p.awards.length).map((p) => {
     let owed = 0, original = 0;
     p.awards.forEach((a) => {
       const missed = counted.filter((w) => w.week > a.week && !p.weeks.has(w.week)).length;
       original += a.amount; owed += a.amount * Math.max(0, 1 - CONFIG.decayPerMissedWeek * missed);
     });
-    return { ...p, owed: Math.floor(owed), original, decayed: original - Math.floor(owed), active: p.weeks.size };
-  }).sort((a, b) => b.owed - a.owed || b.original - a.original);
-  $("totalOwedTag").textContent = totals.length ? num(totals.reduce((s, p) => s + p.owed, 0)) + " owed" : "No awards yet";
+    return { ...p, owed: Math.floor(owed), decayed: original - Math.floor(owed), active: p.weeks.size };
+  }).sort((a, b) => b.owed - a.owed);
 
   // ------------------------------------------------ rendering
   const avatar = (h, pfp) => {
@@ -473,69 +356,53 @@ function start() {
     const src = pfp || (CONFIG.avatars ? "https://unavatar.io/x/" + encodeURIComponent(clean(h)) + "?fallback=false" : "");
     return src ? `<span class="av" data-i="${init}"><img src="${esc(src)}" alt="" loading="lazy"></span>` : `<span class="av">${init}</span>`;
   };
-  const rankCell = (n) => n <= 3 ? `<span class="medal m${n}">${n}</span>` : n;
-  const shareBtn = (h, rank, label) => {
-    const text = `I'm #${rank} on the Credits Leaderboard ${label} 🫡\n\nUniting the Jack Butcher Credits & Statements community — opt in and climb:`;
-    return `<button class="share" data-share="${esc(text)}">share</button>`;
-  };
+  const shareBtn = (rank, scope) => `<button class="share" data-share="${esc(`I'm #${rank} on the Credits Leaderboard ${scope} 🫡\n\nUniting the Credits & Statements community — opt in and climb:`)}">share</button>`;
+  const row = (rank, handle, pfp, sub, amount, small) => `<div class="row ${rank <= 3 ? "top" : ""}"><div class="rk">${rank}</div>
+    <div class="who">${avatar(handle, pfp)}<div style="min-width:0"><a class="h" href="${xUrl(handle)}" target="_blank" rel="noreferrer">@${esc(clean(handle))}</a><div class="sub">${sub}</div></div></div>
+    <div class="amt"><b>${amount}</b><small>${small}</small></div></div>`;
+  let tab = "week";
   const q = () => key($("search").value);
-
-  function renderWeek(w) {
-    const list = w.rankings.map((r, i) => ({ ...r, rank: i + 1 })).filter((r) => !q() || key(r.handle).includes(q()));
-    $("weekMeta").textContent = `${w.dates} · ${w.status === "live" ? "in progress" : w.status === "upcoming" ? "starting soon" : "final"} · ${num(w.pool)} $JACKOFF pool`;
-    if (!w.rankings.length) {
-      $("weekTable").innerHTML = `<div class="empty"><div class="big">${w.status === "upcoming" ? `Week ${w.week} starts soon.` : "Rankings post after the first snapshot."}</div><div>${optIn ? "Opt in now by commenting on the bounty post" : `Opt in by commenting on the first bounty post from @${esc(clean(CONFIG.bountyAccount))} when it goes live`} — the top ${maxRank} split ${num(w.pool)} $JACKOFF.</div><a class="btn primary" href="${esc($("topJoin").href)}" target="_blank" rel="noreferrer">${optIn ? "Opt in on X ↗" : `Follow @${esc(clean(CONFIG.bountyAccount))} ↗`}</a></div>`;
-    } else if (!list.length) {
-      $("weekTable").innerHTML = `<div class="empty"><div>No handle matches “${esc($("search").value)}” this week.</div></div>`;
-    } else {
-      $("weekTable").innerHTML = list.map((r) => {
-        const amt = payout(w.pool, r.rank);
-        return `<div class="rowl ${r.rank <= 3 ? "top3" : ""}"><div class="rk">${rankCell(r.rank)}</div>
-          <div class="who">${avatar(r.handle, r.pfp)}<div style="min-width:0"><a class="h" href="${xUrl(r.handle)}" target="_blank" rel="noreferrer">@${esc(clean(r.handle))}</a><div class="s">${num(r.points || 0)} pts${amt ? shareBtn(r.handle, r.rank, "this week") : ""}</div></div></div>
-          <div class="amt"><b>${amt ? num(amt) : "—"}</b><small>${amt ? "$JACKOFF" : "outside top " + maxRank}</small></div></div>`;
-      }).join("");
-    }
-    const unfilled = Math.max(0, maxRank - w.rankings.length);
-    $("weekFoot").textContent = w.rankings.length ? `${num(w.rankings.length)} ranked${unfilled ? ` · ${unfilled} top-${maxRank} spots still open` : ""}.` : `${maxRank} paid spots open this week.`;
-  }
-
-  function renderTotal() {
-    const list = totals.map((p, i) => ({ ...p, rank: i + 1 })).filter((p) => !q() || key(p.handle).includes(q()));
-    if (!totals.length) {
-      $("totalTable").innerHTML = `<div class="empty"><div class="big">Nobody owed yet.</div><div>This fills up as each week's rankings are posted. Stay active every week — missed weeks decay your total by 25% each.</div></div>`;
-      return;
-    }
-    if (!list.length) { $("totalTable").innerHTML = `<div class="empty"><div>No handle matches “${esc($("search").value)}”.</div></div>`; return; }
-    $("totalTable").innerHTML = list.map((p) => `<div class="rowl ${p.rank <= 3 ? "top3" : ""}"><div class="rk">${rankCell(p.rank)}</div>
-      <div class="who">${avatar(p.handle, p.pfp)}<div style="min-width:0"><a class="h" href="${xUrl(p.handle)}" target="_blank" rel="noreferrer">@${esc(p.handle)}</a><div class="s">${p.active} week${p.active > 1 ? "s" : ""} active${shareBtn(p.handle, p.rank, "all-time")}</div></div></div>
-      <div class="amt"><b>${num(p.owed)}</b><small>${p.decayed ? `<span class="dec">−${num(p.decayed)} decay</span>` : "$JACKOFF"}</small></div></div>`).join("");
-  }
-
   const sel = $("weekSel");
-  sel.innerHTML = weeks.slice().reverse().map((w) => `<option value="${w.week}">Week ${w.week}${w.status === "live" ? " · live" : w.status === "upcoming" ? " · soon" : ""}</option>`).join("");
+  sel.innerHTML = weeks.slice().reverse().map((w) => `<option value="${w.week}">Week ${w.week}</option>`).join("");
   sel.value = String(current.week);
+  if (weeks.length < 2) sel.hidden = true;
   const selected = () => weeks.find((w) => String(w.week) === sel.value) || current;
-  sel.addEventListener("change", () => renderWeek(selected()));
-  $("search").addEventListener("input", () => { renderWeek(selected()); renderTotal(); });
+
+  function render() {
+    sel.hidden = tab !== "week" || weeks.length < 2;
+    if (tab === "week") {
+      const w = selected();
+      $("meta").textContent = `Week ${w.week} · ${w.dates} · ${w.status === "live" ? "in progress" : w.status === "upcoming" ? "starting soon" : "final"}`;
+      if (!w.rankings.length) {
+        $("table").innerHTML = `<div class="empty"><b>${w.status === "upcoming" ? `Week ${w.week} ${w.dates.replace(/^Starts/, "starts")}.` : "Rankings coming soon."}</b><span>${CONFIG.bountyPost.url ? "Opt in by commenting on the bounty post." : `Opt in on the first bounty post from @${esc(bounty)}.`}</span><a class="btn primary" href="${esc(optInUrl)}" target="_blank" rel="noreferrer">${CONFIG.bountyPost.url ? "Opt in on X ↗" : `Follow @${esc(bounty)} ↗`}</a></div>`;
+        return;
+      }
+      const list = w.rankings.map((r, i) => ({ ...r, rank: i + 1 })).filter((r) => !q() || key(r.handle).includes(q()));
+      $("table").innerHTML = list.length ? list.map((r) => { const amt = payout(w.pool, r.rank); return row(r.rank, r.handle, r.pfp, `${num(r.points || 0)} pts${amt ? shareBtn(r.rank, "this week") : ""}`, amt ? num(amt) : "—", amt ? "$JACKOFF" : ""); }).join("")
+        : `<div class="empty"><span>No match for “${esc($("search").value)}”.</span></div>`;
+    } else {
+      $("meta").textContent = `Every week combined, after decay · ${totals.length ? num(totals.reduce((s, p) => s + p.owed, 0)) + " $JACKOFF owed" : "starts after week 1"}`;
+      if (!totals.length) { $("table").innerHTML = `<div class="empty"><b>No rewards yet.</b><span>Totals appear once week 1 is ranked.</span></div>`; return; }
+      const list = totals.map((p, i) => ({ ...p, rank: i + 1 })).filter((p) => !q() || key(p.handle).includes(q()));
+      $("table").innerHTML = list.length ? list.map((p) => row(p.rank, p.handle, p.pfp, `${p.active} wk${p.active > 1 ? "s" : ""} active${shareBtn(p.rank, "all-time")}`, num(p.owed), p.decayed ? `<span class="dec">−${num(p.decayed)} decay</span>` : "$JACKOFF")).join("")
+        : `<div class="empty"><span>No match for “${esc($("search").value)}”.</span></div>`;
+    }
+  }
+
+  document.querySelectorAll(".tabs button").forEach((b) => b.addEventListener("click", () => {
+    tab = b.dataset.tab;
+    document.querySelectorAll(".tabs button").forEach((x) => { x.classList.toggle("on", x === b); x.setAttribute("aria-selected", String(x === b)); });
+    render();
+  }));
+  sel.addEventListener("change", render);
+  $("search").addEventListener("input", render);
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-share]"); if (!b) return;
-    const url = location.href.split("#")[0].replace(/\/index\.html$/, "");
-    const shareUrl = /\/social\/creditsleaderboard/.test(url) ? "https://proofofreal.app/social/creditsleaderboard" : url;
-    window.open("https://x.com/intent/tweet?text=" + encodeURIComponent(b.dataset.share) + "&url=" + encodeURIComponent(shareUrl), "_blank", "noopener");
+    window.open("https://x.com/intent/tweet?text=" + encodeURIComponent(b.dataset.share) + "&url=" + encodeURIComponent("https://proofofreal.app/social/creditsleaderboard"), "_blank", "noopener");
   });
-  document.querySelectorAll(".switch button").forEach((b) => b.addEventListener("click", () => {
-    document.querySelectorAll(".switch button").forEach((x) => x.classList.toggle("on", x === b));
-    $("boardWeek").dataset.hidden = String(b.dataset.tab !== "week"); $("boardTotal").dataset.hidden = String(b.dataset.tab !== "total");
-  }));
-  $("boardWeek").dataset.hidden = "false";
-  renderWeek(current); renderTotal();
-
   // avatar fallback: when an image fails, show initials
-  document.addEventListener("error", (e) => { const img = e.target; if (img.tagName === "IMG" && img.parentElement?.classList.contains("av")) img.parentElement.textContent = img.parentElement.dataset.i || "?"; }, true);
-
-  // reveal on scroll
-  const io = "IntersectionObserver" in window ? new IntersectionObserver((es) => es.forEach((x) => { if (x.isIntersecting) { x.target.classList.add("in"); io.unobserve(x.target); } }), { threshold: .1 }) : null;
-  document.querySelectorAll(".reveal").forEach((el) => io ? io.observe(el) : el.classList.add("in"));
+  document.addEventListener("error", (e) => { const img = e.target; if (img.tagName === "IMG" && img.parentElement && img.parentElement.classList.contains("av")) img.parentElement.textContent = img.parentElement.dataset.i || "?"; }, true);
+  render();
 }
 </script>
 </body>
