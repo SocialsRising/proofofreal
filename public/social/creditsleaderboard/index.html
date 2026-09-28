@@ -9,105 +9,122 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#050505;--card:#0e0e0e;--card2:#161616;--line:#222;--line2:#333;
-  --fg:#f4f4f2;--fg2:#a6a6a1;--fg3:#6b6b67;--warn:#f3d38a;
+  --bg:#050505;--card:#0c0c0c;--card2:#151515;--line:#1f1f1f;--line2:#303030;
+  --fg:#f5f5f3;--fg2:#a8a8a3;--fg3:#6b6b67;--warn:#f3d38a;
+  --chrome:linear-gradient(135deg,#ffffff 0%,#dcdcd8 30%,#8f8f8a 56%,#ececea 82%,#ffffff 100%);
+  --silver-text:linear-gradient(180deg,#ffffff 0%,#c9c9c5 55%,#7d7d78 100%);
+  --edge:linear-gradient(160deg,#5c5c58 0%,#262626 35%,#1a1a1a 65%,#3d3d3a 100%);
   --font:"Inter Tight","Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
 html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--fg);font:500 16px/1.5 var(--font);-webkit-font-smoothing:antialiased}
+body{margin:0;color:var(--fg);font:500 16px/1.5 var(--font);-webkit-font-smoothing:antialiased;
+  background:radial-gradient(900px 460px at 50% -160px,rgba(255,255,255,.09),transparent 70%) no-repeat,var(--bg)}
 a{color:inherit}
 .wrap{max-width:720px;margin:0 auto;padding:0 18px}
 .mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.eyebrow{font-family:var(--mono);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fg3);font-weight:700}
+.eyebrow{font-family:var(--mono);font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fg3);font-weight:700}
 .muted{color:var(--fg2)}
 h1,h2,h3{margin:0;letter-spacing:-.03em;line-height:1.05;font-weight:800}
-h2{font-size:1.6rem}
+h2{font-size:1.65rem;color:transparent;background:var(--silver-text);-webkit-background-clip:text;background-clip:text;padding-bottom:.04em}
 h3{font-size:1.02rem;font-weight:700;letter-spacing:-.01em}
 p{margin:0}
 
-.top{position:sticky;top:0;z-index:10;background:rgba(5,5,5,.9);border-bottom:1px solid var(--line)}
-.top .wrap{display:flex;align-items:center;justify-content:space-between;height:54px}
-.brand{font-weight:800;text-transform:uppercase;font-size:.82rem;letter-spacing:.04em;text-decoration:none;display:flex;align-items:center;gap:9px}
-.brand i{width:20px;height:20px;border:1.5px solid var(--fg);display:grid;place-items:center;font:700 .55rem var(--mono);font-style:normal}
+/* silver-edged surface: 1px gradient border + faint top highlight */
+.edge{border:1px solid transparent;background:linear-gradient(var(--card),var(--card)) padding-box,var(--edge) border-box;box-shadow:inset 0 1px 0 rgba(255,255,255,.06),0 18px 40px -28px rgba(0,0,0,.9)}
 
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:11px;border:1px solid var(--line2);background:var(--card2);color:var(--fg);font:700 .88rem var(--font);text-decoration:none;cursor:pointer;white-space:nowrap}
-.btn:hover{border-color:#555}
-.btn.primary{background:var(--fg);color:#000;border-color:var(--fg)}
+.top{position:sticky;top:0;z-index:10;background:rgba(5,5,5,.88);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.top .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{font-weight:800;text-transform:uppercase;font-size:.82rem;letter-spacing:.05em;text-decoration:none;display:flex;align-items:center;gap:10px}
+.brand i{width:24px;height:24px;border-radius:7px;background:var(--chrome);color:#000;display:grid;place-items:center;font:800 .58rem var(--mono);font-style:normal;box-shadow:inset 0 1px 0 #fff}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 16px;border-radius:11px;border:1px solid var(--line2);background:var(--card2);color:var(--fg);font:700 .88rem var(--font);text-decoration:none;cursor:pointer;white-space:nowrap;transition:border-color .15s,filter .15s}
+.btn:hover{border-color:#6a6a66}
+.btn.primary{background:var(--chrome);color:#000;border-color:transparent;box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 8px 24px -12px rgba(255,255,255,.45)}
+.btn.primary:hover{filter:brightness(1.06)}
 .btn.sm{padding:7px 12px;font-size:.8rem;border-radius:9px}
 .btn[aria-disabled="true"]{opacity:.45;pointer-events:none}
 
-section{padding:40px 0;border-bottom:1px solid var(--line)}
-section:last-of-type{border-bottom:0}
+section{padding:42px 0;position:relative}
+section::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:min(720px,100%);height:1px;background:linear-gradient(90deg,transparent,#333,transparent)}
 .head{margin-bottom:18px;display:grid;gap:6px}
 
 /* hero */
-.hero{padding-top:44px;padding-bottom:36px}
-.hero h1{font-size:clamp(2.7rem,12vw,4.6rem);letter-spacing:-.05em;line-height:.92;margin-top:14px}
-.hero h1 span{color:transparent;background:linear-gradient(180deg,#fafaf8,#8a8a85);-webkit-background-clip:text;background-clip:text}
+.hero{padding-top:48px;padding-bottom:38px}
+.hero h1{font-size:clamp(2.8rem,12vw,4.8rem);letter-spacing:-.055em;line-height:.9;margin-top:14px}
+.hero h1 span{color:transparent;background:var(--silver-text);-webkit-background-clip:text;background-clip:text;padding-bottom:.06em;display:inline-block}
 .hero .lede{font-size:1.08rem;color:var(--fg2);margin-top:16px;max-width:38ch}
-.pool{margin-top:26px;border:1px solid var(--line2);border-radius:16px;background:var(--card);padding:18px 18px 8px}
-.pool .big{font-size:2.3rem;font-weight:800;letter-spacing:-.04em;line-height:1;margin:6px 0 2px}
-.kv{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--line);font-size:.9rem}
-.kv:first-of-type{margin-top:12px}
+.pool{margin-top:28px;border-radius:18px;padding:20px 20px 8px}
+.pool .big{font-size:2.5rem;font-weight:800;letter-spacing:-.045em;line-height:1;margin:8px 0 4px;color:transparent;background:var(--silver-text);-webkit-background-clip:text;background-clip:text;font-family:var(--font)}
+.kv{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--line);font-size:.9rem}
+.kv:first-of-type{margin-top:14px}
 .kv b{font-family:var(--mono);font-weight:700;text-align:right}
 
 /* numbered lists (story, earn) */
 .list{display:grid;gap:10px}
-.item{display:grid;grid-template-columns:34px 1fr;gap:12px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
-.item .n{width:30px;height:30px;border-radius:9px;background:var(--fg);color:#000;display:grid;place-items:center;font-weight:800;font-size:.9rem}
+.item{display:grid;grid-template-columns:34px 1fr;gap:12px;padding:16px;border-radius:15px}
+.item .n{width:30px;height:30px;border-radius:9px;background:var(--chrome);color:#000;display:grid;place-items:center;font-weight:800;font-size:.9rem;box-shadow:inset 0 1px 0 #fff}
 .item p{color:var(--fg2);margin-top:4px;font-size:.93rem}
 .item .act{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
-.dots{margin:14px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.dots{margin:16px 0 0;padding:0;list-style:none;display:grid;gap:9px}
 .dots li{padding-left:18px;position:relative;color:var(--fg2);font-size:.93rem}
-.dots li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--fg)}
+.dots li::before{content:"";position:absolute;left:1px;top:.58em;width:7px;height:7px;border-radius:2px;background:var(--chrome);transform:rotate(45deg)}
 .dots b{color:var(--fg)}
 .note{margin-top:12px;font-size:.85rem;color:var(--fg3)}
 
 /* leaderboard */
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border:1px solid var(--line);border-radius:13px;background:var(--card)}
-.tabs button{border:0;background:transparent;color:var(--fg2);font:700 .86rem var(--font);padding:10px 8px;border-radius:9px;cursor:pointer;line-height:1.2}
-.tabs button.on{background:var(--fg);color:#000}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px}
+.tabs button{border:0;background:transparent;color:var(--fg2);font:700 .86rem var(--font);padding:11px 8px;border-radius:10px;cursor:pointer;line-height:1.2}
+.tabs button.on{background:var(--chrome);color:#000;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
 .tools{display:flex;gap:8px;margin:12px 0}
-.search{flex:1;min-width:0;padding:10px 13px;border-radius:10px;border:1px solid var(--line);background:var(--card);color:var(--fg);font:500 .9rem var(--font);outline:none}
-.search:focus{border-color:#555}
-.weeksel{padding:9px 10px;border-radius:10px;border:1px solid var(--line2);background:var(--card2);color:var(--fg);font:700 .82rem var(--font)}
+.search{flex:1;min-width:0;padding:11px 13px;border-radius:11px;border:1px solid var(--line2);background:var(--card);color:var(--fg);font:500 .9rem var(--font);outline:none}
+.search:focus{border-color:#8a8a85}
+.weeksel{padding:9px 10px;border-radius:11px;border:1px solid var(--line2);background:var(--card2);color:var(--fg);font:700 .82rem var(--font)}
 .meta{font-size:.82rem;color:var(--fg3);margin-bottom:8px}
-.board{border:1px solid var(--line);border-radius:14px;background:var(--card);overflow:hidden}
-.row{display:grid;grid-template-columns:30px 1fr auto;gap:10px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line)}
+.board{border-radius:15px;overflow:hidden}
+.row{display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line)}
 .row:last-child{border-bottom:0}
-.rk{font-weight:800;color:var(--fg2);font-size:.95rem}
-.row.top .rk{color:var(--fg)}
+.row.top{background:linear-gradient(90deg,rgba(255,255,255,.035),transparent 60%)}
+.rk{font-weight:800;color:var(--fg3);font-size:.92rem;text-align:center}
+.medal{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;color:#000;font-size:.78rem;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 4px 12px -6px rgba(255,255,255,.4)}
+.m1{background:linear-gradient(135deg,#ffffff,#cfcfcb 45%,#8d8d88)}
+.m2{background:linear-gradient(135deg,#e6e6e3,#a3a39e 50%,#6d6d69)}
+.m3{background:linear-gradient(135deg,#c9c9c5,#83837e 50%,#545451)}
 .who{display:flex;align-items:center;gap:10px;min-width:0}
-.av{width:30px;height:30px;border-radius:50%;background:var(--card2);border:1px solid var(--line2);display:grid;place-items:center;font:700 .62rem var(--mono);color:var(--fg2);overflow:hidden;flex-shrink:0}
+.av{width:32px;height:32px;border-radius:50%;background:var(--card2);border:1px solid var(--line2);display:grid;place-items:center;font:700 .62rem var(--mono);color:var(--fg2);overflow:hidden;flex-shrink:0}
+.row.top .av{border-color:#8a8a85}
 .av img{width:100%;height:100%;object-fit:cover}
 .h{font-weight:700;text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sub{font-size:.74rem;color:var(--fg3)}
 .share{border:0;background:none;color:var(--fg3);cursor:pointer;font:inherit;padding:0;margin-left:6px;text-decoration:underline}
+.share:hover{color:var(--fg)}
 .amt{text-align:right}
 .amt b{font-family:var(--mono);font-size:.9rem;display:block}
+.row.top .amt b{color:#fff}
 .amt small{font:.7rem var(--mono);color:var(--fg3)}
 .amt .dec{color:var(--warn)}
-.empty{padding:34px 18px;text-align:center;display:grid;gap:10px;justify-items:center;color:var(--fg2);font-size:.93rem}
-.empty b{color:var(--fg);font-size:1.12rem;letter-spacing:-.02em}
+.empty{padding:36px 18px;text-align:center;display:grid;gap:10px;justify-items:center;color:var(--fg2);font-size:.93rem}
+.empty b{color:var(--fg);font-size:1.14rem;letter-spacing:-.02em}
 
 /* payouts */
-.tiers{border:1px solid var(--line);border-radius:14px;overflow:hidden}
-.tiers .kv{margin:0;padding:11px 14px;background:var(--card)}
-.tiers .kv:first-child{border-top:0;background:var(--fg);color:#000}
+.tiers{border-radius:15px;overflow:hidden}
+.tiers .kv{margin:0;padding:12px 14px}
+.tiers .kv:first-child{border-top:0;background:var(--chrome);color:#000}
+.tiers .kv:nth-child(2),.tiers .kv:nth-child(3){background:linear-gradient(90deg,rgba(255,255,255,.04),transparent 70%)}
 .tiers .kv span small{color:var(--fg3);margin-left:6px;font-size:.78rem}
 .tiers .kv:first-child span small{color:rgba(0,0,0,.55)}
 
 /* links */
 .links{display:grid;gap:8px}
-.lk{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card);text-decoration:none;font-weight:700}
-.lk:hover{border-color:#555}
+.lk{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:15px 16px;border-radius:13px;text-decoration:none;font-weight:700;transition:filter .15s}
+.lk:hover{filter:brightness(1.25)}
 .lk small{font:.74rem var(--mono);color:var(--fg3);font-weight:500}
-.lk.off{opacity:.5;border-style:dashed;pointer-events:none}
+.lk.off{opacity:.5;pointer-events:none}
 
-footer{padding:34px 0 48px;border-top:1px solid var(--line)}
-footer p{font-size:.88rem;color:var(--fg2);margin-top:10px}
+footer{padding:36px 0 50px;position:relative}
+footer::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:min(720px,100%);height:1px;background:linear-gradient(90deg,transparent,#333,transparent)}
+footer p{font-size:.88rem;color:var(--fg2);margin-top:12px}
 footer .disc{font-size:.74rem;color:var(--fg3);margin-top:16px}
 </style>
 </head>
@@ -119,7 +136,7 @@ footer .disc{font-size:.74rem;color:var(--fg3);margin-top:16px}
    week's status to "final" when it closes, then add the next week. Payouts, totals and decay are computed.
    ================================================================================================== */
 const CONFIG = {
-  updated: "Sep 27",
+  updated: "Sep 28",
   weekEndsISO: "",                        // e.g. "2026-10-05T00:00:00Z" → shows a countdown; "" hides it
   avatars: true,                          // pull X profile pictures via unavatar.io (falls back to initials)
   // Google Sheet feed (optional). File → Share → Publish to web → pick the tab → "Comma-separated values" → copy link.
@@ -130,7 +147,7 @@ const CONFIG = {
   minJackoff: 1000000,                    // …or at least this many $JACKOFF (raised as the price goes up)
   decayPerMissedWeek: 0.25,               // each missed week removes 25% of an award's original amount
   bountyAccount: "tradesgiving",          // X handle that posts the official bounty posts
-  bountyPost: { label: "Bounty post · live Monday", url: "" },
+  bountyPost: { label: "Bounty post", url: "" },  // optional: the current post; the top "Opt in" button links here (else to the profile)
   article: { label: "Read: price targets & the vision", url: "" },
   links: [
     { label: "Credits NFTs", sub: "OpenSea", url: "https://opensea.io/collection/credits" },
@@ -156,7 +173,7 @@ const TIERS = [
 /* status: "upcoming" → "live" → "final". rankings: ordered best first (or leave empty and use the sheet).
    Entry: { handle: "name", points: 120 }, optional pfp: "https://…" */
 const WEEKS = [
-  { week: 1, dates: "Starts Mon, Sep 28", pool: 10000000, status: "upcoming", rankings: [
+  { week: 1, dates: "Starts Tue, Sep 29", pool: 10000000, status: "upcoming", rankings: [
   ]},
 ];
 </script>
@@ -171,7 +188,7 @@ const WEEKS = [
     <div class="eyebrow">An initiative by Meme Maxxers</div>
     <h1>Credits<br><span>Leaderboard</span></h1>
     <p class="lede">Uniting the Credits &amp; Statements community. Contribute every week, earn $JACKOFF.</p>
-    <div class="pool">
+    <div class="pool edge">
       <div class="eyebrow" id="poolLabel">This week's pool</div>
       <div class="big mono" id="poolBig">—</div>
       <div class="muted" style="font-size:.88rem">$JACKOFF to the weekly top 100</div>
@@ -184,9 +201,9 @@ const WEEKS = [
   <section><div class="wrap">
     <div class="head"><div class="eyebrow">The story</div><h2>How we got here.</h2></div>
     <div class="list">
-      <div class="item"><div class="n">1</div><div><h3>Jack Started the Fire</h3><p>The Credits mint brought Web3's finest together from day one.</p></div></div>
-      <div class="item"><div class="n">2</div><div><h3>Together We Rise</h3><p>On Ethos, US citizens gave up personal gains to give Credits allocations to their international friends. That's the spirit we carry forward.</p></div></div>
-      <div class="item"><div class="n">3</div><div><h3>Now We Write the Next Chapter</h3><p>Cement Credits and Statements as the next blue chip, with the best cohort building together.</p></div></div>
+      <div class="item edge"><div class="n">1</div><div><h3>Jack Started the Fire</h3><p>The Credits mint brought Web3's finest together from day one.</p></div></div>
+      <div class="item edge"><div class="n">2</div><div><h3>Together We Rise</h3><p>US citizens gave up personal gains to give Credits allocations to their international friends. That's the spirit we carry forward.</p></div></div>
+      <div class="item edge"><div class="n">3</div><div><h3>Now We Write the Next Chapter</h3><p>Cement Credits and Statements as the next blue chip, with the best cohort building together.</p></div></div>
     </div>
     <ul class="dots">
       <li><b>Contributors earn $JACKOFF</b>, paid at the end when the community decides.</li>
@@ -199,16 +216,16 @@ const WEEKS = [
   <section id="earn"><div class="wrap">
     <div class="head"><div class="eyebrow">How to earn</div><h2>Opt in. Post. Contribute.</h2></div>
     <div class="list">
-      <div class="item"><div class="n">1</div><div><h3>Opt in</h3><p>Comment on the official bounty post from <a id="bountyHandle" href="#" target="_blank" rel="noreferrer" style="color:var(--fg)">@tradesgiving</a>.</p><div class="act" id="bountyLink"></div></div></div>
-      <div class="item"><div class="n">2</div><div><h3>Post on X</h3><p>Share Credits or Statements NFTs to earn points every week.</p></div></div>
-      <div class="item"><div class="n">3</div><div><h3>Go deeper in Discord</h3><p>Memes, recruiting friends and holders, building apps, buying Credits or $JACKOFF, and more.</p><div class="act"><a class="btn sm" href="https://discord.gg/krVPuyksQy" target="_blank" rel="noreferrer">Join the Discord ↗</a></div></div></div>
+      <div class="item edge"><div class="n">1</div><div><h3>Opt in</h3><p>Comment on the official bounty posts from <a id="bountyHandle" href="#" target="_blank" rel="noreferrer" style="color:var(--fg)">@tradesgiving</a> weekly.</p></div></div>
+      <div class="item edge"><div class="n">2</div><div><h3>Post on X</h3><p>Create posts about Credits or Statements NFTs tagging <a href="https://x.com/jackbutcher" target="_blank" rel="noreferrer" style="color:var(--fg)">@jackbutcher</a> to earn points weekly.</p></div></div>
+      <div class="item edge"><div class="n">3</div><div><h3>Go deeper in Discord</h3><p>Earn more leaderboard points by making memes, recruiting friends/holders, building apps, buying Credits/$JACKOFF, and new tasks weekly.</p><div class="act"><a class="btn sm" href="https://discord.gg/krVPuyksQy" target="_blank" rel="noreferrer">Join the Discord ↗</a></div></div></div>
     </div>
     <p class="note">More ways to earn coming soon.</p>
   </div></section>
 
   <section id="board"><div class="wrap">
     <div class="head"><div class="eyebrow">Leaderboard</div><h2>Who's building Credits.</h2></div>
-    <div class="tabs" role="tablist">
+    <div class="tabs edge" role="tablist">
       <button class="on" data-tab="week" role="tab" aria-selected="true">Weekly Rankings</button>
       <button data-tab="total" role="tab" aria-selected="false">All Time $JACKOFF Rewards</button>
     </div>
@@ -217,19 +234,19 @@ const WEEKS = [
       <select class="weeksel" id="weekSel" aria-label="Week"></select>
     </div>
     <div class="meta" id="meta"></div>
-    <div class="board" id="table"></div>
+    <div class="board edge" id="table"></div>
   </div></section>
 
   <section><div class="wrap">
     <div class="head"><div class="eyebrow">Weekly payouts</div><h2 id="tierTitle">10,000,000 $JACKOFF</h2></div>
-    <div class="tiers" id="tiers"></div>
+    <div class="tiers edge" id="tiers"></div>
   </div></section>
 
   <section><div class="wrap">
     <div class="head"><div class="eyebrow">Rules</div><h2>Keep it simple.</h2></div>
     <ul class="dots" style="margin:0">
       <li><b>−25% per missed week.</b> Each reward loses 25% of its original amount for every week you don't contribute.</li>
-      <li id="eligRule"><b>Hold to claim.</b> Own at least 1 Credit or 1,000,000 $JACKOFF at distribution. The $JACKOFF amount rises with the price.</li>
+      <li id="eligRule"><b>Hold to claim.</b> Own at least 1 Credit or 1,000,000 $JACKOFF at distribution.</li>
       <li><b>Paid at the end</b>, on a date the community decides. Spam and bots don't count.</li>
     </ul>
   </div></section>
@@ -308,17 +325,16 @@ function start() {
   $("firstTakes").textContent = num(payout(current.pool, 1));
   if (current.rankings.length) { $("rankedRow").hidden = false; $("ranked").textContent = num(current.rankings.length); }
   $("bountyHandle").href = xUrl(bounty); $("bountyHandle").textContent = "@" + bounty;
-  $("bountyLink").innerHTML = linkBtn(CONFIG.bountyPost, "btn sm");
   $("articleLink").innerHTML = linkBtn(CONFIG.article, "btn");
-  $("eligRule").innerHTML = `<b>Hold to claim.</b> Own at least ${CONFIG.minCredits} Credit${CONFIG.minCredits > 1 ? "s" : ""} or ${num(CONFIG.minJackoff)} $JACKOFF at distribution. The $JACKOFF amount rises with the price.`;
+  $("eligRule").innerHTML = `<b>Hold to claim.</b> Own at least ${CONFIG.minCredits} Credit${CONFIG.minCredits > 1 ? "s" : ""} or ${num(CONFIG.minJackoff)} $JACKOFF at distribution.`;
   $("tierTitle").textContent = `${num(current.pool)} $JACKOFF`;
   $("tiers").innerHTML = TIERS.map((t) => {
     const n = t.to - t.from + 1;
     return `<div class="kv"><span>${t.from === t.to ? "#" + t.from : `#${t.from}–${t.to}`}${n > 1 ? `<small>${n} spots</small>` : ""}</span><b>${num(payout(current.pool, t.from))}${n > 1 ? " each" : ""}</b></div>`;
   }).join("");
   $("links").innerHTML = CONFIG.links.map((l) => l.url
-    ? `<a class="lk" href="${esc(l.url)}" target="_blank" rel="noreferrer"><span>${esc(l.label)}</span><small>${esc(l.sub)} ↗</small></a>`
-    : `<div class="lk off"><span>${esc(l.label)}</span><small>soon</small></div>`).join("");
+    ? `<a class="lk edge" href="${esc(l.url)}" target="_blank" rel="noreferrer"><span>${esc(l.label)}</span><small>${esc(l.sub)} ↗</small></a>`
+    : `<div class="lk edge off"><span>${esc(l.label)}</span><small>soon</small></div>`).join("");
 
   if (CONFIG.weekEndsISO) {
     const end = new Date(CONFIG.weekEndsISO).getTime();
@@ -357,7 +373,7 @@ function start() {
     return src ? `<span class="av" data-i="${init}"><img src="${esc(src)}" alt="" loading="lazy"></span>` : `<span class="av">${init}</span>`;
   };
   const shareBtn = (rank, scope) => `<button class="share" data-share="${esc(`I'm #${rank} on the Credits Leaderboard ${scope} 🫡\n\nUniting the Credits & Statements community — opt in and climb:`)}">share</button>`;
-  const row = (rank, handle, pfp, sub, amount, small) => `<div class="row ${rank <= 3 ? "top" : ""}"><div class="rk">${rank}</div>
+  const row = (rank, handle, pfp, sub, amount, small) => `<div class="row ${rank <= 3 ? "top" : ""}"><div class="rk">${rank <= 3 ? `<span class="medal m${rank}">${rank}</span>` : rank}</div>
     <div class="who">${avatar(handle, pfp)}<div style="min-width:0"><a class="h" href="${xUrl(handle)}" target="_blank" rel="noreferrer">@${esc(clean(handle))}</a><div class="sub">${sub}</div></div></div>
     <div class="amt"><b>${amount}</b><small>${small}</small></div></div>`;
   let tab = "week";
