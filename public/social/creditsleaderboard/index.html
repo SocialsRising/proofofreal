@@ -13,11 +13,15 @@
   --fg:#f5f5f3;--fg2:#a8a8a3;--fg3:#6b6b67;--warn:#f3d38a;
   --chrome:linear-gradient(135deg,#ffffff 0%,#dcdcd8 30%,#8f8f8a 56%,#ececea 82%,#ffffff 100%);
   --silver-text:linear-gradient(180deg,#ffffff 0%,#c9c9c5 55%,#7d7d78 100%);
+  --gold:linear-gradient(135deg,#fff4c9 0%,#ecc75f 38%,#a9791c 72%,#f6dc8e 100%);
+  --silver:linear-gradient(135deg,#ffffff 0%,#d6d6d2 38%,#8b8b86 72%,#ececea 100%);
+  --bronze:linear-gradient(135deg,#ffdcbc 0%,#d08d52 38%,#8a4e22 72%,#e8b286 100%);
   --edge:linear-gradient(160deg,#5c5c58 0%,#262626 35%,#1a1a1a 65%,#3d3d3a 100%);
   --font:"Inter Tight","Helvetica Neue",Arial,sans-serif;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
+:focus-visible{outline:2px solid #cfcfcb;outline-offset:2px}
 html{scroll-behavior:smooth}
 body{margin:0;color:var(--fg);font:500 16px/1.5 var(--font);-webkit-font-smoothing:antialiased;
   background:radial-gradient(900px 460px at 50% -160px,rgba(255,255,255,.09),transparent 70%) no-repeat,var(--bg)}
@@ -76,6 +80,7 @@ section::before{content:"";position:absolute;top:0;left:50%;transform:translateX
 /* leaderboard */
 .tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px}
 .tabs button{border:0;background:transparent;color:var(--fg2);font:700 .86rem var(--font);padding:11px 8px;border-radius:10px;cursor:pointer;line-height:1.2}
+@media(max-width:420px){.tabs button{font-size:.8rem;padding:10px 6px}}
 .tabs button.on{background:var(--chrome);color:#000;box-shadow:inset 0 1px 0 rgba(255,255,255,.9)}
 .tools{display:flex;gap:8px;margin:12px 0}
 .search{flex:1;min-width:0;padding:11px 13px;border-radius:11px;border:1px solid var(--line2);background:var(--card);color:var(--fg);font:500 .9rem var(--font);outline:none}
@@ -86,19 +91,26 @@ section::before{content:"";position:absolute;top:0;left:50%;transform:translateX
 .row{display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);transition:background .15s}
 .row:hover{background:rgba(255,255,255,.025)}
 .row:last-child{border-bottom:0}
-.row.top{background:linear-gradient(90deg,rgba(255,255,255,.035),transparent 60%)}
+.row.r1{background:linear-gradient(90deg,rgba(236,199,95,.09),transparent 65%)}
+.row.r2{background:linear-gradient(90deg,rgba(255,255,255,.055),transparent 65%)}
+.row.r3{background:linear-gradient(90deg,rgba(208,141,82,.08),transparent 65%)}
 .rk{font-weight:800;color:var(--fg3);font-size:.92rem;text-align:center}
 .medal{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;color:#000;font-size:.78rem;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.85),0 4px 12px -6px rgba(255,255,255,.4)}
-.m1{background:linear-gradient(135deg,#ffffff,#cfcfcb 45%,#8d8d88)}
-.m2{background:linear-gradient(135deg,#e6e6e3,#a3a39e 50%,#6d6d69)}
-.m3{background:linear-gradient(135deg,#c9c9c5,#83837e 50%,#545451)}
+.m1{background:var(--gold);box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 4px 14px -5px rgba(236,199,95,.55)}
+.m2{background:var(--silver);box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 4px 14px -5px rgba(255,255,255,.4)}
+.m3{background:var(--bronze);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 4px 14px -5px rgba(208,141,82,.5)}
 .who{display:flex;align-items:center;gap:10px;min-width:0}
 .av{width:38px;height:38px;border-radius:50%;background:var(--card2);border:1px solid var(--line2);display:grid;place-items:center;font:700 .62rem var(--mono);color:var(--fg2);overflow:hidden;flex-shrink:0}
-.row.top .av{border:1.5px solid transparent;background:linear-gradient(var(--card2),var(--card2)) padding-box,var(--chrome) border-box}
+.row.top .av{border:2px solid transparent}
+.row.r1 .av{background:linear-gradient(var(--card2),var(--card2)) padding-box,var(--gold) border-box}
+.row.r2 .av{background:linear-gradient(var(--card2),var(--card2)) padding-box,var(--silver) border-box}
+.row.r3 .av{background:linear-gradient(var(--card2),var(--card2)) padding-box,var(--bronze) border-box}
+.row.r1 .amt b{color:#f6dc8e}
 .av img{width:100%;height:100%;object-fit:cover}
 .h{font-weight:700;text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sub{font-size:.74rem;color:var(--fg3);display:flex;flex-wrap:wrap;align-items:center;gap:3px 8px;margin-top:2px}
 .sub span{white-space:nowrap}
+.sub .chip{padding:1px 7px;border-radius:999px;border:1px solid var(--line2);font-size:.64rem;font-weight:700;letter-spacing:.03em;color:var(--fg2)}
 .share{border:1px solid var(--line2);background:var(--card2);color:var(--fg2);cursor:pointer;font:700 .66rem var(--font);letter-spacing:.02em;padding:2px 8px;border-radius:999px;line-height:1.5}
 .share:hover{color:#000;background:var(--chrome);border-color:transparent}
 .amt{text-align:right}
@@ -112,10 +124,11 @@ section::before{content:"";position:absolute;top:0;left:50%;transform:translateX
 /* payouts */
 .tiers{border-radius:15px;overflow:hidden}
 .tiers .kv{margin:0;padding:12px 14px}
-.tiers .kv:first-child{border-top:0;background:var(--chrome);color:#000}
-.tiers .kv:nth-child(2),.tiers .kv:nth-child(3){background:linear-gradient(90deg,rgba(255,255,255,.04),transparent 70%)}
+.tiers .kv:first-child{border-top:0;background:var(--gold);color:#1a1204}
+.tiers .kv:nth-child(2){background:linear-gradient(90deg,rgba(255,255,255,.06),transparent 70%);box-shadow:inset 3px 0 0 #cfcfcb}
+.tiers .kv:nth-child(3){background:linear-gradient(90deg,rgba(208,141,82,.08),transparent 70%);box-shadow:inset 3px 0 0 #c9834a}
 .tiers .kv span small{color:var(--fg3);margin-left:6px;font-size:.78rem}
-.tiers .kv:first-child span small{color:rgba(0,0,0,.55)}
+.tiers .kv:first-child span small{color:rgba(26,18,4,.6)}
 
 /* links */
 .links{display:grid;gap:8px}
@@ -420,8 +433,8 @@ function start() {
     return `<span class="av" data-i="${init}"><img src="${esc(chain[0])}" data-next="${esc(chain.slice(1).join(" "))}" alt="" loading="lazy" decoding="async"></span>`;
   };
   const SHARE_URL = "https://proofofreal.app/social/creditsleaderboard";
-  const shareBtn = (rank, scope) => `<button class="share" data-share="${esc(`I'm #${rank} on the @jackbutcher Credits Leaderboard ${scope} 🫡\n\n@mememaxxers Uniting the Credits & Statements community — opt in and climb: ${SHARE_URL}`)}">Share</button>`;
-  const row = (rank, handle, pfp, sub, amount, small, name) => `<div class="row ${rank <= 3 ? "top" : ""}"><div class="rk">${rank <= 3 ? `<span class="medal m${rank}">${rank}</span>` : rank}</div>
+  const shareBtn = (rank, scope) => `<button class="share" data-share="${esc(`I'm #${rank} on the @jackbutcher Credits Contributor Leaderboard ${scope} 🫡\n\n@mememaxxers Uniting the Credits & Statements community — opt in and climb: ${SHARE_URL}`)}">Share</button>`;
+  const row = (rank, handle, pfp, sub, amount, small, name) => `<div class="row ${rank <= 3 ? "top r" + rank : ""}"><div class="rk">${rank <= 3 ? `<span class="medal m${rank}">${rank}</span>` : rank}</div>
     <div class="who">${avatar(handle, pfp)}<div style="min-width:0"><a class="h" href="${xUrl(handle)}" target="_blank" rel="noreferrer">${name ? esc(name) : "@" + esc(clean(handle))}</a><div class="sub">${name ? `<span>@${esc(clean(handle))}</span>` : ""}${sub}</div></div></div>
     <div class="amt"><b>${amount}</b><small>${small}</small></div></div>`;
   let tab = !current.rankings.length && totals.length ? "total" : "week";
@@ -449,7 +462,7 @@ function start() {
       if (!totals.length) { $("table").innerHTML = `<div class="empty"><b>No rewards yet.</b><span>Totals appear once week 1 is ranked.</span></div>`; return; }
       const list = totals.filter((p) => !q() || key(p.handle).includes(q()) || (p.name || "").toLowerCase().includes(q()));
       const activity = (p) => [p.retro ? "Retroactive" : "", p.active ? `${p.active} wk${p.active > 1 ? "s" : ""} active` : ""].filter(Boolean).join(" + ");
-      $("table").innerHTML = list.length ? list.map((p) => row(p.rank, p.handle, p.pfp, `<span>${activity(p)}</span>${shareBtn(p.rank, "all-time")}`, num(p.owed), p.decayed ? `<span class="dec">−${num(p.decayed)} decay</span>` : "$JACKOFF", p.name)).join("")
+      $("table").innerHTML = list.length ? list.map((p) => row(p.rank, p.handle, p.pfp, `<span class="chip">${activity(p)}</span>${shareBtn(p.rank, "all-time")}`, num(p.owed), p.decayed ? `<span class="dec">−${num(p.decayed)} decay</span>` : "$JACKOFF", p.name)).join("")
         : `<div class="empty"><span>No match for “${esc($("search").value)}”.</span></div>`;
     }
   }
