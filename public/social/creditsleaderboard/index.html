@@ -136,13 +136,16 @@ footer .disc{font-size:.74rem;color:var(--fg3);margin-top:16px}
    week's status to "final" when it closes, then add the next week. Payouts, totals and decay are computed.
    ================================================================================================== */
 const CONFIG = {
-  updated: "Sep 28",
+  updated: "Sep 29",
   weekEndsISO: "",                        // e.g. "2026-10-05T00:00:00Z" → shows a countdown; "" hides it
   avatars: true,                          // pull X profile pictures via unavatar.io (falls back to initials)
   // Google Sheet feed (optional). File → Share → Publish to web → pick the tab → "Comma-separated values" → copy link.
   // Columns (header row required): week, handle, points, pfp   — handle can be "name", "@name" or an x.com link;
   // pfp is optional. Rows fill the rankings of the matching week in WEEKS below, sorted by points (highest first).
   sheetCsvUrl: "",
+  // Optional feed for the retroactive / master allocation sheet, published as CSV the same way. Columns are matched
+  // by header: a "Name" column, a "Twitter link" / "handle" column and a "Total" / "amount" column. Replaces GRANTS.
+  grantsCsvUrl: "",
   minCredits: 1,                          // eligibility at distribution: own at least this many Credits…
   minJackoff: 1000000,                    // …or at least this many $JACKOFF (raised as the price goes up)
   decayPerMissedWeek: 0.25,               // each missed week removes 25% of an award's original amount
@@ -173,8 +176,26 @@ const TIERS = [
 /* status: "upcoming" → "live" → "final". rankings: ordered best first (or leave empty and use the sheet).
    Entry: { handle: "name", points: 120 }, optional pfp: "https://…" */
 const WEEKS = [
-  { week: 1, dates: "Starts Tue, Sep 29", pool: 10000000, status: "upcoming", rankings: [
+  { week: 1, dates: "From Tue, Sep 29", pool: 10000000, status: "live", rankings: [
   ]},
+];
+
+/* Retroactive / manual $JACKOFF allocations, added straight to All Time Rewards (on top of weekly payouts).
+   They count as earned before week 1, so the missed-week decay applies to them like any other reward.
+   Source: "Master Jackoff reserved allo sheet 9_29". */
+const GRANTS = [
+  { name: "Tradesgiving", link: "https://x.com/tradesgiving", amount: 1000000 },
+  { name: "ClumsyKnight", link: "https://x.com/CLumsyKnight48", amount: 750000 },
+  { name: "Qwix", link: "https://x.com/iiqwiix", amount: 500000 },
+  { name: "Crusader", link: "https://x.com/airdropcrusader", amount: 250000 },
+  { name: "Darian", link: "https://x.com/brbk85", amount: 250000 },
+  { name: "kenZaii", link: "https://x.com/kenZaii7", amount: 250000 },
+  { name: "Boxer", link: "https://x.com/Boxerr110", amount: 250000 },
+  { name: "Jame", link: "https://x.com/Jamewowpro", amount: 250000 },
+  { name: "PVM", link: "https://x.com/pvmihalache", amount: 250000 },
+  { name: "Doktor Funk", link: "https://x.com/doktor_DeFi", amount: 150000 },
+  { name: "Penna", link: "https://x.com/Prof_penna", amount: 150000 },
+  { name: "UA", link: "https://x.com/BullishByBlood", amount: 150000 },
 ];
 </script>
 
@@ -299,7 +320,21 @@ async function loadSheet() {
     WEEKS.forEach((w) => { const list = byWeek.get(w.week); if (list) w.rankings = list.sort((a, b) => b.points - a.points); });
   } catch (e) { console.warn("Credits leaderboard: sheet not loaded, using WEEKS as-is.", e); }
 }
-loadSheet().then(start);
+async function loadGrants() {
+  if (!CONFIG.grantsCsvUrl) return;
+  try {
+    const res = await fetch(CONFIG.grantsCsvUrl, { cache: "no-store" });
+    if (!res.ok) throw new Error("grants sheet " + res.status);
+    const [head, ...rows] = parseCsv(await res.text());
+    const find = (re) => head.findIndex((h) => re.test(h.trim()));
+    const iN = find(/^name/i), iL = find(/twitter|link|handle|^x$/i), iA = find(/total|amount|jackoff|allo/i);
+    if (iL < 0 || iA < 0) throw new Error("grants sheet needs a link/handle column and a total column");
+    const list = rows.map((r) => ({ name: iN >= 0 ? (r[iN] || "").trim() : "", link: (r[iL] || "").trim(), amount: Number(String(r[iA] || "").replace(/[^0-9.]/g, "")) || 0 }))
+      .filter((g) => g.link && g.amount > 0);
+    if (list.length) GRANTS.splice(0, GRANTS.length, ...list);
+  } catch (e) { console.warn("Credits leaderboard: grants sheet not loaded, using GRANTS as-is.", e); }
+}
+Promise.all([loadSheet(), loadGrants()]).then(start);
 
 function start() {
   const $ = (id) => document.getElementById(id);
@@ -354,9 +389,15 @@ function start() {
     const p = people.get(k) || { handle: clean(r.handle), pfp: r.pfp, awards: [], weeks: new Set() };
     const amt = i < maxRank ? payout(w.pool, i + 1) : 0;
     if (amt) p.awards.push({ week: w.week, amount: amt });
-    p.weeks.add(w.week); if (r.pfp) p.pfp = r.pfp;
+    p.weeks.add(w.week); if (r.pfp) p.pfp = r.pfp; if (r.name) p.name = r.name;
     people.set(k, p);
   }));
+  GRANTS.forEach((g) => {
+    const k = key(g.link || g.handle); if (!k || !(g.amount > 0)) return;
+    const p = people.get(k) || { handle: clean(g.link || g.handle), awards: [], weeks: new Set() };
+    p.awards.push({ week: 0, amount: g.amount }); p.retro = true; if (g.name) p.name = g.name;
+    people.set(k, p);
+  });
   const totals = [...people.values()].filter((p) => p.awards.length).map((p) => {
     let owed = 0, original = 0;
     p.awards.forEach((a) => {
@@ -365,6 +406,8 @@ function start() {
     });
     return { ...p, owed: Math.floor(owed), decayed: original - Math.floor(owed), active: p.weeks.size };
   }).sort((a, b) => b.owed - a.owed);
+  // competition ranking: equal totals share a rank (1, 2, 3, 4, 4, 4, …)
+  totals.forEach((p, i) => { p.rank = i && p.owed === totals[i - 1].owed ? totals[i - 1].rank : i + 1; });
 
   // ------------------------------------------------ rendering
   const avatar = (h, pfp) => {
@@ -373,10 +416,10 @@ function start() {
     return src ? `<span class="av" data-i="${init}"><img src="${esc(src)}" alt="" loading="lazy"></span>` : `<span class="av">${init}</span>`;
   };
   const shareBtn = (rank, scope) => `<button class="share" data-share="${esc(`I'm #${rank} on the Credits Leaderboard ${scope} 🫡\n\nUniting the Credits & Statements community — opt in and climb:`)}">share</button>`;
-  const row = (rank, handle, pfp, sub, amount, small) => `<div class="row ${rank <= 3 ? "top" : ""}"><div class="rk">${rank <= 3 ? `<span class="medal m${rank}">${rank}</span>` : rank}</div>
-    <div class="who">${avatar(handle, pfp)}<div style="min-width:0"><a class="h" href="${xUrl(handle)}" target="_blank" rel="noreferrer">@${esc(clean(handle))}</a><div class="sub">${sub}</div></div></div>
+  const row = (rank, handle, pfp, sub, amount, small, name) => `<div class="row ${rank <= 3 ? "top" : ""}"><div class="rk">${rank <= 3 ? `<span class="medal m${rank}">${rank}</span>` : rank}</div>
+    <div class="who">${avatar(handle, pfp)}<div style="min-width:0"><a class="h" href="${xUrl(handle)}" target="_blank" rel="noreferrer">${name ? esc(name) : "@" + esc(clean(handle))}</a><div class="sub">${name ? "@" + esc(clean(handle)) + " · " : ""}${sub}</div></div></div>
     <div class="amt"><b>${amount}</b><small>${small}</small></div></div>`;
-  let tab = "week";
+  let tab = !current.rankings.length && totals.length ? "total" : "week";
   const q = () => key($("search").value);
   const sel = $("weekSel");
   sel.innerHTML = weeks.slice().reverse().map((w) => `<option value="${w.week}">Week ${w.week}</option>`).join("");
@@ -390,17 +433,18 @@ function start() {
       const w = selected();
       $("meta").textContent = `Week ${w.week} · ${w.dates} · ${w.status === "live" ? "in progress" : w.status === "upcoming" ? "starting soon" : "final"}`;
       if (!w.rankings.length) {
-        $("table").innerHTML = `<div class="empty"><b>${w.status === "upcoming" ? `Week ${w.week} ${w.dates.replace(/^Starts/, "starts")}.` : "Rankings coming soon."}</b><span>${CONFIG.bountyPost.url ? "Opt in by commenting on the bounty post." : `Opt in on the first bounty post from @${esc(bounty)}.`}</span><a class="btn primary" href="${esc(optInUrl)}" target="_blank" rel="noreferrer">${CONFIG.bountyPost.url ? "Opt in on X ↗" : `Follow @${esc(bounty)} ↗`}</a></div>`;
+        $("table").innerHTML = `<div class="empty"><b>${w.status === "upcoming" ? `Week ${w.week} ${w.dates.replace(/^Starts/, "starts")}.` : "First weekly rankings drop Wednesday."}</b><span>${CONFIG.bountyPost.url ? "Opt in by commenting on the bounty post." : `Opt in by commenting on the weekly bounty posts from @${esc(bounty)}.`}</span><a class="btn primary" href="${esc(optInUrl)}" target="_blank" rel="noreferrer">${CONFIG.bountyPost.url ? "Opt in on X ↗" : `Follow @${esc(bounty)} ↗`}</a></div>`;
         return;
       }
-      const list = w.rankings.map((r, i) => ({ ...r, rank: i + 1 })).filter((r) => !q() || key(r.handle).includes(q()));
-      $("table").innerHTML = list.length ? list.map((r) => { const amt = payout(w.pool, r.rank); return row(r.rank, r.handle, r.pfp, `${num(r.points || 0)} pts${amt ? shareBtn(r.rank, "this week") : ""}`, amt ? num(amt) : "—", amt ? "$JACKOFF" : ""); }).join("")
+      const list = w.rankings.map((r, i) => ({ ...r, rank: i + 1 })).filter((r) => !q() || key(r.handle).includes(q()) || (r.name || "").toLowerCase().includes(q()));
+      $("table").innerHTML = list.length ? list.map((r) => { const amt = payout(w.pool, r.rank); return row(r.rank, r.handle, r.pfp, `${num(r.points || 0)} pts${amt ? shareBtn(r.rank, "this week") : ""}`, amt ? num(amt) : "—", amt ? "$JACKOFF" : "", r.name); }).join("")
         : `<div class="empty"><span>No match for “${esc($("search").value)}”.</span></div>`;
     } else {
-      $("meta").textContent = `Every week combined, after decay · ${totals.length ? num(totals.reduce((s, p) => s + p.owed, 0)) + " $JACKOFF owed" : "starts after week 1"}`;
+      $("meta").textContent = `Retroactive + every week combined, after decay · ${totals.length ? num(totals.reduce((s, p) => s + p.owed, 0)) + " $JACKOFF owed" : "none yet"}`;
       if (!totals.length) { $("table").innerHTML = `<div class="empty"><b>No rewards yet.</b><span>Totals appear once week 1 is ranked.</span></div>`; return; }
-      const list = totals.map((p, i) => ({ ...p, rank: i + 1 })).filter((p) => !q() || key(p.handle).includes(q()));
-      $("table").innerHTML = list.length ? list.map((p) => row(p.rank, p.handle, p.pfp, `${p.active} wk${p.active > 1 ? "s" : ""} active${shareBtn(p.rank, "all-time")}`, num(p.owed), p.decayed ? `<span class="dec">−${num(p.decayed)} decay</span>` : "$JACKOFF")).join("")
+      const list = totals.filter((p) => !q() || key(p.handle).includes(q()) || (p.name || "").toLowerCase().includes(q()));
+      const activity = (p) => [p.retro ? "Retroactive" : "", p.active ? `${p.active} wk${p.active > 1 ? "s" : ""} active` : ""].filter(Boolean).join(" + ");
+      $("table").innerHTML = list.length ? list.map((p) => row(p.rank, p.handle, p.pfp, `${activity(p)}${shareBtn(p.rank, "all-time")}`, num(p.owed), p.decayed ? `<span class="dec">−${num(p.decayed)} decay</span>` : "$JACKOFF", p.name)).join("")
         : `<div class="empty"><span>No match for “${esc($("search").value)}”.</span></div>`;
     }
   }
@@ -418,6 +462,7 @@ function start() {
   });
   // avatar fallback: when an image fails, show initials
   document.addEventListener("error", (e) => { const img = e.target; if (img.tagName === "IMG" && img.parentElement && img.parentElement.classList.contains("av")) img.parentElement.textContent = img.parentElement.dataset.i || "?"; }, true);
+  document.querySelectorAll(".tabs button").forEach((x) => { x.classList.toggle("on", x.dataset.tab === tab); x.setAttribute("aria-selected", String(x.dataset.tab === tab)); });
   render();
 }
 </script>
