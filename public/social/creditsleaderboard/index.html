@@ -83,7 +83,8 @@ section::before{content:"";position:absolute;top:0;left:50%;transform:translateX
 .weeksel{padding:9px 10px;border-radius:11px;border:1px solid var(--line2);background:var(--card2);color:var(--fg);font:700 .82rem var(--font)}
 .meta{font-size:.82rem;color:var(--fg3);margin-bottom:8px}
 .board{border-radius:15px;overflow:hidden}
-.row{display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:center;padding:11px 14px;border-bottom:1px solid var(--line)}
+.row{display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line);transition:background .15s}
+.row:hover{background:rgba(255,255,255,.025)}
 .row:last-child{border-bottom:0}
 .row.top{background:linear-gradient(90deg,rgba(255,255,255,.035),transparent 60%)}
 .rk{font-weight:800;color:var(--fg3);font-size:.92rem;text-align:center}
@@ -92,13 +93,14 @@ section::before{content:"";position:absolute;top:0;left:50%;transform:translateX
 .m2{background:linear-gradient(135deg,#e6e6e3,#a3a39e 50%,#6d6d69)}
 .m3{background:linear-gradient(135deg,#c9c9c5,#83837e 50%,#545451)}
 .who{display:flex;align-items:center;gap:10px;min-width:0}
-.av{width:32px;height:32px;border-radius:50%;background:var(--card2);border:1px solid var(--line2);display:grid;place-items:center;font:700 .62rem var(--mono);color:var(--fg2);overflow:hidden;flex-shrink:0}
-.row.top .av{border-color:#8a8a85}
+.av{width:38px;height:38px;border-radius:50%;background:var(--card2);border:1px solid var(--line2);display:grid;place-items:center;font:700 .62rem var(--mono);color:var(--fg2);overflow:hidden;flex-shrink:0}
+.row.top .av{border:1.5px solid transparent;background:linear-gradient(var(--card2),var(--card2)) padding-box,var(--chrome) border-box}
 .av img{width:100%;height:100%;object-fit:cover}
 .h{font-weight:700;text-decoration:none;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sub{font-size:.74rem;color:var(--fg3)}
-.share{border:0;background:none;color:var(--fg3);cursor:pointer;font:inherit;padding:0;margin-left:6px;text-decoration:underline}
-.share:hover{color:var(--fg)}
+.sub{font-size:.74rem;color:var(--fg3);display:flex;flex-wrap:wrap;align-items:center;gap:3px 8px;margin-top:2px}
+.sub span{white-space:nowrap}
+.share{border:1px solid var(--line2);background:var(--card2);color:var(--fg2);cursor:pointer;font:700 .66rem var(--font);letter-spacing:.02em;padding:2px 8px;border-radius:999px;line-height:1.5}
+.share:hover{color:#000;background:var(--chrome);border-color:transparent}
 .amt{text-align:right}
 .amt b{font-family:var(--mono);font-size:.9rem;display:block}
 .row.top .amt b{color:#fff}
@@ -138,7 +140,8 @@ footer .disc{font-size:.74rem;color:var(--fg3);margin-top:16px}
 const CONFIG = {
   updated: "Sep 29",
   weekEndsISO: "",                        // e.g. "2026-10-05T00:00:00Z" → shows a countdown; "" hides it
-  avatars: true,                          // pull X profile pictures via unavatar.io (falls back to initials)
+  pfpDir: "pfps/",                        // own copies, named <x handle, lowercase>.jpg — loaded first, never rate-limited
+  avatars: true,                          // if there's no own copy, try the live X picture via unavatar.io, then initials
   // Google Sheet feed (optional). File → Share → Publish to web → pick the tab → "Comma-separated values" → copy link.
   // Columns (header row required): week, handle, points, pfp   — handle can be "name", "@name" or an x.com link;
   // pfp is optional. Rows fill the rankings of the matching week in WEEKS below, sorted by points (highest first).
@@ -406,18 +409,20 @@ function start() {
     });
     return { ...p, owed: Math.floor(owed), decayed: original - Math.floor(owed), active: p.weeks.size };
   }).sort((a, b) => b.owed - a.owed);
-  // competition ranking: equal totals share a rank (1, 2, 3, 4, 4, 4, …)
-  totals.forEach((p, i) => { p.rank = i && p.owed === totals[i - 1].owed ? totals[i - 1].rank : i + 1; });
+  // dense ranking: equal totals share a rank, the next amount down is the next number (1, 2, 3, 4, 4, 4, 5, 5)
+  totals.forEach((p, i) => { p.rank = !i ? 1 : p.owed === totals[i - 1].owed ? totals[i - 1].rank : totals[i - 1].rank + 1; });
 
   // ------------------------------------------------ rendering
   const avatar = (h, pfp) => {
     const init = esc(clean(h).slice(0, 2).toUpperCase() || "?");
-    const src = pfp || (CONFIG.avatars ? "https://unavatar.io/x/" + encodeURIComponent(clean(h)) + "?fallback=false" : "");
-    return src ? `<span class="av" data-i="${init}"><img src="${esc(src)}" alt="" loading="lazy"></span>` : `<span class="av">${init}</span>`;
+    const chain = [pfp, CONFIG.pfpDir ? CONFIG.pfpDir + encodeURIComponent(clean(h).toLowerCase()) + ".jpg" : "", CONFIG.avatars ? "https://unavatar.io/x/" + encodeURIComponent(clean(h)) + "?fallback=false" : ""].filter(Boolean);
+    if (!chain.length) return `<span class="av">${init}</span>`;
+    return `<span class="av" data-i="${init}"><img src="${esc(chain[0])}" data-next="${esc(chain.slice(1).join(" "))}" alt="" loading="lazy" decoding="async"></span>`;
   };
-  const shareBtn = (rank, scope) => `<button class="share" data-share="${esc(`I'm #${rank} on the Credits Leaderboard ${scope} 🫡\n\nUniting the Credits & Statements community — opt in and climb:`)}">share</button>`;
+  const SHARE_URL = "https://proofofreal.app/social/creditsleaderboard";
+  const shareBtn = (rank, scope) => `<button class="share" data-share="${esc(`I'm #${rank} on the @jackbutcher Credits Leaderboard ${scope} 🫡\n\n@mememaxxers Uniting the Credits & Statements community — opt in and climb: ${SHARE_URL}`)}">Share</button>`;
   const row = (rank, handle, pfp, sub, amount, small, name) => `<div class="row ${rank <= 3 ? "top" : ""}"><div class="rk">${rank <= 3 ? `<span class="medal m${rank}">${rank}</span>` : rank}</div>
-    <div class="who">${avatar(handle, pfp)}<div style="min-width:0"><a class="h" href="${xUrl(handle)}" target="_blank" rel="noreferrer">${name ? esc(name) : "@" + esc(clean(handle))}</a><div class="sub">${name ? "@" + esc(clean(handle)) + " · " : ""}${sub}</div></div></div>
+    <div class="who">${avatar(handle, pfp)}<div style="min-width:0"><a class="h" href="${xUrl(handle)}" target="_blank" rel="noreferrer">${name ? esc(name) : "@" + esc(clean(handle))}</a><div class="sub">${name ? `<span>@${esc(clean(handle))}</span>` : ""}${sub}</div></div></div>
     <div class="amt"><b>${amount}</b><small>${small}</small></div></div>`;
   let tab = !current.rankings.length && totals.length ? "total" : "week";
   const q = () => key($("search").value);
@@ -437,14 +442,14 @@ function start() {
         return;
       }
       const list = w.rankings.map((r, i) => ({ ...r, rank: i + 1 })).filter((r) => !q() || key(r.handle).includes(q()) || (r.name || "").toLowerCase().includes(q()));
-      $("table").innerHTML = list.length ? list.map((r) => { const amt = payout(w.pool, r.rank); return row(r.rank, r.handle, r.pfp, `${num(r.points || 0)} pts${amt ? shareBtn(r.rank, "this week") : ""}`, amt ? num(amt) : "—", amt ? "$JACKOFF" : "", r.name); }).join("")
+      $("table").innerHTML = list.length ? list.map((r) => { const amt = payout(w.pool, r.rank); return row(r.rank, r.handle, r.pfp, `<span>${num(r.points || 0)} pts</span>${amt ? shareBtn(r.rank, "this week") : ""}`, amt ? num(amt) : "—", amt ? "$JACKOFF" : "", r.name); }).join("")
         : `<div class="empty"><span>No match for “${esc($("search").value)}”.</span></div>`;
     } else {
-      $("meta").textContent = `Retroactive + every week combined, after decay · ${totals.length ? num(totals.reduce((s, p) => s + p.owed, 0)) + " $JACKOFF owed" : "none yet"}`;
+      $("meta").textContent = `Retroactive + every week combined, after decay · ${totals.length ? num(totals.reduce((s, p) => s + p.owed, 0)) + " $JACKOFF rewarded" : "none yet"}`;
       if (!totals.length) { $("table").innerHTML = `<div class="empty"><b>No rewards yet.</b><span>Totals appear once week 1 is ranked.</span></div>`; return; }
       const list = totals.filter((p) => !q() || key(p.handle).includes(q()) || (p.name || "").toLowerCase().includes(q()));
       const activity = (p) => [p.retro ? "Retroactive" : "", p.active ? `${p.active} wk${p.active > 1 ? "s" : ""} active` : ""].filter(Boolean).join(" + ");
-      $("table").innerHTML = list.length ? list.map((p) => row(p.rank, p.handle, p.pfp, `${activity(p)}${shareBtn(p.rank, "all-time")}`, num(p.owed), p.decayed ? `<span class="dec">−${num(p.decayed)} decay</span>` : "$JACKOFF", p.name)).join("")
+      $("table").innerHTML = list.length ? list.map((p) => row(p.rank, p.handle, p.pfp, `<span>${activity(p)}</span>${shareBtn(p.rank, "all-time")}`, num(p.owed), p.decayed ? `<span class="dec">−${num(p.decayed)} decay</span>` : "$JACKOFF", p.name)).join("")
         : `<div class="empty"><span>No match for “${esc($("search").value)}”.</span></div>`;
     }
   }
@@ -458,10 +463,15 @@ function start() {
   $("search").addEventListener("input", render);
   document.addEventListener("click", (e) => {
     const b = e.target.closest("[data-share]"); if (!b) return;
-    window.open("https://x.com/intent/tweet?text=" + encodeURIComponent(b.dataset.share) + "&url=" + encodeURIComponent("https://proofofreal.app/social/creditsleaderboard"), "_blank", "noopener");
+    window.open("https://x.com/intent/tweet?text=" + encodeURIComponent(b.dataset.share), "_blank", "noopener");
   });
   // avatar fallback: when an image fails, show initials
-  document.addEventListener("error", (e) => { const img = e.target; if (img.tagName === "IMG" && img.parentElement && img.parentElement.classList.contains("av")) img.parentElement.textContent = img.parentElement.dataset.i || "?"; }, true);
+  // avatar fallback: try the next source in data-next, and show initials once none are left
+  document.addEventListener("error", (e) => {
+    const img = e.target; if (img.tagName !== "IMG" || !img.parentElement || !img.parentElement.classList.contains("av")) return;
+    const [next, ...rest] = (img.dataset.next || "").split(" ").filter(Boolean);
+    if (next) { img.dataset.next = rest.join(" "); img.src = next; } else img.parentElement.textContent = img.parentElement.dataset.i || "?";
+  }, true);
   document.querySelectorAll(".tabs button").forEach((x) => { x.classList.toggle("on", x.dataset.tab === tab); x.setAttribute("aria-selected", String(x.dataset.tab === tab)); });
   render();
 }
