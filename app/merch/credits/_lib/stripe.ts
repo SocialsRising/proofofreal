@@ -4,6 +4,10 @@ import { itemLabel, type OrderRecord } from "./order";
 
 /** Stripe REST without the SDK: form-encoded bodies, nested keys as a[b][0][c]. */
 const STRIPE_API = () => process.env.STRIPE_API_BASE || "https://api.stripe.com";
+/** Pinned so response shapes (e.g. collected_information.shipping_details) don't change under us. */
+export const STRIPE_VERSION = "2026-09-30.endive";
+/** Dashboard label for this checkout flow (Stripe asks for a fixed 8-random-letter suffix). */
+const INTEGRATION_ID = "credits-merch-qkzvhtwe";
 
 export function formEncode(obj: unknown, prefix = "", out: string[] = []): string {
   if (obj === undefined || obj === null) return out.join("&");
@@ -19,6 +23,7 @@ export async function createCheckoutSession(order: OrderRecord, orderUrl: string
   const metadata = { order_id: order.id, order_url: orderUrl, referral: order.referral || "", collection: COLLECTION };
   const params = {
     mode: "payment",
+    integration_identifier: INTEGRATION_ID,
     success_url: `${origin}/merch/credits/thanks?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${origin}/merch/credits`,
     client_reference_id: order.id,
@@ -39,7 +44,7 @@ export async function createCheckoutSession(order: OrderRecord, orderUrl: string
   };
   const res = await fetch(`${STRIPE_API()}/v1/checkout/sessions`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/x-www-form-urlencoded", "Idempotency-Key": `merch-${order.id}` },
+    headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/x-www-form-urlencoded", "Idempotency-Key": `merch-${order.id}`, "Stripe-Version": STRIPE_VERSION },
     body: formEncode(params),
   });
   const json = await res.json().catch(() => ({}));

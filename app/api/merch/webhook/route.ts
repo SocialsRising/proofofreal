@@ -17,6 +17,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "bad signature" }, { status: 400 });
   }
   const event = JSON.parse(payload);
+  if (event.type === "checkout.session.async_payment_failed") {
+    const s = event.data?.object ?? {};
+    console.warn("merch payment failed (delayed method) — nothing sent to Printful", { session: s.id, order: s.metadata?.order_id, referral: s.metadata?.referral || null });
+    return NextResponse.json({ failed: true });
+  }
   if (event.type !== "checkout.session.completed" && event.type !== "checkout.session.async_payment_succeeded") {
     return NextResponse.json({ ignored: event.type });
   }
