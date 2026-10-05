@@ -151,7 +151,7 @@ footer .disc{font-size:.74rem;color:var(--fg3);margin-top:16px}
    week's status to "final" when it closes, then add the next week. Payouts, totals and decay are computed.
    ================================================================================================== */
 const CONFIG = {
-  updated: "Sep 29",
+  updated: "Oct 5",
   weekEndsISO: "",                        // e.g. "2026-10-05T00:00:00Z" → shows a countdown; "" hides it
   pfpDir: "pfps/",                        // own copies, named <x handle, lowercase>.jpg — loaded first, never rate-limited
   avatars: true,                          // if there's no own copy, try the live X picture via unavatar.io, then initials
@@ -192,22 +192,25 @@ const TIERS = [
 /* status: "upcoming" → "live" → "final". rankings: ordered best first (or leave empty and use the sheet).
    Entry: { handle: "name", points: 120 }, optional pfp: "https://…" */
 const WEEKS = [
-  { week: 1, dates: "From Tue, Sep 29", pool: 10000000, status: "live", rankings: [
+  { week: 1, dates: "Sep 29 – Oct 4", pool: 10000000, status: "final", rankings: [
+  ]},
+  { week: 2, dates: "From Mon, Oct 5", pool: 10000000, status: "live", rankings: [
   ]},
 ];
 
-/* Retroactive / manual $JACKOFF allocations, added straight to All Time Rewards (on top of weekly payouts).
-   They count as earned before week 1, so the missed-week decay applies to them like any other reward.
-   Source: "Master Jackoff reserved allo sheet 9_29". */
+/* All-time $JACKOFF totals from the master sheet. They already include weekly rewards and any decay you applied,
+   so they're shown exactly as written (the page adds no decay of its own on top).
+   Source: "Master Jackoff reserved allo sheet 10_5". */
 const GRANTS = [
-  { name: "Tradesgiving", link: "https://x.com/tradesgiving", amount: 1000000 },
-  { name: "ClumsyKnight", link: "https://x.com/CLumsyKnight48", amount: 750000 },
+  { name: "Tradesgiving", link: "https://x.com/tradesgiving", amount: 2000000 },
+  { name: "ClumsyKnight", link: "https://x.com/CLumsyKnight48", amount: 1000000 },
   { name: "Qwix", link: "https://x.com/iiqwiix", amount: 500000 },
+  { name: "Aphation", link: "https://x.com/Aphation_", amount: 500000 },
+  { name: "Jame", link: "https://x.com/Jamewowpro", amount: 500000 },
+  { name: "Darian", link: "https://x.com/brbk85", amount: 500000 },
+  { name: "kenZaii", link: "https://x.com/kenZaii7", amount: 500000 },
   { name: "Crusader", link: "https://x.com/airdropcrusader", amount: 250000 },
-  { name: "Darian", link: "https://x.com/brbk85", amount: 250000 },
-  { name: "kenZaii", link: "https://x.com/kenZaii7", amount: 250000 },
   { name: "Boxer", link: "https://x.com/Boxerr110", amount: 250000 },
-  { name: "Jame", link: "https://x.com/Jamewowpro", amount: 250000 },
   { name: "PVM", link: "https://x.com/pvmihalache", amount: 250000 },
   { name: "Doktor Funk", link: "https://x.com/doktor_DeFi", amount: 150000 },
   { name: "Penna", link: "https://x.com/Prof_penna", amount: 150000 },
@@ -411,13 +414,13 @@ function start() {
   GRANTS.forEach((g) => {
     const k = key(g.link || g.handle); if (!k || !(g.amount > 0)) return;
     const p = people.get(k) || { handle: clean(g.link || g.handle), awards: [], weeks: new Set() };
-    p.awards.push({ week: 0, amount: g.amount }); p.retro = true; if (g.name) p.name = g.name;
+    p.awards.push({ week: 0, amount: g.amount, fixed: true }); p.retro = true; if (g.name) p.name = g.name;
     people.set(k, p);
   });
   const totals = [...people.values()].filter((p) => p.awards.length).map((p) => {
     let owed = 0, original = 0;
     p.awards.forEach((a) => {
-      const missed = counted.filter((w) => w.week > a.week && !p.weeks.has(w.week)).length;
+      const missed = a.fixed ? 0 : counted.filter((w) => w.week > a.week && !p.weeks.has(w.week)).length;
       original += a.amount; owed += a.amount * Math.max(0, 1 - CONFIG.decayPerMissedWeek * missed);
     });
     return { ...p, owed: Math.floor(owed), decayed: original - Math.floor(owed), active: p.weeks.size };
@@ -451,17 +454,17 @@ function start() {
       const w = selected();
       $("meta").textContent = `Week ${w.week} · ${w.dates} · ${w.status === "live" ? "in progress" : w.status === "upcoming" ? "starting soon" : "final"}`;
       if (!w.rankings.length) {
-        $("table").innerHTML = `<div class="empty"><b>${w.status === "upcoming" ? `Week ${w.week} ${w.dates.replace(/^Starts/, "starts")}.` : "First weekly rankings drop Wednesday."}</b><span>${CONFIG.bountyPost.url ? "Opt in by commenting on the bounty post." : `Opt in by commenting on the weekly bounty posts from @${esc(bounty)}.`}</span><a class="btn primary" href="${esc(optInUrl)}" target="_blank" rel="noreferrer">${CONFIG.bountyPost.url ? "Opt in on X ↗" : `Follow @${esc(bounty)} ↗`}</a></div>`;
+        $("table").innerHTML = `<div class="empty"><b>${w.status === "upcoming" ? `Week ${w.week} ${w.dates.replace(/^Starts/, "starts")}.` : w.status === "final" ? `Week ${w.week} rewards are included in All Time.` : `Week ${w.week} rankings coming soon.`}</b><span>${CONFIG.bountyPost.url ? "Opt in by commenting on the bounty post." : `Opt in by commenting on the weekly bounty posts from @${esc(bounty)}.`}</span><a class="btn primary" href="${esc(optInUrl)}" target="_blank" rel="noreferrer">${CONFIG.bountyPost.url ? "Opt in on X ↗" : `Follow @${esc(bounty)} ↗`}</a></div>`;
         return;
       }
       const list = w.rankings.map((r, i) => ({ ...r, rank: i + 1 })).filter((r) => !q() || key(r.handle).includes(q()) || (r.name || "").toLowerCase().includes(q()));
       $("table").innerHTML = list.length ? list.map((r) => { const amt = payout(w.pool, r.rank); return row(r.rank, r.handle, r.pfp, `<span>${num(r.points || 0)} pts</span>${amt ? shareBtn(r.rank, "this week") : ""}`, amt ? num(amt) : "—", amt ? "$JACKOFF" : "", r.name); }).join("")
         : `<div class="empty"><span>No match for “${esc($("search").value)}”.</span></div>`;
     } else {
-      $("meta").textContent = `Retroactive + every week combined, after decay · ${totals.length ? num(totals.reduce((s, p) => s + p.owed, 0)) + " $JACKOFF rewarded" : "none yet"}`;
+      $("meta").textContent = `All-time totals · ${totals.length ? num(totals.reduce((s, p) => s + p.owed, 0)) + " $JACKOFF rewarded" : "none yet"}`;
       if (!totals.length) { $("table").innerHTML = `<div class="empty"><b>No rewards yet.</b><span>Totals appear once week 1 is ranked.</span></div>`; return; }
       const list = totals.filter((p) => !q() || key(p.handle).includes(q()) || (p.name || "").toLowerCase().includes(q()));
-      const activity = (p) => [p.retro ? "Retroactive" : "", p.active ? `${p.active} wk${p.active > 1 ? "s" : ""} active` : ""].filter(Boolean).join(" + ");
+      const activity = (p) => [p.retro ? "Contributor" : "", p.active ? `${p.active} wk${p.active > 1 ? "s" : ""} active` : ""].filter(Boolean).join(" + ");
       $("table").innerHTML = list.length ? list.map((p) => row(p.rank, p.handle, p.pfp, `<span class="chip">${activity(p)}</span>${shareBtn(p.rank, "all-time")}`, num(p.owed), p.decayed ? `<span class="dec">−${num(p.decayed)} decay</span>` : "$JACKOFF", p.name)).join("")
         : `<div class="empty"><span>No match for “${esc($("search").value)}”.</span></div>`;
     }
