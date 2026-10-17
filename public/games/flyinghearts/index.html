@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Flying Hearts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@500;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#07060c;--fg:#fff7fb;--fg2:#c9bfd0;--fg3:#8b7f95;--pink:#ff4fa3;--pink2:#ff9ccc;--line:rgba(255,255,255,.12);--card:rgba(20,14,28,.78);
+  --chrome:linear-gradient(135deg,#fff 0%,#ffd6ea 30%,#ff7fbf 58%,#ffe3f1 82%,#fff 100%);--font:"Inter Tight","Helvetica Neue",Arial,sans-serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--fg);font:600 15px/1.4 var(--font);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none}
+canvas{position:fixed;inset:0;width:100%;height:100%;display:block}
+[hidden]{display:none!important}
+button{font:inherit;color:inherit;cursor:pointer}
+.ui{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:14px;z-index:5}
+.panel{width:min(560px,100%);max-height:100%;overflow:auto;background:var(--card);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border:1px solid var(--line);border-radius:22px;padding:18px;box-shadow:0 30px 80px -30px #000;touch-action:pan-y}
+.logo{font-weight:900;font-size:clamp(2.1rem,9vw,3.2rem);letter-spacing:-.05em;line-height:.9;text-align:center;margin:4px 0 6px}
+.logo span{color:transparent;background:var(--chrome);-webkit-background-clip:text;background-clip:text}
+.sub{color:var(--fg2);text-align:center;font-size:.9rem;margin:0 0 14px}
+.label{font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fg3);font-weight:800;margin:14px 0 8px;display:flex;justify-content:space-between}
+.row{display:grid;gap:8px}
+.cities{grid-template-columns:repeat(4,1fr)}
+.cars{grid-template-columns:repeat(4,1fr)}
+.pilots{grid-template-columns:repeat(auto-fill,minmax(52px,1fr))}
+.opt{border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:14px;padding:8px 6px;text-align:center;display:grid;gap:4px;justify-items:center;position:relative}
+.opt.on{border-color:transparent;background:linear-gradient(rgba(30,16,36,.95),rgba(30,16,36,.95)) padding-box,var(--chrome) border-box;border:1.5px solid transparent}
+.opt:disabled{opacity:.45;cursor:not-allowed}
+.opt b{font-size:.78rem;font-weight:800}
+.opt small{font-size:.62rem;color:var(--fg3);font-weight:700}
+.opt canvas,.opt img{position:static;width:100%;height:auto;display:block;border-radius:8px}
+.lock{position:absolute;top:6px;right:6px;font-size:.6rem;background:#000a;border-radius:999px;padding:1px 6px;color:var(--fg2)}
+.pilot{aspect-ratio:1;padding:3px;border-radius:50%}
+.pilot img,.pilot canvas{border-radius:50%;width:100%;height:100%;object-fit:cover}
+.up{display:grid;place-items:center;font-size:1.3rem;color:var(--fg2);border-style:dashed}
+.inp{width:100%;padding:11px 13px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.35);color:var(--fg);font:600 .92rem var(--font);outline:none}
+.inp:focus{border-color:var(--pink2)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 18px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.07);font-weight:800;font-size:.95rem;text-decoration:none;color:var(--fg)}
+.btn.primary{background:var(--chrome);color:#2a0716;border-color:transparent;box-shadow:0 10px 30px -10px rgba(255,79,163,.7)}
+.btn.big{width:100%;padding:16px;font-size:1.1rem;margin-top:16px}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.links{display:flex;flex-wrap:wrap;gap:6px 12px;justify-content:center;margin-top:14px;font-size:.78rem;color:var(--fg3)}
+.links a{color:var(--fg2);text-decoration:none}
+.hint{font-size:.76rem;color:var(--fg3);text-align:center;margin-top:8px}
+/* HUD */
+.hud{position:fixed;left:0;right:0;top:0;padding:max(10px,env(safe-area-inset-top)) 14px 0;display:flex;justify-content:space-between;align-items:flex-start;z-index:4;pointer-events:none}
+.score{font-weight:900;font-size:1.9rem;letter-spacing:-.04em;text-shadow:0 2px 12px #0008}
+.meta{font-size:.72rem;color:var(--fg2);font-weight:800;text-shadow:0 1px 6px #000}
+.combo{color:var(--pink2)}
+.fuel{width:110px;height:8px;border-radius:99px;background:#0007;border:1px solid var(--line);overflow:hidden;margin-top:6px}
+.fuel i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ff9a3c,#ff4fa3);transition:width .1s}
+.fuel.full i{background:linear-gradient(90deg,#fff,#ff9ccc,#ff4fa3)}
+.hud .r{display:flex;gap:8px;pointer-events:auto}
+.icon{width:38px;height:38px;border-radius:12px;border:1px solid var(--line);background:#0008;display:grid;place-items:center;font-size:1rem}
+.ctrl{position:fixed;right:14px;bottom:max(16px,env(safe-area-inset-bottom));display:flex;gap:10px;z-index:4}
+.ctrl button{width:64px;height:64px;border-radius:50%;border:1px solid var(--line);background:#0009;font-weight:900;font-size:.72rem;display:grid;place-items:center;line-height:1.1}
+.ctrl button span{font-size:1.4rem;display:block}
+.ctrl button.ready{background:var(--chrome);color:#2a0716;border-color:transparent;box-shadow:0 0 24px rgba(255,79,163,.6)}
+.toast{position:fixed;left:50%;top:22%;transform:translateX(-50%);font-weight:900;font-size:1.6rem;letter-spacing:-.03em;color:#fff;text-shadow:0 3px 18px rgba(255,79,163,.9);z-index:4;pointer-events:none;opacity:0;transition:opacity .2s}
+.toast.show{opacity:1}
+.tip{position:fixed;left:50%;bottom:22%;transform:translateX(-50%);font-weight:800;color:var(--fg2);text-shadow:0 2px 8px #000;z-index:4;pointer-events:none;text-align:center;font-size:.9rem}
+/* game over */
+.big-score{font-size:3rem;font-weight:900;letter-spacing:-.05em;text-align:center;line-height:1;margin:6px 0}
+.kvs{display:grid;gap:4px;margin:12px 0;font-size:.86rem}
+.kv{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0}
+.kv b{font-variant-numeric:tabular-nums}
+.badge{display:inline-block;background:var(--chrome);color:#2a0716;font-weight:900;font-size:.72rem;border-radius:999px;padding:3px 10px}
+.card-preview{width:100%;border-radius:14px;border:1px solid var(--line);display:block;margin-top:6px}
+</style>
+</head>
+<body>
+<script>
+/* =====================================================================================================
+   EDIT HERE. Launch settings for Flying Hearts.
+   ===================================================================================================== */
+const CONFIG = {
+  site: "https://proofofreal.app/games/flyinghearts",
+  tags: ["$IMD", "@mememaxxers"],          // always in the share post (add the game token ticker below once it exists)
+  tokenTicker: "",                          // e.g. "$VROOM" — added to the share post when set
+  links: [
+    { label: "X / @mememaxxers", url: "https://x.com/mememaxxers" },
+    { label: "Discord", url: "https://discord.gg/krVPuyksQy" },
+    { label: "Token", url: "" },            // fill in when live
+    { label: "Collection", url: "" },
+  ],
+  // One city unlocks per day (midnight Pacific). The first city is always open.
+  cities: [
+    { key: "tokyo", name: "Tokyo", unlock: "2026-10-19T07:00:00Z", track: "" },
+    { key: "singapore", name: "Singapore", unlock: "2026-10-20T07:00:00Z", track: "" },
+    { key: "seoul", name: "Seoul", unlock: "2026-10-21T07:00:00Z", track: "" },
+    { key: "danang", name: "Da Nang", unlock: "2026-10-22T07:00:00Z", track: "" },
+  ],
+  // Roadster designs by $IMD tier. Set locked: true to gate one later.
+  cars: [
+    { key: "paper", name: "Paper", tier: "0.5 IMD", body: ["#fff7fb", "#ffd3e8"], trim: "#ff4fa3", locked: false },
+    { key: "midnight", name: "Midnight", tier: "5 IMD", body: ["#2a2a33", "#0d0d12"], trim: "#c9cbd3", locked: false },
+    { key: "gold", name: "Gold", tier: "50 IMD", body: ["#fff1b8", "#d9a62e"], trim: "#7a4d06", locked: false },
+    { key: "diamond", name: "Diamond", tier: "500 IMD", body: ["#e6fdff", "#7fe3ff"], trim: "#ff4fa3", locked: false, shine: true },
+  ],
+  // Preset pilots. Emoji pilots are placeholders — add image paths (e.g. "pilots/waifu01.png") to use art.
+  pilots: [
+    { key: "heart", emoji: "💖", bg: ["#ff9ccc", "#ff4fa3"] },
+    { key: "cool", emoji: "😎", bg: ["#ffe08a", "#ff9a3c"] },
+    { key: "cat", emoji: "🐱", bg: ["#c3f0ff", "#5ab8ff"] },
+    { key: "fox", emoji: "🦊", bg: ["#ffd6b0", "#ff7a3c"] },
+    { key: "frog", emoji: "🐸", bg: ["#d7ffc9", "#4fd36a"] },
+    { key: "alien", emoji: "👾", bg: ["#e5d4ff", "#8a5cff"] },
+    { key: "robot", emoji: "🤖", bg: ["#e8ecf2", "#8f9aa8"] },
+    { key: "panda", emoji: "🐼", bg: ["#ffffff", "#bfc3cc"] },
+  ],
+};
+</script>
+
+<canvas id="c"></canvas>
+
+<div class="hud" id="hud" hidden>
+  <div><div class="score" id="hScore">0</div><div class="meta"><span id="hHearts">💖 0</span> · <span id="hDist">0m</span> · <span class="combo" id="hCombo">×1</span></div><div class="fuel" id="fuel"><i></i></div></div>
+  <div class="r"><button class="icon" id="bMute" aria-label="Sound">🔊</button><button class="icon" id="bPause" aria-label="Pause">⏸</button></div>
+</div>
+<div class="ctrl" id="ctrl" hidden>
+  <button id="bFlip" aria-label="Flip"><span>⟳</span>FLIP</button>
+  <button id="bBoost" aria-label="Boost"><span>🔥</span>BOOST</button>
+</div>
+<div class="toast" id="toast"></div>
+<div class="tip" id="tip" hidden>Hold anywhere to fly ⬆️<br>Tap ⟳ to flip · 🔥 when fuel is full</div>
+
+<!-- MENU -->
+<div class="ui" id="menu">
+  <div class="panel">
+    <div class="logo">FLYING<br><span>HEARTS</span></div>
+    <p class="sub">Fly a Roadster over Asia's skylines. Hold to fly, flip for combos, boost through everything.</p>
+    <div class="label"><span>City</span><span id="cityNote"></span></div>
+    <div class="row cities" id="cities"></div>
+    <div class="label"><span>Roadster</span><span>by $IMD tier</span></div>
+    <div class="row cars" id="cars"></div>
+    <div class="label"><span>Pilot</span><span>or upload your NFT</span></div>
+    <div class="row pilots" id="pilots"></div>
+    <input type="file" id="file" accept="image/*" hidden>
+    <div class="label"><span>Your X handle</span><span>optional · for your referral link</span></div>
+    <input class="inp" id="handle" placeholder="@yourhandle" maxlength="20" autocomplete="off">
+    <button class="btn primary big" id="play">Play</button>
+    <div class="hint" id="refNote" hidden></div>
+    <div class="links" id="links"></div>
+  </div>
+</div>
+
+<!-- PAUSE -->
+<div class="ui" id="pause" hidden><div class="panel" style="text-align:center"><div class="logo" style="font-size:2rem">Paused</div><div class="btns"><button class="btn primary" id="resume">Resume</button><button class="btn" id="quit">Menu</button></div></div></div>
+
+<!-- GAME OVER -->
+<div class="ui" id="over" hidden>
+  <div class="panel">
+    <div style="text-align:center"><span class="badge" id="newBest" hidden>New best!</span></div>
+    <div class="big-score" id="oScore">0</div>
+    <p class="sub" id="oSub"></p>
+    <div class="kvs" id="oKvs"></div>
+    <img class="card-preview" id="cardImg" alt="Your share card">
+    <div class="btns">
+      <button class="btn primary" id="share">Share on X</button>
+      <button class="btn" id="again">Play again</button>
+    </div>
+    <div class="btns">
+      <button class="btn" id="copyRef">Copy my link</button>
+      <button class="btn" id="toMenu">Change setup</button>
+    </div>
+    <div class="hint">Post your card tagging $IMD and @mememaxxers — top scores, most-viral posts and referrals get rewarded.</div>
+  </div>
+</div>
+
+<script>
+(() => {
+/* ------------------------------------------------------------------ setup */
+const $ = (id) => document.getElementById(id);
+const cv = $("c"), ctx = cv.getContext("2d");
+const store = { get(k, d) { try { const v = localStorage.getItem("fh-" + k); return v === null ? d : JSON.parse(v); } catch { return d; } }, set(k, v) { try { localStorage.setItem("fh-" + k, JSON.stringify(v)); } catch {} } };
+const qs = (() => { try { return new URLSearchParams(window.top.location.search); } catch { return new URLSearchParams(location.search); } })();
+const PREVIEW_ALL = qs.get("all") === "1";
+const cleanHandle = (h) => String(h || "").trim().replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//i, "").replace(/[/?#].*$/, "").replace(/^@/, "").replace(/[^A-Za-z0-9_]/g, "").slice(0, 15);
+const refFrom = cleanHandle(qs.get("ref")); if (refFrom) store.set("invitedBy", refFrom);
+const invitedBy = store.get("invitedBy", "");
+
+const H = 600, GROUND = 538;           // world height & ground line (world units)
+// The world is 600 units tall; at least MIN_W units of track are always visible ahead so portrait phones get
+// enough reaction time. Spare vertical space (portrait) is filled with extended sky above and road below.
+const MIN_W = 560;
+let W = 1000, scale = 1, dpr = 1, oy = 0;
+function resize() {
+  dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.round(innerWidth * dpr); cv.height = Math.round(innerHeight * dpr);
+  scale = Math.min(cv.height / H, cv.width / MIN_W); W = cv.width / scale; oy = Math.max(0, (cv.height - H * scale) / 2);
+}
+addEventListener("resize", resize); resize();
+
+const rng = (seed) => () => { seed |= 0; seed = (seed + 0x6D2B79F5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const fmt = (n) => Math.round(n).toLocaleString("en-US");
+
+/* ------------------------------------------------------------------ cities: palettes, skylines, landmarks */
+const THEMES = {
+  tokyo:     { sky: ["#1b1035", "#5b2a6e", "#ff7a7a", "#ffc58a"], sun: "#ffe0b0", far: "#3a2346", mid: "#25162f", near: "#130b1a", win: "#ffd27a", ob: ["#e8423f", "#7a1418"], particle: "#ffc2d9", ground: "#1a1020", line: "#ff4fa3", music: { bpm: 118, root: 220, scale: [0, 1, 5, 7, 8], wave: "square" } },
+  singapore: { sky: ["#061a2b", "#0b4a63", "#1f8a8a", "#7fe0c8"], sun: "#e8fff6", far: "#0f3446", mid: "#0a2433", near: "#06151f", win: "#9ff7ff", ob: ["#29c4a9", "#0b5c50"], particle: "#b9fff0", ground: "#04121b", line: "#29c4a9", music: { bpm: 108, root: 246.94, scale: [0, 2, 4, 7, 9], wave: "sine" } },
+  seoul:     { sky: ["#0a0618", "#24104a", "#5a1d8f", "#c04fff"], sun: "#ffd6ff", far: "#26134a", mid: "#170c30", near: "#0c0619", win: "#ff7ae0", ob: ["#b44dff", "#3b0f6b"], particle: "#ffb3f5", ground: "#0b0616", line: "#ff4fd8", music: { bpm: 128, root: 196, scale: [0, 3, 5, 7, 10], wave: "sawtooth" } },
+  danang:    { sky: ["#0d1a2e", "#1f4e6e", "#e88a3c", "#ffd36b"], sun: "#fff1b0", far: "#25445a", mid: "#173244", near: "#0c1c28", win: "#ffe08a", ob: ["#f2b632", "#7a4d06"], particle: "#ffe9a6", ground: "#0a2030", line: "#f2b632", music: { bpm: 100, root: 261.63, scale: [0, 2, 5, 7, 9], wave: "triangle" } },
+};
+const STRIP = 2400; // repeating background strip length (world units)
+function makeSkyline(seed, n, minH, maxH, minW, maxW) {
+  const r = rng(seed), out = []; let x = 0;
+  while (x < STRIP) { const w = minW + r() * (maxW - minW); out.push({ x, w, h: minH + r() * (maxH - minH), lit: r() }); x += w + r() * 6; }
+  return out;
+}
+const SKY = {};
+for (const [k, i] of [["tokyo", 1], ["singapore", 2], ["seoul", 3], ["danang", 4]]) SKY[k] = { far: makeSkyline(i * 11, 0, 70, 190, 40, 90), mid: makeSkyline(i * 37, 0, 90, 250, 50, 110) };
+
+function landmark(g, key, x, base, s, col) {
+  g.save(); g.translate(x, base); g.scale(s, s); g.fillStyle = col; g.strokeStyle = col;
+  if (key === "tokyo") {            // Tokyo Tower
+    g.beginPath(); g.moveTo(-34, 0); g.lineTo(-4, -230); g.lineTo(4, -230); g.lineTo(34, 0); g.closePath(); g.fill();
+    g.fillStyle = "#ff5a3c"; g.fillRect(-20, -90, 40, 10); g.fillRect(-10, -170, 20, 8); g.fillRect(-1.5, -275, 3, 46);
+  } else if (key === "singapore") { // Marina Bay Sands + Supertree
+    for (const dx of [-60, 0, 60]) { g.beginPath(); g.moveTo(dx - 18, 0); g.lineTo(dx - 12, -170); g.lineTo(dx + 14, -170); g.lineTo(dx + 18, 0); g.fill(); }
+    g.beginPath(); g.ellipse(0, -178, 100, 10, 0, 0, Math.PI * 2); g.fill();
+    g.fillRect(140, -110, 6, 110); g.beginPath(); g.moveTo(120, -110); g.lineTo(166, -110); g.lineTo(152, -130); g.lineTo(134, -130); g.fill();
+  } else if (key === "seoul") {     // N Seoul Tower on a hill
+    g.beginPath(); g.ellipse(0, 0, 150, 70, 0, Math.PI, 0); g.fill();
+    g.fillRect(-4, -230, 8, 170); g.beginPath(); g.ellipse(0, -205, 16, 12, 0, 0, Math.PI * 2); g.fill(); g.fillRect(-1.5, -275, 3, 50);
+  } else {                          // Da Nang Dragon Bridge
+    g.lineWidth = 9; g.beginPath(); g.moveTo(-220, -30);
+    for (let i = 0; i <= 44; i++) { const xx = -220 + i * 10; g.lineTo(xx, -40 - Math.abs(Math.sin(i / 5.5)) * 70); } g.stroke();
+    g.beginPath(); g.moveTo(-230, -24); g.lineTo(230, -24); g.lineWidth = 5; g.stroke();
+    g.beginPath(); g.arc(230, -46, 14, 0, Math.PI * 2); g.fill();
+  }
+  g.restore();
+}
+
+function drawWorld(g, cityKey, scroll, w, h, t) {
+  const th = THEMES[cityKey], sc = h / H; g.save(); g.scale(sc, sc); const ww = w / sc;
+  const sky = g.createLinearGradient(0, 0, 0, GROUND);
+  th.sky.forEach((c, i) => sky.addColorStop(i / (th.sky.length - 1), c)); g.fillStyle = sky; g.fillRect(0, 0, ww, H);
+  // sun / moon glow
+  const sx = ww * 0.72, sy = 190; const glow = g.createRadialGradient(sx, sy, 10, sx, sy, 170);
+  glow.addColorStop(0, th.sun); glow.addColorStop(.25, th.sun + "88"); glow.addColorStop(1, "transparent"); g.fillStyle = glow; g.fillRect(sx - 170, sy - 170, 340, 340);
+  g.fillStyle = th.sun; g.beginPath(); g.arc(sx, sy, 46, 0, Math.PI * 2); g.fill();
+  // Fuji for Tokyo
+  if (cityKey === "tokyo") { const fx = ww * 0.3 - (scroll * 0.03) % (ww + 600); g.fillStyle = "#4a2a5a"; g.beginPath(); g.moveTo(fx - 260, GROUND - 120); g.lineTo(fx - 40, GROUND - 330); g.lineTo(fx + 40, GROUND - 330); g.lineTo(fx + 260, GROUND - 120); g.fill(); g.fillStyle = "#f3e6f5"; g.beginPath(); g.moveTo(fx - 72, GROUND - 290); g.lineTo(fx - 40, GROUND - 330); g.lineTo(fx + 40, GROUND - 330); g.lineTo(fx + 72, GROUND - 290); g.lineTo(fx + 30, GROUND - 300); g.lineTo(fx, GROUND - 285); g.lineTo(fx - 30, GROUND - 300); g.fill(); }
+  // far skyline + landmark
+  const layer = (bld, speed, col, base, lit) => {
+    const off = (scroll * speed) % STRIP;
+    for (let k = -1; k <= Math.ceil(ww / STRIP) + 1; k++) {
+      const ox = k * STRIP - off;
+      g.fillStyle = col;
+      for (const b of bld) { const x = ox + b.x; if (x > ww || x + b.w < 0) continue; g.fillRect(x, base - b.h, b.w, b.h);
+        if (lit) { g.fillStyle = THEMES[cityKey].win; for (let wy = base - b.h + 10; wy < base - 8; wy += 14) for (let wx = x + 6; wx < x + b.w - 6; wx += 11) if (((wx * 7 + wy * 13 + b.lit * 97) | 0) % 5 === 0) g.fillRect(wx, wy, 4, 6); g.fillStyle = col; } }
+      if (speed < 0.3) landmark(g, cityKey, ox + 1300, base, 1, col);
+    }
+  };
+  layer(SKY[cityKey].far, 0.18, th.far, GROUND - 40, false);
+  layer(SKY[cityKey].mid, 0.42, th.mid, GROUND, true);
+  // ground: road / river band
+  g.fillStyle = th.ground; g.fillRect(0, GROUND, ww, H - GROUND);
+  g.strokeStyle = th.line; g.globalAlpha = .55; g.lineWidth = 3; g.setLineDash([40, 30]); g.lineDashOffset = scroll % 70;
+  g.beginPath(); g.moveTo(0, GROUND + 26); g.lineTo(ww, GROUND + 26); g.stroke(); g.setLineDash([]); g.globalAlpha = 1;
+  g.fillStyle = th.line; g.globalAlpha = .9; g.fillRect(0, GROUND, ww, 2); g.globalAlpha = 1;
+  g.restore();
+}
+
+/* ------------------------------------------------------------------ car + pilot */
+const pilotImg = new Image(); let pilotReady = false;
+function drawPilotInto(g, cx, cy, r) {
+  g.save(); g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.closePath(); g.clip();
+  if (pilotReady) { const s = Math.max((r * 2) / pilotImg.width, (r * 2) / pilotImg.height); g.drawImage(pilotImg, cx - pilotImg.width * s / 2, cy - pilotImg.height * s / 2, pilotImg.width * s, pilotImg.height * s); }
+  else { g.fillStyle = "#ff9ccc"; g.fillRect(cx - r, cy - r, r * 2, r * 2); }
+  g.restore();
+  g.strokeStyle = "rgba(255,255,255,.9)"; g.lineWidth = 2; g.beginPath(); g.arc(cx, cy, r, 0, Math.PI * 2); g.stroke();
+}
+function drawCar(g, car, x, y, rot, s, t, boosting) {
+  g.save(); g.translate(x, y); g.rotate(rot); g.scale(s, s);
+  // exhaust / boost flame
+  const fl = boosting ? 46 + Math.sin(t * 60) * 8 : 14 + Math.sin(t * 40) * 3;
+  const fg = g.createLinearGradient(-48 - fl, 0, -46, 0); fg.addColorStop(0, "transparent"); fg.addColorStop(.4, boosting ? "#ff4fa3" : "#ff9a3c"); fg.addColorStop(1, "#fff");
+  g.fillStyle = fg; g.beginPath(); g.moveTo(-46, -4); g.lineTo(-48 - fl, 2); g.lineTo(-46, 8); g.fill();
+  // body
+  const bg = g.createLinearGradient(0, -24, 0, 14); bg.addColorStop(0, car.body[0]); bg.addColorStop(1, car.body[1]);
+  g.fillStyle = bg; g.strokeStyle = "rgba(0,0,0,.35)"; g.lineWidth = 1.2;
+  g.beginPath(); g.moveTo(-48, 6); g.quadraticCurveTo(-50, -8, -34, -10); g.lineTo(-14, -12); g.quadraticCurveTo(0, -27, 18, -22);
+  g.quadraticCurveTo(30, -18, 40, -8); g.quadraticCurveTo(54, -6, 52, 4); g.quadraticCurveTo(50, 10, 40, 10); g.lineTo(-40, 10); g.quadraticCurveTo(-48, 10, -48, 6); g.fill(); g.stroke();
+  if (car.shine) { g.globalAlpha = .55 + Math.sin(t * 3) * .2; const sh = g.createLinearGradient(-40, -20, 50, 10); sh.addColorStop(0, "#fff"); sh.addColorStop(.5, "#ff9ccc"); sh.addColorStop(1, "#7fe3ff"); g.fillStyle = sh; g.fill(); g.globalAlpha = 1; }
+  // trim + heart decal
+  g.fillStyle = car.trim; g.fillRect(-36, 0, 70, 2.5);
+  heart(g, 26, -6, 5, car.trim);
+  // wheels
+  for (const wx of [-28, 32]) { g.fillStyle = "#111"; g.beginPath(); g.arc(wx, 10, 8, 0, Math.PI * 2); g.fill(); g.fillStyle = "#cfcfd6"; g.beginPath(); g.arc(wx, 10, 3.5, 0, Math.PI * 2); g.fill(); }
+  // cockpit + pilot
+  drawPilotInto(g, 2, -22, 13);
+  g.restore();
+}
+function heart(g, x, y, r, col) { g.fillStyle = col; g.beginPath(); g.moveTo(x, y + r * 0.9); g.bezierCurveTo(x - r * 1.6, y - r * 0.2, x - r * 0.7, y - r * 1.4, x, y - r * 0.5); g.bezierCurveTo(x + r * 0.7, y - r * 1.4, x + r * 1.6, y - r * 0.2, x, y + r * 0.9); g.fill(); }
+
+/* ------------------------------------------------------------------ audio (procedural per-city loop + sfx) */
+let AC = null, master = null, muted = store.get("muted", false), seq = null, noiseBuf = null;
+function audio() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = muted ? 0 : 0.5; master.connect(AC.destination);
+    noiseBuf = AC.createBuffer(1, AC.sampleRate * 0.2, AC.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; } catch { AC = null; } }
+  if (AC && AC.state === "suspended") AC.resume();
+  return AC;
+}
+function tone(freq, t0, dur, type = "sine", vol = 0.12, slide = 0) {
+  if (!AC) return; const o = AC.createOscillator(), gn = AC.createGain(); o.type = type; o.frequency.setValueAtTime(freq, t0);
+  if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(30, freq * slide), t0 + dur);
+  gn.gain.setValueAtTime(vol, t0); gn.gain.exponentialRampToValueAtTime(0.0001, t0 + dur); o.connect(gn).connect(master); o.start(t0); o.stop(t0 + dur + 0.02);
+}
+function hat(t0, vol = 0.04) { if (!AC) return; const s = AC.createBufferSource(); s.buffer = noiseBuf; const f = AC.createBiquadFilter(); f.type = "highpass"; f.frequency.value = 7000; const gn = AC.createGain(); gn.gain.setValueAtTime(vol, t0); gn.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.05); s.connect(f).connect(gn).connect(master); s.start(t0); s.stop(t0 + 0.06); }
+const sfx = {
+  heart: () => AC && tone(880 + Math.random() * 200, AC.currentTime, 0.12, "triangle", 0.1, 1.5),
+  flip: () => AC && tone(300, AC.currentTime, 0.35, "sawtooth", 0.06, 3),
+  boost: () => AC && tone(140, AC.currentTime, 0.6, "sawtooth", 0.08, 4),
+  smash: () => AC && tone(200, AC.currentTime, 0.25, "square", 0.08, 0.4),
+  crash: () => { if (!AC) return; tone(220, AC.currentTime, 0.6, "sawtooth", 0.12, 0.2); hat(AC.currentTime, 0.2); },
+};
+function startMusic(cityKey) {
+  stopMusic(); if (!audio()) return;
+  const m = THEMES[cityKey].music, step = 60 / m.bpm / 4, r = rng(cityKey.length * 99);
+  const note = (deg, oct = 0) => m.root * Math.pow(2, (m.scale[((deg % m.scale.length) + m.scale.length) % m.scale.length] + 12 * (oct + Math.floor(deg / m.scale.length))) / 12);
+  const arp = Array.from({ length: 16 }, () => (r() < 0.75 ? Math.floor(r() * 8) : null));
+  const bass = [0, null, null, 0, null, null, 4, null, 0, null, null, 0, null, 3, null, null];
+  let n = 0, next = AC.currentTime + 0.05;
+  seq = setInterval(() => {
+    while (next < AC.currentTime + 0.12) {
+      const i = n % 16, bar = Math.floor(n / 16) % 4, shift = [0, 0, 3, 4][bar];
+      if (i % 4 === 0) tone(110, next, 0.18, "sine", 0.22, 0.35);       // kick
+      if (i % 2 === 1) hat(next);
+      if (bass[i] !== null) tone(note(bass[i] + shift, -2), next, step * 2.6, "triangle", 0.11);
+      if (arp[i] !== null) tone(note(arp[i] + shift, 0), next, step * 1.6, m.wave, m.wave === "sawtooth" || m.wave === "square" ? 0.035 : 0.06);
+      next += step; n++;
+    }
+  }, 25);
+}
+function stopMusic() { if (seq) clearInterval(seq); seq = null; }
+function setMuted(v) { muted = v; store.set("muted", v); if (master) master.gain.value = v ? 0 : 0.5; $("bMute").textContent = v ? "🔇" : "🔊"; }
+
+/* ------------------------------------------------------------------ menu state */
+const now = () => Date.now();
+const cityOpen = (c, i) => PREVIEW_ALL || i === 0 || now() >= Date.parse(c.unlock);
+const dayName = (iso) => new Date(iso).toLocaleDateString(undefined, { weekday: "short", timeZone: "America/Los_Angeles" });
+let sel = { city: store.get("city", "tokyo"), car: store.get("car", "paper"), pilot: store.get("pilot", "heart") };
+if (!CONFIG.cities.some((c, i) => c.key === sel.city && cityOpen(c, i))) sel.city = CONFIG.cities[0].key;
+if (!CONFIG.cars.some((c) => c.key === sel.car && !c.locked)) sel.car = CONFIG.cars[0].key;
+$("handle").value = store.get("handle", "") ? "@" + store.get("handle", "") : "";
+if (invitedBy) { $("refNote").hidden = false; $("refNote").textContent = `Invited by @${invitedBy} 💖`; }
+
+function emojiPilot(p, size = 128) {
+  const c = document.createElement("canvas"); c.width = c.height = size; const g = c.getContext("2d");
+  const gr = g.createLinearGradient(0, 0, size, size); gr.addColorStop(0, p.bg[0]); gr.addColorStop(1, p.bg[1]); g.fillStyle = gr; g.fillRect(0, 0, size, size);
+  g.font = `${size * 0.62}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(p.emoji, size / 2, size / 2 + size * 0.04);
+  return c;
+}
+function setPilotImage(src) { pilotReady = false; pilotImg.onload = () => { pilotReady = true; renderPreviews(); }; pilotImg.src = src; }
+function choosePilot(key) {
+  sel.pilot = key; store.set("pilot", key);
+  if (key === "custom") { const d = store.get("customPilot", null); if (d) setPilotImage(d); }
+  else { const p = CONFIG.pilots.find((x) => x.key === key) || CONFIG.pilots[0]; setPilotImage(p.src || emojiPilot(p).toDataURL()); }
+  renderMenu();
+}
+function carPreview(car) {
+  const c = document.createElement("canvas"); c.width = 220; c.height = 120; const g = c.getContext("2d");
+  const gr = g.createLinearGradient(0, 0, 0, 120); gr.addColorStop(0, "#2a1636"); gr.addColorStop(1, "#120a18"); g.fillStyle = gr; g.fillRect(0, 0, 220, 120);
+  drawCar(g, car, 110, 70, -0.05, 1.8, performance.now() / 1000, false); return c;
+}
+// once the pilot image loads, redraw the menu so the car previews show the pilot in the cockpit
+function renderPreviews() { if (state === "menu") renderMenu(); }
+
+function renderMenu() {
+  $("cities").innerHTML = ""; CONFIG.cities.forEach((c, i) => {
+    const open = cityOpen(c, i), b = document.createElement("button"); b.className = "opt" + (sel.city === c.key ? " on" : ""); b.disabled = !open;
+    const th = THEMES[c.key]; b.innerHTML = `<span style="width:100%;aspect-ratio:1.4;border-radius:8px;background:linear-gradient(180deg,${th.sky.join(",")})"></span><b>${c.name}</b>` + (open ? "" : `<span class="lock">🔒 ${dayName(c.unlock)}</span>`);
+    b.onclick = () => { sel.city = c.key; store.set("city", c.key); renderMenu(); }; $("cities").appendChild(b);
+  });
+  const openCount = CONFIG.cities.filter(cityOpen).length; $("cityNote").textContent = openCount < CONFIG.cities.length ? "a new city unlocks daily" : "all cities open";
+  $("cars").innerHTML = ""; CONFIG.cars.forEach((car) => {
+    const b = document.createElement("button"); b.className = "opt" + (sel.car === car.key ? " on" : ""); b.disabled = !!car.locked;
+    const pv = carPreview(car); pv.dataset.carprev = car.key; b.appendChild(pv); b.insertAdjacentHTML("beforeend", `<b>${car.name}</b><small>${car.tier}</small>` + (car.locked ? `<span class="lock">🔒</span>` : ""));
+    b.onclick = () => { sel.car = car.key; store.set("car", car.key); renderMenu(); }; $("cars").appendChild(b);
+  });
+  $("pilots").innerHTML = ""; CONFIG.pilots.forEach((p) => {
+    const b = document.createElement("button"); b.className = "opt pilot" + (sel.pilot === p.key ? " on" : "");
+    if (p.src) b.innerHTML = `<img src="${p.src}" alt="">`; else b.appendChild(emojiPilot(p, 96));
+    b.onclick = () => choosePilot(p.key); $("pilots").appendChild(b);
+  });
+  const custom = store.get("customPilot", null);
+  if (custom) { const b = document.createElement("button"); b.className = "opt pilot" + (sel.pilot === "custom" ? " on" : ""); b.innerHTML = `<img src="${custom}" alt="Your pilot">`; b.onclick = () => choosePilot("custom"); $("pilots").appendChild(b); }
+  const up = document.createElement("button"); up.className = "opt pilot up"; up.title = "Upload your NFT or art"; up.textContent = "＋"; up.onclick = () => $("file").click(); $("pilots").appendChild(up);
+}
+$("file").addEventListener("change", (e) => {
+  const f = e.target.files && e.target.files[0]; if (!f) return; const rd = new FileReader();
+  rd.onload = () => { const im = new Image(); im.onload = () => { const s = 256, c = document.createElement("canvas"); c.width = c.height = s; const g = c.getContext("2d"); const k = Math.max(s / im.width, s / im.height); g.drawImage(im, (s - im.width * k) / 2, (s - im.height * k) / 2, im.width * k, im.height * k); const d = c.toDataURL("image/jpeg", 0.88); store.set("customPilot", d); choosePilot("custom"); }; im.src = rd.result; };
+  rd.readAsDataURL(f); e.target.value = "";
+});
+$("links").innerHTML = CONFIG.links.filter((l) => l.url).map((l) => `<a href="${l.url}" target="_blank" rel="noreferrer">${l.label} ↗</a>`).join("");
+
+/* ------------------------------------------------------------------ game state */
+let state = "menu", G = null, last = 0, holding = false, lastTap = 0;
+const car = () => CONFIG.cars.find((c) => c.key === sel.car) || CONFIG.cars[0];
+function newGame() {
+  G = { t: 0, x: Math.min(180, W * 0.24), y: 260, vy: 0, rot: 0, speed: 330, scroll: 0, dist: 0, hearts: 0, tricks: 0, flips: 0, smashed: 0, combo: 1, comboT: 0,
+    flipT: -1, fuel: 0, boostT: 0, obs: [], items: [], parts: [], trail: [], nextSpawn: 700, alive: true, best: store.get("best-" + sel.city, 0) };
+}
+function spawn() {
+  const r = Math.random(), x = G.scroll + W + 80, lvl = clamp(G.dist / 4000, 0, 1);
+  const gapH = 230 - lvl * 70, gapY = 140 + Math.random() * (GROUND - 280);
+  if (r < 0.72) {
+    G.obs.push({ type: "pillars", x, w: 66, gapY, gapH, hit: false });
+    const n = 3 + (Math.random() * 3 | 0); for (let i = 0; i < n; i++) G.items.push({ x: x + 33 + (i - (n - 1) / 2) * 34, y: gapY + Math.sin(i) * 10, got: false });
+  } else {
+    const y = 110 + Math.random() * (GROUND - 220); G.obs.push({ type: "drone", x, y0: y, y, r: 22, ph: Math.random() * 6, hit: false });
+    for (let i = 0; i < 5; i++) G.items.push({ x: x + 140 + i * 36, y: y + Math.sin(i * 0.9) * 50, got: false });
+  }
+  G.nextSpawn = G.scroll + 400 + Math.random() * 180 - lvl * 80;
+}
+function addCombo() { G.combo = clamp(G.combo + 1, 1, 8); G.comboT = 2.6; }
+function toast(text) { const t = $("toast"); t.textContent = text; t.classList.add("show"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 650); }
+function burst(x, y, col, n = 12, sp = 220) { for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, v = sp * (0.3 + Math.random()); G.parts.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0.6 + Math.random() * 0.4, col }); } }
+function flip() { if (state !== "play" || G.flipT >= 0) return; G.flipT = 0; sfx.flip(); }
+function boost() { if (state !== "play" || G.fuel < 100 || G.boostT > 0) return; G.fuel = 0; G.boostT = 2.0; sfx.boost(); toast("BOOST 🔥"); }
+const score = () => Math.round(G.dist / 10 + G.hearts * 10 + G.tricks);
+
+function update(dt) {
+  G.t += dt; const boosting = G.boostT > 0;
+  G.speed = Math.min(640, 330 + G.t * 7); const v = G.speed * (boosting ? 1.75 : 1);
+  G.scroll += v * dt; G.dist += v * dt;
+  G.vy += (holding ? -2350 : 1450) * dt; G.vy = clamp(G.vy, -480, 600); G.y += G.vy * dt;
+  if (G.y < 40) { G.y = 40; G.vy = Math.max(0, G.vy); }
+  // rotation: tilt with velocity, plus flip
+  const tilt = clamp(G.vy / 900, -0.45, 0.6);
+  if (G.flipT >= 0) { G.flipT += dt; const p = clamp(G.flipT / 0.55, 0, 1); G.rot = -p * Math.PI * 2 + tilt * (1 - p);
+    if (p >= 1) { G.flipT = -1; G.flips++; const pts = 100 * G.combo; G.tricks += pts; G.fuel = Math.min(100, G.fuel + 12); addCombo(); toast(`FLIP +${pts}`); burst(G.x, G.y, "#fff", 10, 160); } }
+  else G.rot += (tilt - G.rot) * Math.min(1, dt * 10);
+  if (G.comboT > 0) { G.comboT -= dt; if (G.comboT <= 0) G.combo = 1; }
+  if (boosting) G.boostT -= dt;
+  if (G.scroll > G.nextSpawn) spawn();
+  // trail of hearts
+  if (Math.random() < (boosting ? 0.9 : 0.35)) G.trail.push({ x: G.scroll + G.x - 50, y: G.y + 2 + (Math.random() - .5) * 8, life: 0.8, s: 3 + Math.random() * 3 });
+  // collisions (axis-aligned hitbox, a bit smaller than the drawn car)
+  const hx = G.scroll + G.x, hw = 36, hh = 13;
+  for (const o of G.obs) {
+    if (o.type === "drone") o.y = o.y0 + Math.sin(G.t * 2.2 + o.ph) * 60;
+    if (o.hit) continue;
+    let hit = false;
+    if (o.type === "pillars") { if (hx + hw > o.x && hx - hw < o.x + o.w && (G.y - hh < o.gapY - o.gapH / 2 || G.y + hh > o.gapY + o.gapH / 2)) hit = true; }
+    else if (Math.hypot(hx - o.x, G.y - o.y) < o.r + 16) hit = true;
+    if (hit) { if (boosting) { o.hit = true; G.smashed++; G.tricks += 75 * G.combo; addCombo(); sfx.smash(); burst(o.x - G.scroll + (o.w || 0) / 2, o.type === "pillars" ? G.y : o.y, THEMES[sel.city].ob[0], 22, 320); toast("SMASH +" + 75 * G.combo); } else return crash(); }
+  }
+  for (const it of G.items) if (!it.got && Math.abs(it.x - hx) < 30 && Math.abs(it.y - G.y) < 28) { it.got = true; G.hearts++; G.tricks += 10 * (G.combo - 1); G.fuel = Math.min(100, G.fuel + 3); addCombo(); sfx.heart(); burst(it.x - G.scroll, it.y, "#ff9ccc", 6, 120); }
+  if (G.y + 12 > GROUND) return crash();
+  G.obs = G.obs.filter((o) => o.x + 120 > G.scroll); G.items = G.items.filter((i) => i.x + 40 > G.scroll);
+  for (const p of G.parts) { p.x += p.vx * dt; p.y += p.vy * dt; p.vy += 400 * dt; p.life -= dt; } G.parts = G.parts.filter((p) => p.life > 0);
+  for (const p of G.trail) p.life -= dt; G.trail = G.trail.filter((p) => p.life > 0);
+  // HUD
+  $("hScore").textContent = fmt(score()); $("hHearts").textContent = "💖 " + G.hearts; $("hDist").textContent = fmt(G.dist / 10) + "m"; $("hCombo").textContent = "×" + G.combo;
+  $("fuel").firstElementChild.style.width = G.fuel + "%"; $("fuel").classList.toggle("full", G.fuel >= 100); $("bBoost").classList.toggle("ready", G.fuel >= 100 && G.boostT <= 0);
+  if (G.t > 4) $("tip").hidden = true;
+}
+
+function render(t) {
+  const th0 = THEMES[sel.city];
+  if (oy > 0) { ctx.fillStyle = th0.sky[0]; ctx.fillRect(0, 0, cv.width, oy + 2); ctx.fillStyle = th0.ground; ctx.fillRect(0, cv.height - oy - 2, cv.width, oy + 2); }
+  ctx.save(); ctx.translate(0, oy);
+  drawWorld(ctx, sel.city, state === "menu" ? t * 120 : G ? G.scroll : 0, cv.width, H * scale, t);
+  ctx.restore();
+  if (!G || state === "menu") return;
+  ctx.save(); ctx.translate(0, oy); ctx.scale(scale, scale);
+  const th = THEMES[sel.city];
+  for (const p of G.trail) { ctx.globalAlpha = Math.max(0, p.life / 0.8) * 0.8; heart(ctx, p.x - G.scroll, p.y, p.s, G.boostT > 0 ? "#ffb3d6" : th.particle); } ctx.globalAlpha = 1;
+  for (const it of G.items) if (!it.got) { const bob = Math.sin(t * 5 + it.x) * 3; heart(ctx, it.x - G.scroll, it.y + bob, 11, "#ff4fa3"); ctx.globalAlpha = .35; heart(ctx, it.x - G.scroll, it.y + bob, 16, "#ff9ccc"); ctx.globalAlpha = 1; }
+  for (const o of G.obs) {
+    if (o.hit) continue; const x = o.x - G.scroll;
+    if (o.type === "pillars") {
+      const top = o.gapY - o.gapH / 2, bot = o.gapY + o.gapH / 2;
+      for (const [y0, y1] of [[0, top], [bot, GROUND]]) {
+        const gr = ctx.createLinearGradient(x, 0, x + o.w, 0); gr.addColorStop(0, th.ob[0]); gr.addColorStop(1, th.ob[1]); ctx.fillStyle = gr; ctx.fillRect(x, y0, o.w, y1 - y0);
+        ctx.fillStyle = th.ob[0]; ctx.fillRect(x - 8, y0 === 0 ? y1 - 14 : y0, o.w + 16, 14);           // cap (torii / neon / bridge style)
+        ctx.fillStyle = th.win; ctx.globalAlpha = .7; for (let wy = (y0 === 0 ? 10 : y0 + 26); wy < y1 - 20; wy += 22) ctx.fillRect(x + 12, wy, o.w - 24, 5); ctx.globalAlpha = 1;
+      }
+    } else {
+      ctx.fillStyle = th.ob[1]; ctx.beginPath(); ctx.arc(x, o.y, o.r, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = th.ob[0]; ctx.lineWidth = 3; ctx.stroke();
+      ctx.fillStyle = th.win; ctx.beginPath(); ctx.arc(x, o.y, 6, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = th.ob[0]; ctx.lineWidth = 2; for (const s of [-1, 1]) { ctx.beginPath(); ctx.moveTo(x + s * 14, o.y - 18); ctx.lineTo(x + s * 30, o.y - 26); ctx.stroke(); ctx.beginPath(); ctx.ellipse(x + s * 30, o.y - 27, 12 + Math.sin(t * 50) * 2, 2.5, 0, 0, Math.PI * 2); ctx.stroke(); }
+    }
+  }
+  drawCar(ctx, car(), G.x, G.y, G.rot, 1.15, t, G.boostT > 0);
+  if (G.boostT > 0) { ctx.globalAlpha = .18; ctx.fillStyle = "#ff4fa3"; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
+  for (const p of G.parts) { ctx.globalAlpha = Math.max(0, p.life); ctx.fillStyle = p.col; ctx.fillRect(p.x - 2, p.y - 2, 4, 4); } ctx.globalAlpha = 1;
+  ctx.restore();
+}
+
+function frame(ts) {
+  const t = ts / 1000, dt = Math.min(0.033, t - (last || t)); last = t;
+  if (state === "play" && G && G.alive) update(dt);
+  render(t); requestAnimationFrame(frame);
+}
+
+/* ------------------------------------------------------------------ flow */
+function show(id) { for (const s of ["menu", "pause", "over"]) $(s).hidden = s !== id; const play = state === "play" || state === "paused"; $("hud").hidden = !play; $("ctrl").hidden = !play; }
+function startGame() {
+  store.set("handle", cleanHandle($("handle").value)); audio(); newGame(); state = "play"; holding = false; show(null);
+  $("tip").hidden = false; startMusic(sel.city);
+}
+function crash() {
+  G.alive = false; sfx.crash(); burst(G.x, G.y, "#fff", 30, 360); stopMusic(); state = "over";
+  const s = score(), best = Math.max(G.best, s); const isBest = s > G.best && s > 0; store.set("best-" + sel.city, best);
+  setTimeout(() => { $("oScore").textContent = fmt(s); $("newBest").hidden = !isBest; const city = CONFIG.cities.find((c) => c.key === sel.city).name;
+    $("oSub").textContent = `${city} · ${car().name} Roadster · best ${fmt(best)}`;
+    $("oKvs").innerHTML = [["Distance", fmt(G.dist / 10) + " m"], ["Hearts", G.hearts], ["Flips", G.flips], ["Smashes", G.smashed], ["Trick points", fmt(G.tricks)]].map(([k, v]) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`).join("");
+    makeCard(s, city).then((url) => { $("cardImg").src = url; });
+    show("over"); }, 650);
+}
+function myLink() { const h = store.get("handle", ""); return CONFIG.site + (h ? `?ref=${encodeURIComponent(h)}` : ""); }
+function shareText(s, city) {
+  const tags = [...CONFIG.tags, CONFIG.tokenTicker].filter(Boolean).join(" ");
+  return `I scored ${fmt(s)} flying my ${car().name} Roadster over ${city} in Flying Hearts 💖🚗\n\nBeat me 👇 ${tags}${invitedBy ? `\n(invited by @${invitedBy})` : ""}`;
+}
+let cardBlob = null;
+function makeCard(s, city) {
+  return new Promise((res) => {
+    const c = document.createElement("canvas"); c.width = 1200; c.height = 675; const g = c.getContext("2d");
+    drawWorld(g, sel.city, G.scroll, 1200, 675, G.t);
+    g.save(); g.scale(675 / H, 675 / H);
+    g.fillStyle = "rgba(10,6,16,.45)"; g.fillRect(0, 0, 1200 * H / 675, H);
+    drawCar(g, car(), 300, 330, -0.12, 4.2, G.t, true);
+    g.restore();
+    g.textAlign = "left"; g.fillStyle = "#fff"; g.font = '900 64px "Inter Tight",Arial'; g.fillText("FLYING HEARTS", 640, 150);
+    g.font = '800 30px "Inter Tight",Arial'; g.fillStyle = "#ffc2dd"; g.fillText(`${city} · ${car().name} Roadster`, 640, 200);
+    g.font = '900 150px "Inter Tight",Arial'; g.fillStyle = "#fff"; g.fillText(fmt(s), 630, 360);
+    g.font = '800 30px "Inter Tight",Arial'; g.fillStyle = "#ffe3f1"; g.fillText(`💖 ${G.hearts}  ·  ⟳ ${G.flips} flips  ·  🔥 ${G.smashed} smashed`, 640, 420);
+    const h = store.get("handle", ""); g.font = '700 26px "Inter Tight",Arial'; g.fillStyle = "#fff"; g.fillText(h ? `@${h}` : "", 640, 500);
+    g.fillStyle = "#ff9ccc"; g.fillText([...CONFIG.tags, CONFIG.tokenTicker].filter(Boolean).join("  "), 640, 545);
+    g.fillStyle = "#c9bfd0"; g.font = '700 22px "Inter Tight",Arial'; g.fillText("proofofreal.app/games/flyinghearts", 640, 600);
+    c.toBlob((b) => { cardBlob = b; res(URL.createObjectURL(b)); }, "image/png");
+  });
+}
+async function share() {
+  const city = CONFIG.cities.find((c) => c.key === sel.city).name, s = score(), text = shareText(s, city), url = myLink();
+  const file = cardBlob ? new File([cardBlob], "flying-hearts.png", { type: "image/png" }) : null;
+  try { if (file && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text: `${text}\n${url}` }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+  if (cardBlob) { const a = document.createElement("a"); a.href = URL.createObjectURL(cardBlob); a.download = "flying-hearts.png"; document.body.appendChild(a); a.click(); a.remove(); }
+  window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "noopener");
+  toast("Card saved — attach it to your post 📎");
+}
+
+/* ------------------------------------------------------------------ input */
+const isUI = (e) => e.target.closest && e.target.closest("button,input,a,.panel");
+addEventListener("pointerdown", (e) => {
+  if (state !== "play" || isUI(e)) return; audio(); holding = true;
+  if (e.timeStamp - lastTap < 260) flip(); lastTap = e.timeStamp;
+});
+addEventListener("pointerup", () => { holding = false; }); addEventListener("pointercancel", () => { holding = false; });
+addEventListener("keydown", (e) => {
+  if (e.target.tagName === "INPUT") return;
+  if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") { e.preventDefault(); if (state === "play") holding = true; else if (state === "menu" || state === "over") startGame(); }
+  if (e.code === "KeyF" || e.code === "ArrowRight") flip();
+  if (e.code === "KeyB" || e.code === "ShiftLeft" || e.code === "ShiftRight") boost();
+  if (e.code === "KeyP" || e.code === "Escape") togglePause();
+  if (e.code === "KeyM") setMuted(!muted);
+});
+addEventListener("keyup", (e) => { if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") holding = false; });
+$("bFlip").addEventListener("pointerdown", (e) => { e.stopPropagation(); flip(); });
+$("bBoost").addEventListener("pointerdown", (e) => { e.stopPropagation(); boost(); });
+function togglePause() { if (state === "play") { state = "paused"; holding = false; stopMusic(); show("pause"); } else if (state === "paused") { state = "play"; show(null); startMusic(sel.city); } }
+$("bPause").onclick = togglePause; $("resume").onclick = togglePause;
+$("quit").onclick = () => { state = "menu"; G = null; stopMusic(); show("menu"); };
+$("bMute").onclick = () => setMuted(!muted); setMuted(muted);
+$("play").onclick = startGame; $("again").onclick = startGame;
+$("toMenu").onclick = () => { state = "menu"; show("menu"); renderMenu(); };
+$("share").onclick = share;
+$("copyRef").onclick = async () => { const h = cleanHandle($("handle").value) || store.get("handle", ""); if (!h) { toast("Add your X handle in setup first"); return; } try { await navigator.clipboard.writeText(myLink()); toast("Link copied 🔗"); } catch { prompt("Your link", myLink()); } };
+document.addEventListener("visibilitychange", () => { if (document.hidden && state === "play") togglePause(); });
+
+if (qs.get("debug") === "1") window.__fh = { get G() { return G; }, get state() { return state; }, setHold: (v) => { holding = v; }, flip, boost, GROUND, tick: (dt) => { if (state === "play" && G && G.alive) update(dt); },
+  // renders the 1200×630 link-preview image (og.png) with the game's own drawing code
+  og: () => new Promise((res) => {
+    const c = document.createElement("canvas"); c.width = 1200; c.height = 630; const g = c.getContext("2d");
+    drawWorld(g, "tokyo", 900, 1200, 630, 1.2);
+    const v = g.createLinearGradient(0, 0, 1200, 0); v.addColorStop(0, "rgba(7,6,12,.1)"); v.addColorStop(.55, "rgba(7,6,12,.55)"); v.addColorStop(1, "rgba(7,6,12,.85)"); g.fillStyle = v; g.fillRect(0, 0, 1200, 630);
+    g.save(); g.scale(630 / H, 630 / H); for (let i = 0; i < 26; i++) heart(g, 110 + i * 9, 300 + Math.sin(i * .7) * 10, 3 + (i % 3), "rgba(255,156,204,.85)"); drawCar(g, CONFIG.cars[0], 380, 290, -0.14, 4.4, 1.2, true); g.restore();
+    g.fillStyle = "#fff"; g.font = '900 104px "Inter Tight",Arial'; g.textAlign = "left"; g.fillText("FLYING", 670, 220);
+    const gr = g.createLinearGradient(670, 240, 1120, 330); gr.addColorStop(0, "#fff"); gr.addColorStop(.45, "#ff9ccc"); gr.addColorStop(1, "#ff4fa3"); g.fillStyle = gr; g.fillText("HEARTS", 670, 320);
+    g.fillStyle = "#ffe3f1"; g.font = '800 27px "Inter Tight",Arial'; g.fillText("Tokyo · Singapore · Seoul · Da Nang", 674, 385);
+    g.fillStyle = "#c9bfd0"; g.font = '700 26px "Inter Tight",Arial'; g.fillText("Hold to fly · flip · boost", 674, 428);
+    g.fillStyle = "#ff9ccc"; g.font = '800 28px "Inter Tight",Arial'; g.fillText("$IMD  ·  @mememaxxers", 674, 520);
+    c.toBlob(res, "image/png");
+  }) };
+choosePilot(sel.pilot); renderMenu(); show("menu"); requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
