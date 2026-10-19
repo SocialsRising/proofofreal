@@ -74,11 +74,37 @@ body.clean .hud>div:first-child,body.clean .ctrl,body.clean .tip,body.clean .tim
 body.clean .hud .r{opacity:.22}
 /* game over */
 .big-score{font-size:3rem;font-weight:900;letter-spacing:-.05em;text-align:center;line-height:1;margin:6px 0}
-.kvs{display:grid;gap:4px;margin:12px 0;font-size:.86rem}
+.kvs{display:grid;grid-template-columns:1fr 1fr;column-gap:18px;row-gap:2px;margin:12px 0;font-size:.82rem}
 .kv{display:flex;justify-content:space-between;border-bottom:1px solid var(--line);padding:6px 0}
 .kv b{font-variant-numeric:tabular-nums}
 .badge{display:inline-block;background:var(--chrome);color:#2a0716;font-weight:900;font-size:.72rem;border-radius:999px;padding:3px 10px}
 .card-preview{width:100%;border-radius:14px;border:1px solid var(--line);display:block;margin-top:6px}
+.pilots{max-height:236px;overflow-y:auto;padding:2px;grid-template-columns:repeat(auto-fill,minmax(54px,1fr))}
+.pilots img{background:#2a1636}
+.chosen{display:flex;gap:12px;align-items:center;margin-bottom:10px}
+.chosen img{width:84px;height:84px;border-radius:14px;object-fit:cover;border:2px solid transparent;background:linear-gradient(#1d1026,#1d1026) padding-box,var(--chrome) border-box}
+.cname{font-weight:900;font-size:1.25rem;letter-spacing:-.02em}
+.csub{font-size:.76rem;color:var(--fg3)}
+.socials{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:14px}
+.socials a,.socials span{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--fg2);text-decoration:none;font-size:.68rem;font-weight:800;text-align:center}
+.socials a:hover{border-color:var(--pink2);color:var(--fg)}
+.socials svg{width:20px;height:20px;fill:currentColor}
+.socials span{opacity:.55}
+.socials small{font-size:.58rem;color:var(--fg3);font-weight:700}
+.result-top{display:grid;grid-template-columns:42% 1fr;gap:14px;align-items:center}
+.pcard{position:relative;border-radius:16px;overflow:hidden;aspect-ratio:3/4;border:2px solid transparent;background:linear-gradient(#1d1026,#1d1026) padding-box,var(--chrome) border-box;transform:rotate(-2deg);box-shadow:0 18px 40px -16px rgba(255,79,163,.6)}
+.pcard img{width:100%;height:100%;object-fit:cover;display:block}
+.pname{position:absolute;left:0;right:0;bottom:0;padding:18px 10px 8px;background:linear-gradient(transparent,rgba(10,4,16,.85));font-weight:900;font-size:1.05rem;letter-spacing:.02em;text-transform:uppercase;text-align:center}
+.result-main{text-align:center}
+.result-main .big-score{margin-top:2px}
+.quip{font-size:.92rem;font-weight:700;color:#ffe3f1;background:rgba(255,79,163,.12);border:1px solid rgba(255,156,204,.25);border-radius:14px;padding:9px 11px;margin:6px 0 0;text-align:left}
+.btn.mint{background:linear-gradient(135deg,#ffd76a,#ff9ccc 55%,#b47bff);color:#2a0716;border-color:transparent;margin-top:6px;box-shadow:0 10px 30px -10px rgba(255,190,90,.7)}
+.bark{position:fixed;left:14px;bottom:max(16px,env(safe-area-inset-bottom));z-index:4;display:flex;gap:9px;align-items:center;max-width:min(320px,62vw);background:rgba(20,10,28,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,156,204,.35);border-radius:18px;padding:6px 12px 6px 6px;opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s;pointer-events:none}
+.bark.show{opacity:1;transform:none}
+.bark img{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none;border:2px solid #ff9ccc}
+.bark b{display:block;font-size:.7rem;color:#ff9ccc;letter-spacing:.06em;text-transform:uppercase}
+.bark span{font-size:.88rem;font-weight:800}
+body.clean .bark{display:none}
 .loading{position:fixed;inset:0;display:grid;place-items:center;z-index:6;background:var(--bg);font-weight:900;letter-spacing:-.03em;font-size:1.4rem}
 </style>
 </head>
@@ -92,11 +118,13 @@ const CONFIG = {
   tags: ["$IMD", "@mememaxxers"],          // always in the share post (add the game token ticker below once it exists)
   tokenTicker: "",                          // e.g. "$VROOM" — added to the share post when set
   runSeconds: 60,                           // length of one run
+  mint: { label: "Mint Paper Hearts", url: "https://opensea.io/collection/paper-hearts-uwu" },
+  // Social row at the bottom of the menu and results screen. A link with no url shows as "soon".
   links: [
-    { label: "X / @mememaxxers", url: "https://x.com/mememaxxers" },
-    { label: "Discord", url: "https://discord.gg/krVPuyksQy" },
-    { label: "Token", url: "" },            // fill in when live
-    { label: "Collection", url: "" },
+    { icon: "opensea", label: "Paper Hearts", url: "https://opensea.io/collection/paper-hearts-uwu" },
+    { icon: "x", label: "@mememaxxers", url: "https://x.com/mememaxxers" },
+    { icon: "discord", label: "Discord", url: "https://discord.gg/krVPuyksQy" },
+    { icon: "token", label: "Token", url: "" },   // incoming — paste the link here when it's live
   ],
   // One city unlocks per day (midnight Pacific). The first city is always open.
   cities: [
@@ -112,16 +140,17 @@ const CONFIG = {
     { key: "gold", name: "Gold", tier: "50 IMD", body: ["#fff1b8", "#d9a62e"], trim: "#7a4d06", locked: false },
     { key: "diamond", name: "Diamond", tier: "500 IMD", body: ["#e6fdff", "#7fe3ff"], trim: "#ff4fa3", locked: false, shine: true },
   ],
-  // Preset pilots. Emoji pilots are placeholders — add image paths (e.g. "pilots/waifu01.png") to use art.
+  // Playable pilots: [name, card colour]. Art lives in waifus/<name-lowercase-dashed>.webp (card) and -face.webp (cockpit).
   pilots: [
-    { key: "heart", emoji: "💖", bg: ["#ff9ccc", "#ff4fa3"] },
-    { key: "cool", emoji: "😎", bg: ["#ffe08a", "#ff9a3c"] },
-    { key: "cat", emoji: "🐱", bg: ["#c3f0ff", "#5ab8ff"] },
-    { key: "fox", emoji: "🦊", bg: ["#ffd6b0", "#ff7a3c"] },
-    { key: "frog", emoji: "🐸", bg: ["#d7ffc9", "#4fd36a"] },
-    { key: "alien", emoji: "👾", bg: ["#e5d4ff", "#8a5cff"] },
-    { key: "robot", emoji: "🤖", bg: ["#e8ecf2", "#8f9aa8"] },
-    { key: "panda", emoji: "🐼", bg: ["#ffffff", "#bfc3cc"] },
+    ["Adi", "#76b9f5"], ["Akari", "#111111"], ["Angel", "#f6a6cd"], ["Ayo", "#ffbd9d"], ["Boom", "#ffbd9d"], ["Cacao", "#9ae5c1"],
+    ["Choco", "#76b9f5"], ["Chuc Nam Moi", "#ffffff"], ["Darling", "#76b9f5"], ["Dommy Mommy", "#ffe26b"], ["Elf On Shelf", "#ef6268"],
+    ["Fiona", "#111111"], ["Fufu", "#111111"], ["GG EZ", "#76b9f5"], ["Ghost", "#ffbd9d"], ["Gobbles", "#ffbd9d"], ["Gyro", "#ffffff"],
+    ["Hi", "#ffe26b"], ["Hmmph", "#111111"], ["Kazuha", "#ffffff"], ["Kobe", "#ffbd9d"], ["Koko", "#ffffff"], ["Mimi", "#ef6268"], ["Miso", "#ffbd9d"],
+    ["Misty", "#65ced0"], ["Momo", "#ffe26b"], ["NO", "#f6a6cd"], ["Nani", "#111111"], ["Nebula", "#9ae5c1"], ["Nini", "#ef6268"],
+    ["Noneya", "#b49aee"], ["Noob", "#f6a6cd"], ["Ohayo", "#9ae5c1"], ["Peace", "#ffbd9d"], ["Peak", "#b49aee"], ["Pow Pow", "#76b9f5"],
+    ["QUEEN", "#76b9f5"], ["R L", "#ef6268"], ["Reaper", "#76b9f5"], ["Ruki", "#b49aee"], ["Sabrina", "#b49aee"], ["Su Casa", "#ffe26b"],
+    ["Suki", "#f6a6cd"], ["The Method", "#111111"], ["Toes", "#65ced0"], ["Twenty", "#ffffff"], ["Vanity", "#76b9f5"], ["Yaomi", "#ef6268"],
+    ["Yuu", "#76b9f5"], ["Zuki", "#ffffff"],
   ],
 };
 </script>
@@ -140,6 +169,7 @@ const CONFIG = {
   <button id="bBoost" aria-label="Boost"><span>🔥</span>BOOST</button>
 </div>
 <div class="toast" id="toast"></div>
+<div class="bark" id="bark"><img id="barkImg" alt=""><div><b id="barkName"></b><span id="barkText"></span></div></div>
 <div class="tip" id="tip" hidden></div>
 
 <!-- MENU -->
@@ -151,7 +181,8 @@ const CONFIG = {
     <div class="row cities" id="cities"></div>
     <div class="label"><span>Roadster</span><span>by $IMD tier</span></div>
     <div class="row cars" id="cars"></div>
-    <div class="label"><span>Pilot</span><span>or upload your NFT</span></div>
+    <div class="label"><span>Pilot</span><span>50 Paper Hearts · or upload your NFT</span></div>
+    <div class="chosen"><img id="chosenImg" alt=""><div><div class="cname" id="chosenName"></div><div class="csub">Tap a face to choose who flies with you 💖</div></div></div>
     <div class="row pilots" id="pilots"></div>
     <input type="file" id="file" accept="image/*" hidden>
     <div class="label"><span>Your X handle</span><span>optional · shows on the city screens</span></div>
@@ -159,7 +190,7 @@ const CONFIG = {
     <button class="btn primary big" id="play">Play</button>
     <div class="hint" id="refNote" hidden></div>
     <div class="hint">🎬 Recording a clip? Tap 🎬 (or press H) in-game to hide the HUD.</div>
-    <div class="links" id="links"></div>
+    <div class="socials" data-socials></div>
   </div>
 </div>
 
@@ -169,10 +200,18 @@ const CONFIG = {
 <!-- GAME OVER -->
 <div class="ui" id="over" hidden>
   <div class="panel">
-    <div style="text-align:center"><span class="badge" id="newBest" hidden>New best!</span></div>
-    <div class="big-score" id="oScore">0</div>
-    <p class="sub" id="oSub"></p>
+    <div class="result-top">
+      <div class="pcard" id="oCard"><img id="oWaifu" alt=""><div class="pname" id="oName"></div></div>
+      <div class="result-main">
+        <div><span class="badge" id="newBest" hidden>New best!</span></div>
+        <div class="big-score" id="oScore">0</div>
+        <p class="sub" id="oSub"></p>
+        <p class="quip" id="oQuip"></p>
+      </div>
+    </div>
     <div class="kvs" id="oKvs"></div>
+    <a class="btn mint big" id="mintBtn" target="_blank" rel="noreferrer">💖 Mint Paper Hearts</a>
+    <div class="hint" id="mintNote"></div>
     <img class="card-preview" id="cardImg" alt="Your share card">
     <div class="btns">
       <button class="btn primary" id="share">Share on X</button>
@@ -183,12 +222,18 @@ const CONFIG = {
       <button class="btn" id="toMenu">Change setup</button>
     </div>
     <div class="hint">Post your card tagging $IMD and @mememaxxers — top scores, most-viral posts and referrals get rewarded.</div>
+    <div class="socials" data-socials></div>
   </div>
 </div>
 
-<script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js" } }</script>
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.min.js", "three/addons/": "./vendor/addons/" } }</script>
 <script type="module">
 import * as THREE from "three";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { ShaderPass } from "three/addons/postprocessing/ShaderPass.js";
 
 /* ------------------------------------------------------------------ setup */
 const $ = (id) => document.getElementById(id);
@@ -247,10 +292,31 @@ const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0x000000, 45, 330);
 const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 2400);
 const MAXDPR = Math.min(2, window.devicePixelRatio || 1);
-const QSTEPS = [1, 0.8, 0.65, 0.5];
-let qi = clamp(store.get("q", 0), 0, QSTEPS.length - 1), baseFov = 55, fovKick = 0, camBack = 1;
+// quality ladder: bloom + film grade first, then resolution. Drops a step automatically if a device can't hold ~50fps.
+const QSTEPS = [{ pr: 1, post: true }, { pr: 0.8, post: true }, { pr: 0.8, post: false }, { pr: 0.65, post: false }, { pr: 0.5, post: false }];
+let qi = clamp(store.get("q2", 0), 0, QSTEPS.length - 1), baseFov = 55, fovKick = 0, camBack = 1;
+const composer = new EffectComposer(renderer), renderPass = new RenderPass(scene, camera);
+const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.55, 0.5, 0.9);
+const gradePass = new ShaderPass({
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uTint: { value: new THREE.Color() } },
+  vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime; uniform vec3 uTint; varying vec2 vUv;
+    void main(){
+      vec2 c = vUv - 0.5; float r = dot(c, c), ca = 0.012 * r;
+      vec3 col = vec3(texture2D(tDiffuse, vUv + c * ca).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - c * ca).b);
+      float l = dot(col, vec3(0.299, 0.587, 0.114));
+      col = mix(col, col + uTint * 0.07, (1.0 - l) * 0.9);          // tint the shadows with the city colour
+      col = mix(col, col * col * (3.0 - 2.0 * col), 0.18);            // a touch of filmic contrast
+      col *= mix(1.0, 0.7, smoothstep(0.12, 0.62, r));               // vignette
+      float n = fract(sin(dot(vUv * 1000.0 + fract(uTime) * 61.0, vec2(12.9898, 78.233))) * 43758.5453);
+      col += (n - 0.5) * 0.03;                                        // film grain
+      gl_FragColor = vec4(col, 1.0);
+    }`,
+});
+composer.addPass(renderPass); composer.addPass(bloom); composer.addPass(new OutputPass()); composer.addPass(gradePass);
 function resize() {
-  renderer.setPixelRatio(Math.max(0.6, MAXDPR * QSTEPS[qi])); renderer.setSize(innerWidth, innerHeight, false);
+  const pr = Math.max(0.6, MAXDPR * QSTEPS[qi].pr);
+  renderer.setPixelRatio(pr); renderer.setSize(innerWidth, innerHeight, false); composer.setPixelRatio(pr); composer.setSize(innerWidth, innerHeight);
   const a = innerWidth / innerHeight; camera.aspect = a;
   // keep ~78° of horizontal view; portrait phones get a taller FOV (capped) and a camera pulled further back
   baseFov = clamp(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(39)) / a) * 180 / Math.PI, 52, 80);
@@ -264,14 +330,14 @@ addEventListener("resize", resize);
 const VERT = /* glsl */`
 #include <common>
 #include <fog_pars_vertex>
-varying vec3 vWP; varying vec3 vN; varying vec3 vSeed; varying vec2 vUv; varying float vH;
+varying vec3 vWP; varying vec3 vN; varying vec3 vSeed; varying vec2 vUv; varying float vH; varying vec3 vS;
 void main() {
   mat4 m = modelMatrix;
   #ifdef USE_INSTANCING
   m = m * instanceMatrix;
   #endif
   vec4 wp = m * vec4(position, 1.0);
-  vWP = wp.xyz; vN = normalize(mat3(m) * normal); vUv = uv; vH = length(m[1].xyz);
+  vWP = wp.xyz; vN = normalize(mat3(m) * normal); vUv = uv; vH = length(m[1].xyz); vS = vec3(length(m[0].xyz), vH, length(m[2].xyz));
   #ifdef USE_INSTANCING_COLOR
   vSeed = instanceColor;
   #else
@@ -286,13 +352,14 @@ const HASH = `float hash(vec2 p){ p = fract(p * vec2(123.34, 456.21)); p += dot(
 const BLD_FRAG = /* glsl */`
 #include <common>
 #include <fog_pars_fragment>
-uniform vec3 uBase; uniform vec3 uWin; uniform vec3 uAcc;
-varying vec3 vWP; varying vec3 vN; varying vec3 vSeed; varying vec2 vUv; varying float vH;
+uniform vec3 uBase; uniform vec3 uWin; uniform vec3 uAcc; uniform vec3 uAcc2; uniform float uTime;
+varying vec3 vWP; varying vec3 vN; varying vec3 vSeed; varying vec2 vUv; varying float vH; varying vec3 vS;
 ${HASH}
 void main() {
   vec3 n = normalize(vN);
   float diff = 0.6 + 0.4 * max(0.0, dot(n, normalize(vec3(-0.5, 0.7, 0.6))));
-  vec3 col = uBase * diff * mix(0.6, 1.25, clamp(vWP.y / 70.0, 0.0, 1.0));
+  vec3 col = uBase * (0.78 + 0.44 * vSeed.y) * diff * mix(0.6, 1.25, clamp(vWP.y / 70.0, 0.0, 1.0));
+  col = mix(col, uAcc * 0.22, 0.18 * step(0.82, vSeed.z));
   if (abs(n.y) < 0.5) {
     float u = abs(n.x) > 0.5 ? vWP.z : vWP.x;
     vec2 cell = vec2(u / 1.25, (vWP.y - 0.6) / 1.9);
@@ -300,9 +367,11 @@ void main() {
     vec2 a = smoothstep(vec2(0.24, 0.3) - fw, vec2(0.24, 0.3) + fw, f) * (1.0 - smoothstep(vec2(0.76, 0.78) - fw, vec2(0.76, 0.78) + fw, f));
     float win = a.x * a.y;
     float thr = 0.45 + vSeed.z * 0.45;
-    float lit = step(thr, hash(id + vSeed.xy * 173.0));
+    float lit = max(step(thr, hash(id + vSeed.xy * 173.0)), step(0.955, hash(vec2(id.y * 0.37, vSeed.x * 91.0))) * step(0.45, vSeed.y));   // + whole lit office floors
     vec3 wc = uWin * (0.35 + 0.75 * hash(id.yx + vSeed.zx * 31.0));
     wc = mix(wc, vec3(0.7, 0.85, 1.0), step(0.86, hash(id * 2.7 + vSeed.yz)));
+    wc = mix(wc, uAcc * 0.9, step(0.94, hash(id * 1.7 + vSeed.zy)));
+    wc *= 0.7 + 0.55 * f.y;
     vec3 lc = mix(col * 0.5 + vec3(0.004, 0.008, 0.018), wc * 1.35, lit);
     vec3 avg = mix(col, uWin * 0.9, (1.0 - thr) * 0.25);
     float far = smoothstep(0.3, 0.9, max(fw.x, fw.y));
@@ -311,6 +380,8 @@ void main() {
     float top = (1.0 - vUv.y) * vH;
     col += uAcc * 2.2 * step(0.62, vSeed.x) * (1.0 - smoothstep(0.25, 0.45, top));
     col += uWin * 0.12 * (1.0 - smoothstep(0.0, 5.0, vWP.y));
+    float faceW = abs(n.x) > 0.5 ? vS.z : vS.x, ex = min(vUv.x, 1.0 - vUv.x) * faceW;
+    col += uAcc2 * 1.9 * (1.0 - smoothstep(0.07, 0.2, ex)) * step(0.72, vSeed.y) * (0.5 + 0.5 * sin(vWP.y * 0.35 - uTime * 3.0 + vSeed.x * 20.0));
   } else {
     col = uBase * 0.55;
   }
@@ -460,6 +531,13 @@ const SUN_DIR = new THREE.Vector3(0.32, 0.1, -1).normalize();
 const skyMat = new THREE.ShaderMaterial({ vertexShader: SKY_VERT, fragmentShader: SKY_FRAG, side: THREE.BackSide, depthWrite: false, fog: false,
   uniforms: { c0: { value: new THREE.Color() }, c1: { value: new THREE.Color() }, c2: { value: new THREE.Color() }, c3: { value: new THREE.Color() }, uSun: { value: new THREE.Color() }, uSunDir: { value: SUN_DIR } } });
 const sky = new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 16), skyMat); sky.renderOrder = -3; sky.frustumCulled = false; scene.add(sky);
+const cloudTex = canvasTex(256, 128, (g) => {
+  const blob = (x, y, r, a) => { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, `rgba(255,255,255,${a})`); gr.addColorStop(0.6, `rgba(255,255,255,${a * 0.6})`); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); };
+  const r = rng(7); for (let i = 0; i < 26; i++) blob(30 + r() * 196, 52 + r() * 40 - Math.abs(r() - 0.5) * 30, 18 + r() * 34, 0.35 + r() * 0.4);
+  g.globalCompositeOperation = "source-atop"; const sh = g.createLinearGradient(0, 30, 0, 128); sh.addColorStop(0, "rgba(255,255,255,0)"); sh.addColorStop(1, "rgba(255,140,190,.55)"); g.fillStyle = sh; g.fillRect(0, 0, 256, 128);
+});
+const clouds = Array.from({ length: 14 }, (_, i) => { const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex, transparent: true, depthWrite: false, fog: false, opacity: 0.6 }));
+  const a = (i / 14 - 0.5) * 2.6 + rand(-0.08, 0.08), R = rand(540, 680); m.userData = { a, R, y: rand(85, 210) }; m.scale.set(rand(200, 340), rand(70, 120), 1); m.renderOrder = -1.5; m.frustumCulled = false; scene.add(m); return m; });
 const bandMat = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, fog: false, side: THREE.BackSide });
 const band = new THREE.Mesh(new THREE.CylinderGeometry(760, 760, 150, 96, 1, true), bandMat); band.renderOrder = -2; band.frustumCulled = false; scene.add(band);
 const groundMat = shaderMat(GROUND_FRAG, { uBase: { value: new THREE.Color() }, uLine: { value: new THREE.Color() }, uWin: { value: new THREE.Color() }, uWater: { value: 0 }, uCross: { value: 0 }, uTime: { value: 0 } });
@@ -499,16 +577,25 @@ function hide(pl, i) { pl.mesh.setMatrixAt(i, ZERO); pl.mesh.instanceMatrix.need
 function tint(pl, i, col) { pl.mesh.setColorAt(i, col); pl.mesh.instanceColor.needsUpdate = true; }
 
 // buildings
-const bldMat = shaderMat(BLD_FRAG, { uBase: { value: new THREE.Color() }, uWin: { value: new THREE.Color() }, uAcc: { value: new THREE.Color() } });
+const bldMat = shaderMat(BLD_FRAG, { uBase: { value: new THREE.Color() }, uWin: { value: new THREE.Color() }, uAcc: { value: new THREE.Color() }, uAcc2: { value: new THREE.Color() }, uTime: { value: 0 } });
 const BLD = pool(UNIT.boxBase, bldMat, 2 * 3 * NSLOT);
+const TIER = pool(UNIT.boxBase, bldMat, 2 * 3 * NSLOT), ANT = pool(UNIT.boxBase, std("#1a1420", { metalness: 0.6, roughness: 0.4 }), 2 * 3 * NSLOT);
+const beaconMat = new THREE.MeshBasicMaterial({ map: TEX.glow, color: 0xff3048, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false });
+const BEACON = pool(UNIT.plane, beaconMat, 2 * 3 * NSLOT, 2);
 const ROWS = [{ front: 15, d: [8, 14], h: [14, 50] }, { front: 30, d: [10, 18], h: [28, 90] }, { front: 49, d: [12, 26], h: [40, 140] }];
 const buildings = []; for (let side = -1; side <= 1; side += 2) for (let row = 0; row < 3; row++) for (let k = 0; k < NSLOT; k++) buildings.push({ i: take(BLD), side, row, k, z: 0 });
 function layBuilding(b) {
   const R = ROWS[b.row], w = rand(7.5, 11), d = rand(R.d[0], R.d[1]), h = R.h[0] + Math.pow(Math.random(), 1.6) * (R.h[1] - R.h[0]);
   const sp = setPiece, clear = sp && b.row < 2 && (sp.side === 0 || sp.side === b.side) && b.z > sp.z + sp.hide[0] - 6 && b.z < sp.z + sp.hide[1] + 6;
-  if (clear || (b.row === 0 && Math.random() < 0.1)) { hide(BLD, b.i); return; }   // set-piece clearing or a cross street
-  put(BLD, b.i, b.side * (R.front + d / 2), 0, b.z, d, h, w);
+  if (clear || (b.row === 0 && Math.random() < 0.1)) { hide(BLD, b.i); hide(TIER, b.i); hide(ANT, b.i); hide(BEACON, b.i); return; }   // set-piece clearing or a cross street
+  const x = b.side * (R.front + d / 2); let top = h;
+  put(BLD, b.i, x, 0, b.z, d, h, w);
   tint(BLD, b.i, _c.setRGB(Math.random(), Math.random(), Math.random()));
+  if (Math.random() < 0.55) {   // stepped setback crown
+    const th = h * rand(0.15, 0.42); put(TIER, b.i, x - b.side * rand(0, d * 0.15), h, b.z + rand(-1, 1), d * rand(0.5, 0.78), th, w * rand(0.5, 0.78)); tint(TIER, b.i, _c.setRGB(Math.random(), Math.random(), Math.random())); top += th;
+  } else hide(TIER, b.i);
+  if (Math.random() < 0.4) { const ah = rand(4, 13), ax = x + rand(-1.5, 1.5), az = b.z + rand(-1.5, 1.5); put(ANT, b.i, ax, top, az, 0.22, ah, 0.22); put(BEACON, b.i, ax, top + ah, az, 2.2, 2.2, 1); }
+  else { hide(ANT, b.i); hide(BEACON, b.i); }
 }
 
 // obstacles, drones, hearts (+ halos), golden hearts, street traffic
@@ -527,7 +614,7 @@ const traffic = []; for (let k = 0; k < 56; k++) traffic.push({ i: take(TRAFFIC)
 // lantern strings hung across the street (chochin / lotus / Hoi An silk / Chinatown)
 const LN_PER = 9, LSTR = 14, LSPACE = 34;
 const LANT = pool(UNIT.lantern, new THREE.MeshBasicMaterial({ toneMapped: false }), LSTR * LN_PER, 1);
-const LGLOW = pool(UNIT.plane, new THREE.MeshBasicMaterial({ map: TEX.glow, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, opacity: 0.8 }), LSTR * LN_PER, 2);
+const LGLOW = pool(UNIT.plane, new THREE.MeshBasicMaterial({ map: TEX.glow, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, opacity: 0.42 }), LSTR * LN_PER, 2);
 const wirePos = new Float32Array(LSTR * (LN_PER + 1) * 6), wireGeo = new THREE.BufferGeometry();
 wireGeo.setAttribute("position", new THREE.BufferAttribute(wirePos, 3).setUsage(THREE.DynamicDrawUsage));
 const wire = new THREE.LineSegments(wireGeo, new THREE.LineBasicMaterial({ color: 0x1a1016 })); wire.frustumCulled = false; scene.add(wire);
@@ -538,7 +625,7 @@ function layString(s) {
   for (let k = 0; k < LN_PER; k++) {
     const [x, y] = pts[k + 1], i = s.base + k, ly = y - 0.75 * sc[1];
     put(LANT, i, x, ly, s.z, sc[0], sc[1], sc[0]); tint(LANT, i, _c.set(pick(th.lanterns)));
-    put(LGLOW, i, x, ly, s.z + 0.7, 3.4, 3.4, 1); tint(LGLOW, i, _c);
+    put(LGLOW, i, x, ly, s.z + 0.7, 2.6, 2.6, 1); tint(LGLOW, i, _c);
   }
   for (let k = 0; k <= LN_PER; k++) { const [x0, y0] = pts[k], [x1, y1] = pts[k + 1]; wirePos.set([x0, y0, s.z, x1, y1, s.z], (s.k * (LN_PER + 1) + k) * 6); }
   wireGeo.attributes.position.needsUpdate = true;
@@ -579,7 +666,11 @@ function drawJumbo() {
   g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#fff"; g.shadowColor = th.line; g.shadowBlur = 24;
   const chrome = () => { const gr = g.createLinearGradient(0, 40, 0, 220); gr.addColorStop(0, "#fff"); gr.addColorStop(0.5, "#ff9ccc"); gr.addColorStop(1, "#ff4fa3"); return gr; };
   if (fever) { const s = 1 + Math.sin(clock * 12) * 0.06; g.save(); g.translate(W / 2, 110); g.scale(s, s); g.font = '900 110px "Inter Tight",sans-serif'; g.fillStyle = chrome(); g.fillText("FEVER", 0, 0); g.restore(); g.font = '900 46px "Inter Tight",sans-serif'; g.fillText("💖 ×2 💖", W / 2, 200); }
-  else if (slide === 0) { g.drawImage(pilotCanvas, 26, 30, 190, 190); const h = store.get("handle", ""); g.textAlign = "left"; g.font = '900 50px "Inter Tight",sans-serif'; g.fillText(h ? "@" + h : "PILOT", 232, 100, 266); g.font = '800 34px "Inter Tight",sans-serif'; g.fillStyle = "#ffc2dd"; g.fillText("is flying 💖", 232, 160, 266); }
+  else if (slide === 0) {
+    g.shadowBlur = 0; if (pilotFullReady) g.drawImage(pilotFull, 0, 0, pilotFull.width, pilotFull.height, 12, 12, 232, 232); else g.drawImage(pilotCanvas, 26, 30, 190, 190); g.shadowBlur = 24;
+    const h = store.get("handle", ""); g.textAlign = "left"; g.font = '900 54px "Inter Tight",sans-serif'; g.fillText(pilot().name.toUpperCase(), 260, 92, 240);
+    g.font = '800 30px "Inter Tight",sans-serif'; g.fillStyle = "#ffc2dd"; g.fillText(h ? `& @${h}` : "is flying 💖", 260, 146, 240); if (h) g.fillText("are flying 💖", 260, 186, 240);
+  }
   else if (slide === 1) { g.font = '900 150px "Inter Tight",sans-serif'; g.fillStyle = chrome(); g.fillText("$IMD", W / 2, 124); }
   else if (slide === 2) { const [a, b] = GREET[cityKey]; g.font = '900 62px "Inter Tight","Hiragino Sans","Malgun Gothic",sans-serif'; g.fillText(a, W / 2, 88, 470); g.font = '900 72px "Inter Tight",sans-serif'; g.fillStyle = th.win; g.fillText(b, W / 2, 168, 470); }
   else if (state === "play" && G) { g.font = '800 36px "Inter Tight",sans-serif'; g.fillText("SCORE", W / 2, 62); g.font = '900 110px "Inter Tight",sans-serif'; g.fillStyle = chrome(); g.fillText(fmt(score()), W / 2, 150, 480); }
@@ -917,7 +1008,7 @@ function disposeTree(o) {
 /* ------------------------------------------------------------------ audio (procedural per-city loop + sfx) */
 let AC = null, master = null, muted = store.get("muted", false), seq = null, noiseBuf = null;
 function audio() {
-  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = muted ? 0 : 0.5; master.connect(AC.destination);
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); master = AC.createGain(); master.gain.value = muted ? 0 : 0.5; const comp = AC.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4; master.connect(comp).connect(AC.destination);
     noiseBuf = AC.createBuffer(1, AC.sampleRate * 0.2, AC.sampleRate); const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; } catch { AC = null; } }
   if (AC && AC.state === "suspended") AC.resume();
   return AC;
@@ -941,27 +1032,118 @@ const sfx = {
   time: () => { if (!AC) return; const t = AC.currentTime; [880, 660, 440].forEach((f, i) => tone(f, t + i * 0.17, i === 2 ? 0.45 : 0.15, "square", 0.06)); },
   tick: () => AC && tone(1200, AC.currentTime, 0.05, "square", 0.03),
 };
-function startMusic(cityKey) {
+/* ------------------------------------------------------------------ the soundtrack: one composed 60-second song per city, locked to the run clock
+   intro → verse → chorus → breakdown + riser → drop → FEVER (the last 10 s) → final chord. Set CONFIG.cities[].track to an mp3 to use a produced track instead. */
+const SONGS = {
+  tokyo:     { title: "Neon Sakura Drive", bpm: 120, root: 57, scale: [0, 2, 3, 7, 8], lead: "koto", style: "citypop", seed: 11,
+    chords: [[5, 9, 12, 16], [7, 11, 14, 17], [4, 7, 11, 14], [9, 12, 16, 19]] },
+  seoul:     { title: "Light Stick Love", bpm: 128, root: 55, scale: [0, 3, 5, 7, 10], lead: "supersaw", fill: "gayageum", style: "edm", seed: 23,
+    chords: [[8, 12, 15, 19], [3, 7, 10, 14], [10, 14, 17, 21], [0, 3, 7, 10]] },
+  danang:    { title: "Lanterns on the Han", bpm: 100, root: 60, scale: [0, 2, 4, 7, 9], lead: "danbau", style: "lofi", seed: 37,
+    chords: [[0, 4, 7, 11], [9, 12, 16, 19], [5, 9, 12, 16], [7, 11, 14, 17]] },
+  singapore: { title: "Marina Nights", bpm: 108, root: 62, scale: [0, 2, 4, 7, 9], lead: "marimba", style: "tropical", seed: 53,
+    chords: [[0, 4, 7, 11], [7, 11, 14, 19], [9, 12, 16, 21], [5, 9, 12, 16]] },
+};
+const DRUMS = {   // 16-step patterns: kick, snare/clap, hat, bass steps
+  citypop:  { k: "x.....x...x.....", s: "....x.......x...", h: "x.x.x.x.x.x.x.x.", b: [0, 3, 6, 8, 11, 14], clap: false },
+  edm:      { k: "x...x...x...x...", s: "....x.......x...", h: "..x...x...x...x.", b: [2, 6, 10, 14], clap: true },
+  lofi:     { k: "x......x..x.....", s: "....x.......x...", h: "x.x.x.x.x.x.x.x.", b: [0, 7, 10], clap: false, swing: 0.09 },
+  tropical: { k: "x...x...x...x...", s: "....x.......x...", h: "xxxxxxxxxxxxxxxx", b: [0, 3, 6, 10, 12], clap: true, stabs: true },
+};
+const RHYTHM = { citypop: "x.x.xx.xx.x.x...", edm: "x.xx.x.xx.x.x.x.", lofi: "x...x.x.x..x....", tropical: "x.x..x.xx.x..x.." };
+function motif(seed, style, lift = 0) {
+  const r = rng(seed), rh = RHYTHM[style], out = []; let d = 4 + ((r() * 3) | 0);
+  for (let k = 0; k < 16; k++) {
+    if (rh[k] !== "x") { out.push(null); continue; }
+    d = clamp(d + [-2, -1, -1, 0, 1, 1, 2][(r() * 7) | 0], 0, 9); let len = 1; for (let j = k + 1; j < 16 && rh[j] !== "x"; j++) len++;
+    out.push({ d: k >= 12 && lift ? 5 + lift : d + (k >= 8 ? lift : 0), len: Math.min(len, 4) });
+  }
+  return out;
+}
+let musicOut = null, revSend = null, dlySend = null, noiseLong = null, trackEl = null;
+const mtof = (m) => 440 * Math.pow(2, (m - 69) / 12);
+function musicBus() {
+  if (musicOut) return true; if (!audio()) return false;
+  const sr = AC.sampleRate;
+  musicOut = AC.createGain(); musicOut.gain.value = 0.85; musicOut.connect(master);
+  const ir = AC.createBuffer(2, sr * 2.4, sr); for (let c = 0; c < 2; c++) { const d = ir.getChannelData(c); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 3.2); }
+  const conv = AC.createConvolver(); conv.buffer = ir; revSend = AC.createGain(); revSend.gain.value = 0.32; revSend.connect(conv).connect(musicOut);
+  const dl = AC.createDelay(1), fb = AC.createGain(), lp = AC.createBiquadFilter(); dl.delayTime.value = 0.28; fb.gain.value = 0.3; lp.type = "lowpass"; lp.frequency.value = 2800;
+  dlySend = AC.createGain(); dlySend.gain.value = 0.22; dlySend.connect(dl); dl.connect(lp).connect(fb).connect(dl); lp.connect(musicOut);
+  noiseLong = AC.createBuffer(1, sr * 2, sr); const nd = noiseLong.getChannelData(0); for (let i = 0; i < nd.length; i++) nd[i] = Math.random() * 2 - 1;
+  return true;
+}
+function env(t, a, peak, dur, dest, rel = 0.05) { const g = AC.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(a + 0.01, dur) + rel); g.connect(dest); return g; }
+function vosc(type, f, t, dur, out) { const o = AC.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t); o.connect(out); o.start(t); o.stop(t + dur + 0.1); return o; }
+function noise(t, dur, out, buf = noiseBuf) { const s = AC.createBufferSource(); s.buffer = buf; s.loop = true; s.connect(out); s.start(t); s.stop(t + dur); return s; }
+function filt(type, f, q = 0.7) { const b = AC.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; }
+const INST = {
+  kick(t, v = 1) { const g = env(t, 0.003, 0.9 * v, 0.3, musicOut); const o = vosc("sine", 150, t, 0.32, g); o.frequency.exponentialRampToValueAtTime(42, t + 0.13); },
+  snare(t, v = 1) { const f = filt("bandpass", 1900, 0.8); f.connect(env(t, 0.002, 0.32 * v, 0.15, musicOut)); noise(t, 0.2, f); vosc("triangle", 190, t, 0.1, env(t, 0.002, 0.14 * v, 0.08, musicOut)); },
+  clap(t, v = 1) { for (const d of [0, 0.011, 0.023]) { const f = filt("bandpass", 1300, 1.4); f.connect(env(t + d, 0.001, 0.28 * v, d === 0.023 ? 0.16 : 0.02, musicOut)); noise(t + d, 0.2, f); } const r = filt("bandpass", 1300, 1); r.connect(env(t, 0.001, 0.08 * v, 0.3, revSend)); noise(t, 0.3, r); },
+  hat(t, v = 1, open = false) { const f = filt("highpass", 8200); f.connect(env(t, 0.001, 0.07 * v, open ? 0.24 : 0.035, musicOut)); noise(t, 0.3, f); },
+  shaker(t, v = 1) { const f = filt("bandpass", 6500, 1.2); f.connect(env(t, 0.004, 0.045 * v, 0.05, musicOut)); noise(t, 0.1, f); },
+  crash(t) { const f = filt("highpass", 3800); f.connect(env(t, 0.002, 0.13, 1.7, musicOut)); f.connect(env(t, 0.002, 0.06, 1.7, revSend)); noise(t, 1.8, f, noiseLong); },
+  riser(t, dur) { const f = filt("bandpass", 400, 2.5); f.frequency.setValueAtTime(400, t); f.frequency.exponentialRampToValueAtTime(7000, t + dur); const g = AC.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.14, t + dur); g.gain.linearRampToValueAtTime(0, t + dur + 0.02); f.connect(g).connect(musicOut); noise(t, dur + 0.05, f, noiseLong); },
+  bass(t, m, dur, v = 1) { const lp = filt("lowpass", 900, 4); lp.frequency.setValueAtTime(1100, t); lp.frequency.exponentialRampToValueAtTime(240, t + Math.min(dur, 0.3)); lp.connect(env(t, 0.006, 0.2 * v, dur, musicOut)); vosc("sawtooth", mtof(m), t, dur, lp); vosc("sine", mtof(m), t, dur, env(t, 0.006, 0.22 * v, dur, musicOut)); },
+  pad(t, ms, dur, v = 1, bright = 1) { const lp = filt("lowpass", 900 + 900 * bright); const g = env(t, 0.35, 0.05 * v, dur, lp, 0.6); lp.connect(musicOut); lp.connect(revSend); for (const m of ms) for (const c of [-8, 8]) { const o = vosc("sawtooth", mtof(m), t, dur + 0.7, g); o.detune.value = c; } },
+  stab(t, ms, v = 1) { const lp = filt("lowpass", 2400); const g = env(t, 0.004, 0.06 * v, 0.16, musicOut); lp.connect(g); lp.connect(revSend); for (const m of ms) vosc("square", mtof(m), t, 0.2, lp); },
+  koto(t, m, dur, v = 1) { const f = mtof(m), g = env(t, 0.003, 0.2 * v, Math.min(0.9, dur * 1.6), musicOut, 0.2); g.connect(revSend); g.connect(dlySend);
+    const o = vosc("triangle", f * 1.03, t, 1.2, g); o.frequency.exponentialRampToValueAtTime(f, t + 0.05); vosc("sine", f * 2, t, 0.4, env(t, 0.002, 0.06 * v, 0.25, g)); },
+  gayageum(t, m, dur, v = 1) { const f = mtof(m), g = env(t, 0.004, 0.16 * v, Math.min(1, dur * 1.8), musicOut, 0.2); g.connect(revSend);
+    const o = vosc("triangle", f, t, 1.3, g), l = AC.createOscillator(), lg = AC.createGain(); l.frequency.value = 6; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(f * 0.012, t + 0.3); l.connect(lg).connect(o.frequency); l.start(t); l.stop(t + 1.3); },
+  supersaw(t, m, dur, v = 1) { const f = mtof(m), lp = filt("lowpass", 3200, 1); const g = env(t, 0.01, 0.07 * v, dur * 0.95, lp, 0.12); lp.connect(musicOut); lp.connect(dlySend); lp.connect(revSend); for (const c of [-14, 0, 14]) vosc("sawtooth", f, t, dur + 0.2, g).detune.value = c; },
+  danbau(t, m, dur, v = 1) {   // Vietnamese monochord: slide up into the note, vibrato that blooms
+    const f = mtof(m), d = Math.max(0.35, dur), g = env(t, 0.03, 0.2 * v, d, musicOut, 0.25); g.connect(revSend); g.connect(dlySend);
+    const o = vosc("sine", f * 0.89, t, d + 0.3, g); o.frequency.exponentialRampToValueAtTime(f, t + 0.13); vosc("sine", f * 2, t, d + 0.3, env(t, 0.03, 0.05 * v, d, g));
+    const l = AC.createOscillator(), lg = AC.createGain(); l.frequency.value = 5.5; lg.gain.setValueAtTime(0, t); lg.gain.linearRampToValueAtTime(f * 0.016, t + d); l.connect(lg).connect(o.frequency); l.start(t); l.stop(t + d + 0.3); },
+  marimba(t, m, dur, v = 1) { const f = mtof(m), g = env(t, 0.002, 0.2 * v, 0.45, musicOut, 0.1); g.connect(revSend); vosc("sine", f, t, 0.6, g); vosc("sine", f * 4, t, 0.1, env(t, 0.001, 0.05 * v, 0.06, g)); },
+  bell(t, m, dur, v = 1) { const f = mtof(m), g = env(t, 0.002, 0.05 * v, 0.9, musicOut, 0.3); g.connect(revSend); g.connect(dlySend); vosc("sine", f, t, 1.2, g); vosc("sine", f * 2.76, t, 0.5, env(t, 0.001, 0.02 * v, 0.3, g)); },
+};
+function startMusic(cityKey, offset = 0) {
   stopMusic(); if (!audio()) return;
-  const m = THEMES[cityKey].music, r = rng(cityKey.length * 99);
-  const note = (deg, oct = 0) => m.root * Math.pow(2, (m.scale[((deg % m.scale.length) + m.scale.length) % m.scale.length] + 12 * (oct + Math.floor(deg / m.scale.length))) / 12);
-  const arp = Array.from({ length: 16 }, () => (r() < 0.75 ? Math.floor(r() * 8) : null));
-  const bass = [0, null, null, 0, null, null, 4, null, 0, null, null, 0, null, 3, null, null];
-  let n = 0, next = AC.currentTime + 0.05;
+  const city = CONFIG.cities.find((c) => c.key === cityKey);
+  if (city && city.track) { trackEl = new Audio(city.track); trackEl.muted = muted; trackEl.currentTime = offset; trackEl.play().catch(() => {}); return; }
+  if (!musicBus()) return;
+  const S = SONGS[cityKey], D = DRUMS[S.style], sd = 60 / S.bpm / 4, A = motif(S.seed, S.style), B = motif(S.seed + 7, S.style, 2);
+  const barLen = sd * 16, feverBar = Math.floor((RUN - 10) / barLen), marks = [0, Math.round(6 / barLen), Math.round(24 / barLen), Math.round(44 / barLen), feverBar];
+  let step = Math.ceil(offset / sd); const t0 = AC.currentTime + 0.06 - step * sd;
+  const note = (d, oct = 1) => S.root + 12 * oct + S.scale[((d % 5) + 5) % 5] + 12 * Math.floor(d / 5);
+  const lead = (t, m, dur, v) => INST[S.lead](t, m, dur, v);
   seq = setInterval(() => {
-    const fever = G && G.fever, step = 60 / (m.bpm * (fever ? 1.15 : 1)) / 4;
-    while (next < AC.currentTime + 0.12) {
-      const i = n % 16, bar = Math.floor(n / 16) % 4, shift = [0, 0, 3, 4][bar];
-      if (i % 4 === 0) tone(110, next, 0.18, "sine", 0.22, 0.35);       // kick
-      if (i % 2 === 1 || fever) hat(next);
-      if (bass[i] !== null) tone(note(bass[i] + shift, -2), next, step * 2.6, "triangle", 0.11);
-      if (arp[i] !== null) tone(note(arp[i] + shift, fever ? 1 : 0), next, step * 1.6, m.wave, m.wave === "sawtooth" || m.wave === "square" ? 0.035 : 0.06);
-      next += step; n++;
+    while (t0 + step * sd < AC.currentTime + 0.16) {
+      const T = step * sd, t = t0 + T, i = step % 16, bar = Math.floor(step / 16), chord = S.chords[bar % 4];
+      if (T >= RUN) {   // ending: big final chord + cymbal
+        INST.crash(t); INST.kick(t); INST.pad(t, chord.map((c) => S.root + c), 2.4, 1.4, 1.5); lead(t, note(5), 1.6, 1.1); INST.bell(t, note(10), 1.5, 1.2);
+        clearInterval(seq); seq = null; return;
+      }
+      const sec = bar < marks[1] ? "intro" : bar < marks[2] ? "A" : bar < Math.round(38 / barLen) ? "B" : bar < marks[3] ? "break" : bar < feverBar ? "C" : "fever";
+      const sw = D.swing && i % 4 === 2 ? D.swing * sd * 4 : 0, ts = t + sw, full = sec !== "intro" && sec !== "break";
+      if (i === 0 && marks.includes(bar) && bar > 0) INST.crash(t);
+      // drums
+      if (full && D.k[i] === "x") INST.kick(t, sec === "fever" ? 1.1 : 1);
+      if (full && D.s[i] === "x") (D.clap ? INST.clap : INST.snare)(t, sec === "B" || sec === "fever" ? 1.1 : 0.9);
+      if (sec === "fever" || (D.h[i] === "x" && sec !== "break")) (S.style === "tropical" ? INST.shaker : INST.hat)(ts, sec === "intro" ? 0.5 : i % 4 === 0 ? 0.7 : 1, S.style === "citypop" && i === 14 && sec !== "intro");
+      if (sec === "break" && i % 4 === 0) INST.hat(t, 0.5);
+      // bass + chords
+      if (full && D.b.includes(i)) INST.bass(t, S.root - 12 + (chord[0] % 12) + (S.style === "citypop" && i % 8 === 6 ? 12 : 0), sd * (S.style === "lofi" ? 5 : 2.4), 1);
+      if (i === 0) INST.pad(t, chord.map((c) => S.root + c), barLen, sec === "intro" || sec === "break" ? 1.3 : 0.9, sec === "fever" ? 1.6 : 1);
+      if (D.stabs && full && [2, 6, 10, 14].includes(i)) INST.stab(t, chord.slice(0, 3).map((c) => S.root + 12 + c), 1);
+      // lead: motif A in the verse, lifted motif B in the chorus, an octave up in FEVER
+      if (i % 2 === 0) {
+        const slot = (bar % 2) * 8 + i / 2, M = sec === "B" || sec === "fever" ? B : A, n = M[slot];
+        const play = sec === "intro" ? bar >= 1 && slot < 8 : sec === "break" ? slot % 4 === 0 : true;
+        if (n && play) lead(ts, note(n.d, sec === "fever" ? 2 : 1), n.len * sd * 2, sec === "intro" ? 0.7 : 1);
+        if (S.fill && sec === "B" && !n && slot % 2 === 1) INST[S.fill](ts, note((slot % 5) + 3, 1), sd * 2, 0.6);
+      }
+      if ((sec === "fever" || (sec === "B" && bar % 2 === 1)) && i % (sec === "fever" ? 1 : 2) === 0) INST.bell(t, S.root + 24 + chord[i % 4], sd, sec === "fever" ? 0.9 : 0.6);   // sparkle arps
+      if (sec === "break" && bar === marks[3] - 1 && i === 0) INST.riser(t, barLen);
+      step++;
     }
   }, 25);
 }
-function stopMusic() { if (seq) clearInterval(seq); seq = null; }
-function setMuted(v) { muted = v; store.set("muted", v); if (master) master.gain.value = v ? 0 : 0.5; $("bMute").textContent = v ? "🔇" : "🔊"; }
+function stopMusic() { if (seq) clearInterval(seq); seq = null; if (trackEl) { trackEl.pause(); trackEl = null; } }
+function setMuted(v) { muted = v; store.set("muted", v); if (master) master.gain.value = v ? 0 : 0.5; if (trackEl) trackEl.muted = v; $("bMute").textContent = v ? "🔇" : "🔊"; }
 
 /* ------------------------------------------------------------------ city theming */
 const pmrem = new THREE.PMREMGenerator(renderer);
@@ -974,6 +1156,9 @@ function applyCity(k) {
   bldMat.uniforms.uBase.value.set(th.mid).lerp(new THREE.Color(th.far), 0.4); bldMat.uniforms.uWin.value.set(th.win); bldMat.uniforms.uAcc.value.set(th.line);
   groundMat.uniforms.uBase.value.set(th.ground); groundMat.uniforms.uLine.value.set(th.line); groundMat.uniforms.uWin.value.set(th.win); groundMat.uniforms.uWater.value = th.water ? 1 : 0; groundMat.uniforms.uCross.value = th.cross;
   barMat.uniforms.uStyle.value = th.style;
+  bldMat.uniforms.uAcc2.value.set({ tokyo: "#5fe1ff", seoul: "#62f0ff", danang: "#ff5a4a", singapore: "#ff6ad5" }[k]);
+  const cc = new THREE.Color(th.sky[2]).lerp(new THREE.Color(th.sun), 0.55); clouds.forEach((c) => c.material.color.copy(cc));
+  gradePass.uniforms.uTint.value.set(th.line);
   droneMat.emissive.set(th.ob[1]);
   ambMat.map = TEX[th.amb.tex]; ambMat.size = th.amb.size; ambMat.blending = th.amb.add ? THREE.AdditiveBlending : THREE.NormalBlending; ambMat.needsUpdate = true;
   hemi.color.set(th.sky[1]); hemi.groundColor.set(th.ground); key.color.set("#ffe6f2"); rim.color.set(th.sun);
@@ -1043,24 +1228,25 @@ function recycle(cz, dt) {
 const now = () => Date.now();
 const cityOpen = (c, i) => PREVIEW_ALL || i === 0 || now() >= Date.parse(c.unlock);
 const dayName = (iso) => new Date(iso).toLocaleDateString(undefined, { weekday: "short", timeZone: "America/Los_Angeles" });
-let sel = { city: store.get("city", "tokyo"), car: store.get("car", "paper"), pilot: store.get("pilot", "heart") };
+const PILOTS = CONFIG.pilots.map(([name, bg]) => { const key = name.toLowerCase().replace(/\s+/g, "-"); return { key, name, bg, src: `waifus/${key}-face.webp`, full: `waifus/${key}.webp` }; });
+let sel = { city: store.get("city", "tokyo"), car: store.get("car", "paper"), pilot: store.get("pilot", "") };
+if (sel.pilot !== "custom" && !PILOTS.some((p) => p.key === sel.pilot)) sel.pilot = pick(PILOTS).key;
 if (!CONFIG.cities.some((c, i) => c.key === sel.city && cityOpen(c, i))) sel.city = CONFIG.cities[0].key;
 if (!CONFIG.cars.some((c) => c.key === sel.car && !c.locked)) sel.car = CONFIG.cars[0].key;
 $("handle").value = store.get("handle", "") ? "@" + store.get("handle", "") : "";
 $("handle").addEventListener("change", () => store.set("handle", cleanHandle($("handle").value)));
 if (invitedBy) { $("refNote").hidden = false; $("refNote").textContent = `Invited by @${invitedBy} 💖`; }
 
-function emojiPilot(p, size = 128) {
-  const c = document.createElement("canvas"); c.width = c.height = size; const g = c.getContext("2d");
-  const gr = g.createLinearGradient(0, 0, size, size); gr.addColorStop(0, p.bg[0]); gr.addColorStop(1, p.bg[1]); g.fillStyle = gr; g.fillRect(0, 0, size, size);
-  g.font = `${size * 0.62}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(p.emoji, size / 2, size / 2 + size * 0.04);
-  return c;
+// the chosen pilot: face crop for the cockpit/bubbles, full card for the city screens + results + share card
+const pilotFull = new Image(); let pilotFullReady = false;
+const pilot = () => (sel.pilot === "custom" ? { key: "custom", name: "You", bg: "#ff9ccc", src: store.get("customPilot", ""), full: store.get("customPilot", "") } : PILOTS.find((p) => p.key === sel.pilot) || PILOTS[0]);
+function setPilotImage(p) {
+  pilotReady = false; pilotImg.onload = () => { pilotReady = true; drawPilotTex(); previews = {}; if (state === "menu") renderMenu(); }; pilotImg.src = p.src;
+  pilotFullReady = false; pilotFull.onload = () => { pilotFullReady = true; }; pilotFull.src = p.full;
 }
-function setPilotImage(src) { pilotReady = false; pilotImg.onload = () => { pilotReady = true; drawPilotTex(); previews = {}; if (state === "menu") renderMenu(); }; pilotImg.src = src; }
 function choosePilot(key) {
-  sel.pilot = key; store.set("pilot", key);
-  if (key === "custom") { const d = store.get("customPilot", null); if (d) setPilotImage(d); }
-  else { const p = CONFIG.pilots.find((x) => x.key === key) || CONFIG.pilots[0]; setPilotImage(p.src || emojiPilot(p).toDataURL()); }
+  if (key === "custom" && !store.get("customPilot", null)) return;
+  sel.pilot = key; store.set("pilot", key); setPilotImage(pilot());
   renderMenu();
 }
 // 3D car thumbnails, rendered once per car/pilot with the main renderer
@@ -1088,21 +1274,31 @@ function renderMenu() {
     const im = new Image(); im.alt = car.name; im.src = carPreview(car); b.appendChild(im); b.insertAdjacentHTML("beforeend", `<b>${car.name}</b><small>${car.tier}</small>` + (car.locked ? `<span class="lock">🔒</span>` : ""));
     b.onclick = () => { sel.car = car.key; store.set("car", car.key); setCar(); renderMenu(); }; $("cars").appendChild(b);
   });
-  $("pilots").innerHTML = ""; CONFIG.pilots.forEach((p) => {
-    const b = document.createElement("button"); b.className = "opt pilot" + (sel.pilot === p.key ? " on" : "");
-    if (p.src) b.innerHTML = `<img src="${p.src}" alt="">`; else b.appendChild(emojiPilot(p, 96));
-    b.onclick = () => choosePilot(p.key); $("pilots").appendChild(b);
-  });
-  const custom = store.get("customPilot", null);
-  if (custom) { const b = document.createElement("button"); b.className = "opt pilot" + (sel.pilot === "custom" ? " on" : ""); b.innerHTML = `<img src="${custom}" alt="Your pilot">`; b.onclick = () => choosePilot("custom"); $("pilots").appendChild(b); }
-  const up = document.createElement("button"); up.className = "opt pilot up"; up.title = "Upload your NFT or art"; up.textContent = "＋"; up.onclick = () => $("file").click(); $("pilots").appendChild(up);
+  const cur = pilot(); $("chosenImg").src = cur.full; $("chosenName").textContent = cur.name;
+  if (!$("pilots").childElementCount) {   // build the 50-face grid once, then just move the highlight
+    const up = document.createElement("button"); up.className = "opt pilot up"; up.title = "Upload your NFT or art"; up.textContent = "＋"; up.onclick = () => $("file").click(); $("pilots").appendChild(up);
+    const custom = document.createElement("button"); custom.className = "opt pilot"; custom.dataset.key = "custom"; custom.title = "Your upload"; custom.onclick = () => choosePilot("custom"); $("pilots").appendChild(custom);
+    PILOTS.forEach((p) => { const b = document.createElement("button"); b.className = "opt pilot"; b.dataset.key = p.key; b.title = p.name; b.innerHTML = `<img src="${p.src}" alt="${p.name}" loading="lazy" decoding="async">`; b.onclick = () => choosePilot(p.key); $("pilots").appendChild(b); });
+  }
+  const customSrc = store.get("customPilot", null), cb = $("pilots").querySelector('[data-key="custom"]');
+  cb.hidden = !customSrc; if (customSrc && !cb.firstChild) cb.innerHTML = `<img src="${customSrc}" alt="Your pilot">`; else if (customSrc) cb.firstChild.src = customSrc;
+  $("pilots").querySelectorAll("[data-key]").forEach((b) => b.classList.toggle("on", b.dataset.key === sel.pilot));
 }
+const ICONS = {
+  opensea: '<svg viewBox="0 0 24 24"><path d="M12 1a11 11 0 1 0 0 22 11 11 0 0 0 0-22Zm-5.6 11.4 3-4.7c.1-.2.4-.2.5 0 .6 1.3 1 2.9.8 3.9l-.4.8H6.6c-.2 0-.3-.2-.2-.3v.3Zm12.4 1.6v.6c0 .1 0 .2-.2.2-.4.2-1.6.8-2.1 1.5-1.3 1.8-2.3 2.2-4.2 2.2H8.1c-2.4 0-4.3-2-4.3-4.4v-.1c0-.1.1-.2.2-.2h3.8c.1 0 .2.1.2.2 0 .3.1.5.2.7.3.5.8.8 1.4.8h1.9v-1.5H9.6c-.1 0-.2-.2-.1-.3l.2-.3c.2-.3.6-.9.9-1.5.3-.4.5-.9.6-1.3l.1-.4V8.5l-.1-.2V6.9c0-.3.3-.6.6-.6s.6.3.6.6v.8c1.5.4 2.6 1.6 3.4 2.7 1 1.4 1.6 2.9 1.6 3.5v.5c0 .1-.1.2-.2.2h-.1l.1-.1Z"/></svg>',
+  x: '<svg viewBox="0 0 24 24"><path d="M17.8 2h3.3l-7.2 8.3L22.4 22h-6.6l-5.2-6.8L4.6 22H1.3l7.7-8.8L.9 2h6.8l4.7 6.2L17.8 2Zm-1.2 18h1.8L6.8 3.9H4.9L16.6 20Z"/></svg>',
+  discord: '<svg viewBox="0 0 24 24"><path d="M20.3 4.4A19.6 19.6 0 0 0 15.4 3l-.6 1.3a18 18 0 0 0-5.6 0L8.6 3a19.5 19.5 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18.1a19.7 19.7 0 0 0 6 3l1.3-2.1c-.7-.3-1.4-.6-2-1l.5-.4a14 14 0 0 0 12.1 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.6 19.6 0 0 0 6-3c.5-5.2-.8-9.7-3.5-13.7ZM8 15.3c-1.2 0-2.2-1.1-2.2-2.4S6.8 10.5 8 10.5s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Z"/></svg>',
+  token: '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 15.6-1-.9C7.5 13.6 5.3 11.6 5.3 9.2 5.3 7.2 6.8 5.7 8.8 5.7c1.1 0 2.2.5 2.9 1.4.7-.9 1.8-1.4 2.9-1.4 2 0 3.5 1.5 3.5 3.5 0 2.4-2.2 4.4-5.5 7.5l-.6.9Z"/></svg>',
+};
+document.querySelectorAll("[data-socials]").forEach((el) => {
+  el.innerHTML = CONFIG.links.map((l) => l.url ? `<a href="${l.url}" target="_blank" rel="noreferrer">${ICONS[l.icon] || ""}${l.label}</a>` : `<span>${ICONS[l.icon] || ""}${l.label}<small>coming soon</small></span>`).join("");
+});
 $("file").addEventListener("change", (e) => {
   const f = e.target.files && e.target.files[0]; if (!f) return; const rd = new FileReader();
   rd.onload = () => { const im = new Image(); im.onload = () => { const s = 256, c = document.createElement("canvas"); c.width = c.height = s; const g = c.getContext("2d"); const k = Math.max(s / im.width, s / im.height); g.drawImage(im, (s - im.width * k) / 2, (s - im.height * k) / 2, im.width * k, im.height * k); const d = c.toDataURL("image/jpeg", 0.88); store.set("customPilot", d); choosePilot("custom"); }; im.src = rd.result; };
   rd.readAsDataURL(f); e.target.value = "";
 });
-$("links").innerHTML = CONFIG.links.filter((l) => l.url).map((l) => `<a href="${l.url}" target="_blank" rel="noreferrer">${l.label} ↗</a>`).join("");
+$("mintBtn").href = CONFIG.mint.url; $("mintBtn").textContent = "💖 " + CONFIG.mint.label;
 
 /* ------------------------------------------------------------------ game state */
 let state = "menu", G = null, last = 0, lastTap = 0, clock = 0, carObj = null;
@@ -1111,7 +1307,7 @@ const car = () => CONFIG.cars.find((c) => c.key === sel.car) || CONFIG.cars[0];
 function setCar() { if (carObj) { scene.remove(carObj); disposeTree(carObj); } carObj = makeCar(car()); scene.add(carObj); }
 function newGame() {
   G = { t: 0, speed: 58, dist: 0, hearts: 0, golds: 0, tricks: 0, bonus: 0, penalty: 0, flips: 0, smashed: 0, nears: 0, hits: 0, combo: 1, maxCombo: 1, comboT: 0, flipT: -1, fuel: 0, boostT: 0, inv: 0,
-    obs: [], items: [], nextZ: -150, alive: true, ended: false, fever: false, lastSec: RUN, best: store.get("best-" + sel.city, 0), shake: 0 };
+    obs: [], items: [], nextZ: -210, alive: true, ended: false, fever: false, lastSec: RUN, best: store.get("best-" + sel.city, 0), shake: 0 };
   Object.assign(P, { x: 0, y: 7, z: 0, vx: 0, vy: 0, roll: 0, spin: 0, pitch: 0 }); steer.x = 0; steer.y = 7;
   clearPools(); PTS.life.fill(0); layWorld(0); camera.position.set(0, 9, 10);
 }
@@ -1130,27 +1326,31 @@ function wall(o, x0, x1, y0, y1, z0, z1, hex) {
 function heartAt(x, y, z, gold = false) { const i = take(gold ? GOLD : HEART); if (i < 0) return; G.items.push({ x, y, z, i, gold, got: false, ph: Math.random() * 6 }); }
 function heartLine(x0, y0, x1, y1, z0, z1, n) { for (let k = 0; k < n; k++) { const t = n === 1 ? 0.5 : k / (n - 1); heartAt(lerp(x0, x1, t), lerp(y0, y1, t), lerp(z0, z1, t)); } }
 function spawnPattern(z) {
-  const th = THEMES[sel.city], lvl = clamp(G.t / (RUN - 5), 0, 1), col = th.ob[0], r = Math.random(), o = addObs(z);
-  if (r < 0.3) {                                     // gate with a hole, framed by a torii / palace gate / bamboo arch / Supertree arch
-    const w = 10 - lvl * 3.3 + rand(0, 1.2), h = 8 - lvl * 2.4 + rand(0, 1), cx = rand(-(XMAX - 1.5), XMAX - 1.5), cy = rand(YMIN + 1.2, YMAX - 3);
+  const th = THEMES[sel.city], lvl = level(), col = th.ob[0], o = addObs(z);
+  const opts = [["gate", 3], ["beams", 2], ["pillars", 2]];
+  if (G.t > 14) opts.push(["drones", 1.4]); if (G.t > 20) opts.push(["train", 1.3]); if (G.t > 30) opts.push(["cross", 1.2]);
+  let roll = Math.random() * opts.reduce((a, [, w]) => a + w, 0), kind = "gate"; for (const [k, w] of opts) { roll -= w; if (roll <= 0) { kind = k; break; } }
+  if (kind === "train" && !TRAINS.some((t) => !t.busy)) kind = "gate";
+  if (kind === "gate") {                                     // gate with a hole, framed by a torii / palace gate / bamboo arch / Supertree arch
+    const w = lerp(13, 6.8, lvl) + rand(0, 1.2), h = lerp(10.5, 5.6, lvl) + rand(0, 1), cx = rand(-(XMAX - 1.5), XMAX - 1.5), cy = rand(YMIN + 1.2, YMAX - 3);
     const x0 = cx - w / 2, x1 = cx + w / 2, y0 = Math.max(0, cy - h / 2), y1 = cy + h / 2;
     wall(o, -WALL, x0, 0, TOPY, z - 0.5, z + 0.5, col); wall(o, x1, WALL, 0, TOPY, z - 0.5, z + 0.5, col);
     wall(o, x0, x1, 0, y0, z - 0.5, z + 0.5, col); wall(o, x0, x1, y1, TOPY, z - 0.5, z + 0.5, col);
     const fr = FRAMES.find((f) => !f.busy); if (fr) { setFrame(fr, cx, y1, w, z); o.frame = fr; }
     heartLine(clamp(cx * 0.4, -XMAX, XMAX), lerp(7, cy, 0.5), cx, clamp(cy, YMIN, YMAX), z + 22, z, 4); heartAt(cx, clamp(cy, YMIN, YMAX), z - 7);
-  } else if (r < 0.46) {                             // sky bridges: go over / under
-    const lv = [3.6, 9.4, 15.2], n = Math.random() < 0.35 + lvl * 0.4 ? 2 : 1, pk = lv.slice().sort(() => Math.random() - 0.5), used = pk.slice(0, n), free = pk.slice(n);
+  } else if (kind === "beams") {                     // sky bridges: go over / under
+    const lv = [3.6, 9.4, 15.2], n = Math.random() < lvl * 0.75 ? 2 : 1, pk = lv.slice().sort(() => Math.random() - 0.5), used = pk.slice(0, n), free = pk.slice(n);
     for (const y of used) wall(o, -WALL, WALL, y - 1.4, y + 1.4, z - 0.7, z + 0.7, col);
     const fy = free[(Math.random() * free.length) | 0]; heartLine(rand(-6, 6), fy, rand(-4, 4), fy, z + 16, z - 6, 5);
-  } else if (r < 0.62) {                             // pillars: go left / right
-    const xs = [-8.5, -2.8, 2.8, 8.5].sort(() => Math.random() - 0.5), n = Math.random() < 0.3 + lvl * 0.5 ? 3 : 2;
+  } else if (kind === "pillars") {                   // pillars: go left / right
+    const xs = [-8.5, -2.8, 2.8, 8.5].sort(() => Math.random() - 0.5), n = Math.random() < lvl * 0.75 ? 3 : 2;
     for (const x of xs.slice(0, n)) wall(o, x - 1.6, x + 1.6, 0, TOPY, z - 1.6, z + 1.6, col);
     const fx = xs[n]; heartLine(fx * 0.5, rand(4, 14), fx, rand(4, 14), z + 18, z, 5);
-  } else if (r < 0.76) {                             // patrol drones
-    for (let k = 0; k < 3; k++) { const i = take(DRONE), j = take(RING); if (i < 0 || j < 0) break;
-      o.drones.push({ i, j, x: 0, y: rand(3, 15), z: z - k * 17, amp: rand(6, 10), w: rand(1.1, 1.8) + lvl, ph: Math.random() * 6 }); tint(RING, j, _c.set(col)); }
+  } else if (kind === "drones") {                    // patrol drones
+    for (let k = 0; k < (lvl > 0.55 ? 3 : 2); k++) { const i = take(DRONE), j = take(RING); if (i < 0 || j < 0) break;
+      o.drones.push({ i, j, x: 0, y: rand(3, 15), z: z - k * 17, amp: rand(6, 10), w: rand(0.9, 1.4) + lvl, ph: Math.random() * 6 }); tint(RING, j, _c.set(col)); }
     o.zMax = z + 3; o.zMin = z - 40; heartLine(rand(-8, 8), rand(3, 15), rand(-8, 8), rand(3, 15), z + 12, z - 40, 6);
-  } else if (r < 0.9 && TRAINS.some((t) => !t.busy)) { // a bullet train / MRT / KTX / Reunification Express crossing the street
+  } else if (kind === "train") {                     // a bullet train / MRT / KTX / Reunification Express crossing the street
     const tr = TRAINS.find((t) => !t.busy), y = rand(4, 14), dir = Math.random() < 0.5 ? -1 : 1, v = dir * rand(24, 32), T = (P.z - z) / Math.max(40, G.speed), xa = rand(-12, 12);
     tr.busy = true; tr.g.visible = true; tr.x = xa - v * T; tr.v = v; tr.y = y; tr.z = z;
     tr.box = { x0: 0, x1: 0, y0: y - 1.7, y1: y + 1.7, z0: z - 1.9, z1: z + 1.9, i: -1 }; o.boxes.push(tr.box); o.train = tr; o.zMax = z + 2;
@@ -1161,16 +1361,39 @@ function spawnPattern(z) {
     wall(o, -WALL, WALL, y - 1.3, y + 1.3, z - 0.7, z + 0.7, col); wall(o, x - 1.5, x + 1.5, 0, TOPY, z - 0.7, z + 0.7, col);
     const qx = x + (Math.random() < 0.5 ? -5 : 5), qy = y + (Math.random() < 0.5 ? -4 : 4); heartLine(qx * 0.5, 8, clamp(qx, -XMAX, XMAX), clamp(qy, YMIN + 0.5, YMAX), z + 16, z, 4);
   }
-  const gap = 64 - lvl * 20 + rand(0, 18) + (G.fever ? 6 : 0);
-  if (G.fever || Math.random() < 0.55) {             // free heart arcs between obstacles (sometimes a golden heart at the end)
+  const gap = lerp(122, 50, lvl) + rand(0, 16) + (G.fever ? 6 : 0);
+  if (G.fever || Math.random() < lerp(0.85, 0.5, lvl)) {             // free heart arcs between obstacles (sometimes a golden heart at the end)
     const zm = z - gap / 2, a = rand(-6, 6), b = rand(4, 14);
     for (let k = 0; k < 6; k++) heartAt(a + Math.sin(k * 0.6) * 3, b + Math.cos(k * 0.5) * 2, zm + 8 - k * 4);
     if (Math.random() < (G.fever ? 0.5 : 0.2)) heartAt(a + Math.sin(3.6) * 3, b + Math.cos(3) * 2, zm - 18, true);
   }
   G.nextZ = z - gap;
 }
-function addCombo() { G.combo = clamp(G.combo + 1, 1, 8); G.maxCombo = Math.max(G.maxCombo, G.combo); G.comboT = 2.6; }
+const level = () => clamp(Math.pow(G.t / (RUN - 8), 1.25), 0, 1);   // 0 → 1 difficulty over the run
+function addCombo() { if (G.combo === 4) bark("combo"); G.combo = clamp(G.combo + 1, 1, 8); G.maxCombo = Math.max(G.maxCombo, G.combo); G.comboT = 2.6; }
 function toast(text, bad = false) { const t = $("toast"); t.textContent = text; t.classList.toggle("bad", bad); t.classList.add("show"); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove("show"), 700); }
+// the pilot talks: little visual-novel bubbles at key moments
+const LINES = {
+  start: ["Let's fly! 💖", "Hold on tight~", "Show me what you got!", "Ready? Ikuzo!", "Don't crash, okay?"],
+  gold: ["Kyaa~ shiny! ✨", "Gold!! 💛", "Ooh, pretty~"],
+  hit: ["Ouch!!", "Hey! Watch it~", "Baka! 😤", "Itai…", "My hair!!"],
+  combo: ["Sugoi! 🔥", "We're on fire!", "Again! Again!", "So cool~ 💖"],
+  fever: ["FEVER TIME!! 💖", "Last ten seconds — go go go!"],
+  near: ["Whoa, close!", "Eek!", "Too close~ 💦"],
+};
+let barkT = 0;
+function bark(kind, force = false) {
+  if (!force && clock - barkT < 2.2) return; barkT = clock;
+  const p = pilot(); $("barkImg").src = p.src; $("barkName").textContent = p.name; $("barkText").textContent = pick(LINES[kind]);
+  const b = $("bark"); b.classList.add("show"); clearTimeout(bark.h); bark.h = setTimeout(() => b.classList.remove("show"), 1900);
+}
+function quip(s) {
+  const n = pilot().name;
+  if (G.hits === 0) return `${n}: “Not a single scratch? …Okay, I'm impressed. 💍”`;
+  if (s >= 7000) return `${n}: “You're kind of amazing, you know that? 💖”`;
+  if (s >= 4000) return `${n}: “Not bad~ one more run? I want a higher score!”`;
+  return `${n}: “Mou~ we crashed so much! Again! 😤”`;
+}
 function flash() { const f = $("flash"); f.classList.add("on"); setTimeout(() => f.classList.remove("on"), 60); }
 function flip() { if (state !== "play" || !G.alive || G.flipT >= 0) return; G.flipT = 0; sfx.flip(); }
 function boost() { if (state !== "play" || !G.alive || G.fuel < 100 || G.boostT > 0) return; G.fuel = 0; G.boostT = 2.0; sfx.boost(); toast("BOOST 🔥"); }
@@ -1184,16 +1407,16 @@ function shatter(o, hex) { burst(P.x, P.y, P.z - 3, hex, 46, 16, 0.75); _c.set("
 function smash(o) { shatter(o, THEMES[sel.city].ob[0]); G.smashed++; const pts = 75 * G.combo; G.tricks += pts; addCombo(); sfx.smash(); G.shake = 0.35; toast("SMASH +" + pts); }
 function hitObs(o) {   // no game over — you crash through, lose the streak and some points, and keep flying
   shatter(o, "#ff3355"); G.hits++; const pen = 100; G.penalty += pen; G.combo = 1; G.comboT = 0; G.fuel = Math.max(0, G.fuel - 20); G.inv = 1.1; G.shake = 0.55;
-  sfx.hit(); flash(); toast(`OUCH −${pen} · streak lost`, true);
+  sfx.hit(); flash(); toast(`OUCH −${pen} · streak lost`, true); bark("hit", true);
 }
-function closeCall() { const pts = 50 * G.combo; G.tricks += pts; G.nears++; addCombo(); sfx.near(); toast(`CLOSE CALL +${pts}`); }
+function closeCall() { const pts = 50 * G.combo; G.tricks += pts; G.nears++; addCombo(); sfx.near(); toast(`CLOSE CALL +${pts}`); bark("near"); }
 
 function update(dt) {
   G.t += dt; const boosting = G.boostT > 0, left = RUN - G.t;
-  if (left <= 10 && !G.fever) { G.fever = true; document.body.classList.add("fever"); toast("FEVER TIME 💖×2"); fwT = 0; }
+  if (left <= 10 && !G.fever) { G.fever = true; document.body.classList.add("fever"); toast("FEVER TIME 💖×2"); fwT = 0; bark("fever", true); }
   const sec = Math.ceil(Math.max(0, left)); if (sec !== G.lastSec) { G.lastSec = sec; $("hTime").textContent = sec; $("hTime").classList.toggle("low", sec <= 10); if (sec <= 5 && sec > 0) sfx.tick(); }
   if (left <= 0) return endRun();
-  G.speed = Math.min(116, 58 + G.t * 1.0); const v = G.speed * (boosting ? 1.8 : 1); worldV = v;
+  G.speed = 50 + 62 * Math.pow(clamp(G.t / RUN, 0, 1), 0.85); const v = G.speed * (boosting ? 1.8 : 1); worldV = v;
   P.z -= v * dt; G.dist += v * dt;
   steer.x = clamp(steer.x + (keys.r - keys.l) * 24 * dt, -XMAX, XMAX); steer.y = clamp(steer.y + (keys.u - keys.d) * 19 * dt, YMIN, YMAX);
   const k = Math.min(1, dt * 9), nx = P.x + (steer.x - P.x) * k, ny = P.y + (steer.y - P.y) * k;
@@ -1221,7 +1444,7 @@ function update(dt) {
   }
   for (const it of G.items) if (!it.got && Math.abs(it.x - P.x) < 1.7 && Math.abs(it.y - P.y) < 1.5 && Math.abs(it.z - P.z) < 2.4) {
     it.got = true;
-    if (it.gold) { give(GOLD, it.i); give(GHALO, it.i); G.golds++; const pts = 250 * (G.fever ? 2 : 1); G.tricks += pts; G.fuel = Math.min(100, G.fuel + 35); addCombo(); sfx.gold(); burst(it.x, it.y, it.z, "#ffd34d", 30, 9, 0.6); toast(`GOLDEN HEART +${pts}`); }
+    if (it.gold) { give(GOLD, it.i); give(GHALO, it.i); G.golds++; const pts = 250 * (G.fever ? 2 : 1); G.tricks += pts; G.fuel = Math.min(100, G.fuel + 35); addCombo(); sfx.gold(); burst(it.x, it.y, it.z, "#ffd34d", 30, 9, 0.6); toast(`GOLDEN HEART +${pts}`); bark("gold", true); }
     else { give(HEART, it.i); give(HALO, it.i); G.hearts++; G.tricks += 10 * (G.combo - 1) + (G.fever ? 10 : 0); G.fuel = Math.min(100, G.fuel + 3); addCombo(); sfx.heart(); burst(it.x, it.y, it.z, "#ff9ccc", 10, 5, 0.45); }
   }
   G.obs = G.obs.filter((o) => { if (o.zMin - 4 > P.z + HZ + 8) { freeObs(o); return false; } return true; });
@@ -1275,6 +1498,8 @@ function world(dt) {
   const cz = camera.position.z;
   // sky, band, landmark, ground and lights follow the camera
   sky.position.copy(camera.position); band.position.set(camera.position.x, 60, cz);
+  for (const c of clouds) { const u = c.userData; u.a += dt * 0.004; c.position.set(camera.position.x + Math.sin(u.a) * u.R, u.y, cz - Math.cos(u.a) * u.R); }
+  bldMat.uniforms.uTime.value = clock; beaconMat.opacity = Math.sin(clock * 2.6) > 0.55 ? 1 : 0.18;
   if (landmark) {
     landmark.position.set(0, 0, cz - LANDMARK_Z); const L = landmark.userData;
     if (L.spin) L.spin.rotation.z += dt * 0.08;
@@ -1313,7 +1538,7 @@ let perfT = 0, perfN = 0, perfLock = false;
 function perf(dt) {
   if (perfLock || state !== "play") return; perfT += dt; perfN++;
   if (perfT > 2.5) { const fps = perfN / perfT; perfT = 0; perfN = 0;
-    if (fps < 48 && qi < QSTEPS.length - 1) { qi++; store.set("q", qi); resize(); }
+    if (fps < 48 && qi < QSTEPS.length - 1) { qi++; store.set("q2", qi); resize(); }
     else if (fps > 58) perfLock = true; }
 }
 
@@ -1324,7 +1549,7 @@ function step(dt) {
     else if (state === "menu") attract(dt);
   }
   world(dt);
-  renderer.render(scene, camera);
+  if (QSTEPS[qi].post) { gradePass.uniforms.uTime.value = clock; composer.render(dt); } else renderer.render(scene, camera);
   perf(dt);
 }
 function frame(ts) { const t = ts / 1000, dt = Math.min(0.033, Math.max(0, t - (last || t))); last = t; step(dt); requestAnimationFrame(frame); }
@@ -1333,10 +1558,11 @@ function frame(ts) { const t = ts / 1000, dt = Math.min(0.033, Math.max(0, t - (
 function snapshot(w, h, scn, cam) {
   const pr = renderer.getPixelRatio(), size = renderer.getSize(new THREE.Vector2()), aspect = cam.aspect;
   renderer.setPixelRatio(1); renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
-  renderer.render(scn, cam);
+  const post = scn === scene && QSTEPS[qi].post;
+  if (post) { composer.setPixelRatio(1); composer.setSize(w, h); renderPass.camera = cam; composer.render(0); renderPass.camera = camera; } else renderer.render(scn, cam);
   const c = document.createElement("canvas"); c.width = w; c.height = h; c.getContext("2d").drawImage(renderer.domElement, 0, 0, w, h);
   cam.aspect = aspect; cam.updateProjectionMatrix(); renderer.setPixelRatio(pr); renderer.setSize(size.x, size.y, false);
-  renderer.render(scene, camera); return c;
+  if (post) { composer.setPixelRatio(pr); composer.setSize(size.x, size.y); composer.render(0); } else renderer.render(scene, camera); return c;
 }
 function heroShot(w, h) {   // 3/4 rear view of the car with the city ahead
   const cam = new THREE.PerspectiveCamera(38, w / h, 0.1, 2400);
@@ -1356,19 +1582,21 @@ function startGame() {
   store.set("handle", cleanHandle($("handle").value)); audio(); applyCity(sel.city); newGame(); state = "play"; show(null);
   document.body.classList.remove("fever"); $("hTime").textContent = RUN; $("hTime").classList.remove("low");
   $("tip").innerHTML = TOUCH ? `${RUN}s run · drag anywhere to steer ✋<br>Double-tap or ⟳ to flip · 🔥 when fuel is full` : `${RUN}s run · steer with the mouse, arrows or WASD<br>Double-click / Space to flip · B or Shift to boost · H hides the HUD`;
-  $("tip").hidden = false; startMusic(sel.city);
+  $("tip").hidden = false; startMusic(sel.city, 0); setTimeout(() => state === "play" && bark("start", true), 700);
 }
 function endRun() {
   if (G.ended) return; G.ended = true; G.alive = false; G.boostT = 0; P.spin = 0; G.flipT = -1;
   if (G.hits === 0) G.bonus += 500;
-  stopMusic(); sfx.time(); document.body.classList.remove("fever"); $("hTime").textContent = "0";
+  if (trackEl) stopMusic(); sfx.time(); document.body.classList.remove("fever"); $("hTime").textContent = "0";
   toast(G.hits === 0 ? "TIME! ✨ CLEAN RUN +500" : "TIME! ⏱");
   for (let i = 0; i < 4; i++) firework(rand(-30, 30), rand(30, 55), P.z - rand(60, 110));
   const s = score(), best = Math.max(G.best, s); const isBest = s > G.best && s > 0; store.set("best-" + sel.city, best);
   const city = CONFIG.cities.find((c) => c.key === sel.city).name;
   const cardP = makeCard(s, city);
   setTimeout(() => { if (!G || !G.ended) return; state = "over"; $("oScore").textContent = fmt(s); $("newBest").hidden = !isBest;
-    $("oSub").textContent = `${city} · ${car().name} Roadster · ${RUN}s run · best ${fmt(best)}`;
+    const p = pilot(); $("oWaifu").src = p.full; $("oName").textContent = p.name; $("oCard").style.background = `linear-gradient(${p.bg},${p.bg}) padding-box, var(--chrome) border-box`;
+    $("oSub").textContent = `${city} · ${car().name} Roadster · ${RUN}s · best ${fmt(best)}`; $("oQuip").textContent = quip(s);
+    $("mintNote").textContent = p.key === "custom" ? "Collect the Paper Hearts waifus on OpenSea 💖" : `Love ${p.name}? Mint & collect the Paper Hearts on OpenSea 💖`;
     $("oKvs").innerHTML = [["Distance", fmt(G.dist) + " m"], ["Hearts", G.hearts + (G.golds ? `  + ${G.golds} golden` : "")], ["Flips", G.flips], ["Close calls", G.nears], ["Best combo", "×" + G.maxCombo], ["Smashes", G.smashed],
       ["Hits", G.hits ? `${G.hits}  (−${fmt(G.penalty)})` : "0 — clean run +500 ✨"], ["Trick points", fmt(G.tricks)]].map(([k, v]) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`).join("");
     cardP.then((url) => { $("cardImg").src = url; });
@@ -1380,19 +1608,32 @@ function shareText(s, city) {
   return `I scored ${fmt(s)} in ${RUN} seconds flying my ${car().name} Roadster through ${city} in Flying Hearts 💖🚗\n\nBeat me 👇 ${tags}${invitedBy ? `\n(invited by @${invitedBy})` : ""}`;
 }
 let cardBlob = null;
+// the pilot's portrait as a tilted collectible card (shared by the share card and the og image)
+function drawPilotCard(g, x, y, w, h, rot = 0.05) {
+  const p = pilot(); g.save(); g.translate(x + w / 2, y + h / 2); g.rotate(rot); g.translate(-w / 2, -h / 2);
+  g.shadowColor = "rgba(255,79,163,.55)"; g.shadowBlur = 40; g.shadowOffsetY = 14;
+  const fr = g.createLinearGradient(0, 0, w, h); fr.addColorStop(0, "#fff"); fr.addColorStop(0.35, "#ffd6ea"); fr.addColorStop(0.6, "#ff7fbf"); fr.addColorStop(1, "#ffe3f1");
+  g.fillStyle = fr; g.beginPath(); g.roundRect(-7, -7, w + 14, h + 14, 26); g.fill(); g.shadowColor = "transparent";
+  g.save(); g.beginPath(); g.roundRect(0, 0, w, h, 20); g.clip(); g.fillStyle = p.bg; g.fillRect(0, 0, w, h);
+  if (pilotFullReady) { const iw = pilotFull.width, ih = pilotFull.height, k = Math.max(w / iw, h / ih); g.drawImage(pilotFull, (w - iw * k) / 2, 0, iw * k, ih * k); }
+  const sh = g.createLinearGradient(0, h * 0.62, 0, h); sh.addColorStop(0, "rgba(10,4,16,0)"); sh.addColorStop(1, "rgba(10,4,16,.88)"); g.fillStyle = sh; g.fillRect(0, h * 0.6, w, h * 0.4);
+  g.fillStyle = "#fff"; g.textAlign = "center"; g.font = '900 38px "Inter Tight",Arial'; g.fillText(p.name.toUpperCase(), w / 2, h - 46, w - 30);
+  g.fillStyle = "#ff9ccc"; g.font = '800 17px "Inter Tight",Arial'; g.fillText("PAPER HEARTS · PILOT", w / 2, h - 20);
+  g.restore(); g.restore();
+}
 function makeCard(s, city) {
   return new Promise((res) => {
     const c = heroShot(1200, 675), g = c.getContext("2d");
-    const v = g.createLinearGradient(0, 0, 1200, 0); v.addColorStop(0, "rgba(7,6,12,.0)"); v.addColorStop(0.4, "rgba(7,6,12,.1)"); v.addColorStop(0.62, "rgba(7,6,12,.6)"); v.addColorStop(1, "rgba(7,6,12,.85)"); g.fillStyle = v; g.fillRect(0, 0, 1200, 675);
-    g.textAlign = "left"; g.shadowColor = "rgba(0,0,0,.5)"; g.shadowBlur = 16;
-    g.fillStyle = "#fff"; g.font = '900 60px "Inter Tight",Arial'; g.fillText("FLYING HEARTS", 650, 130);
-    g.font = '800 28px "Inter Tight",Arial'; g.fillStyle = "#ffc2dd"; g.fillText(`${city} · ${car().name} Roadster · ${RUN}s`, 652, 178);
-    g.font = '900 140px "Inter Tight",Arial'; g.fillStyle = "#fff"; g.fillText(fmt(s), 642, 330);
-    g.font = '800 27px "Inter Tight",Arial'; g.fillStyle = "#ffe3f1"; g.fillText(`💖 ${G.hearts}  ·  ⟳ ${G.flips} flips  ·  ⚡ ${G.nears} close calls`, 652, 390);
-    if (G.hits === 0) { g.fillStyle = "#ffd34d"; g.fillText("✨ CLEAN RUN", 652, 432); }
-    const h = store.get("handle", ""); g.font = '700 26px "Inter Tight",Arial'; g.fillStyle = "#fff"; g.fillText(h ? `@${h}` : "", 652, 490);
-    g.fillStyle = "#ff9ccc"; g.fillText([...CONFIG.tags, CONFIG.tokenTicker].filter(Boolean).join("  "), 652, 535);
-    g.fillStyle = "#c9bfd0"; g.font = '700 22px "Inter Tight",Arial'; g.fillText("proofofreal.app/games/flyinghearts", 652, 600);
+    const v = g.createLinearGradient(0, 0, 0, 675); v.addColorStop(0, "rgba(7,6,12,.82)"); v.addColorStop(0.42, "rgba(7,6,12,.25)"); v.addColorStop(0.7, "rgba(7,6,12,.05)"); v.addColorStop(1, "rgba(7,6,12,.7)"); g.fillStyle = v; g.fillRect(0, 0, 1200, 675);
+    drawPilotCard(g, 820, 66, 320, 470, 0.045);
+    g.textAlign = "left"; g.shadowColor = "rgba(0,0,0,.55)"; g.shadowBlur = 16;
+    g.fillStyle = "#fff"; g.font = '900 44px "Inter Tight",Arial'; g.fillText("FLYING HEARTS", 56, 84);
+    g.font = '800 24px "Inter Tight",Arial'; g.fillStyle = "#ffc2dd"; g.fillText(`${city} · ${car().name} Roadster · ${RUN}s run`, 58, 120);
+    g.font = '900 128px "Inter Tight",Arial'; g.fillStyle = "#fff"; g.fillText(fmt(s), 48, 238);
+    g.font = '800 25px "Inter Tight",Arial'; g.fillStyle = "#ffe3f1"; g.fillText(`💖 ${G.hearts}  ·  ⟳ ${G.flips} flips  ·  ⚡ ${G.nears} close calls`, 58, 284);
+    if (G.hits === 0) { g.fillStyle = "#ffd34d"; g.fillText("✨ CLEAN RUN", 58, 322); }
+    const h = store.get("handle", ""); g.font = '800 26px "Inter Tight",Arial'; g.fillStyle = "#fff"; g.fillText(h ? `@${h}  ×  ${pilot().name}` : `flying with ${pilot().name}`, 58, 590);
+    g.font = '800 24px "Inter Tight",Arial'; g.fillStyle = "#ff9ccc"; g.fillText([...CONFIG.tags, CONFIG.tokenTicker].filter(Boolean).join("  ") + "   ·   proofofreal.app/games/flyinghearts", 58, 630);
     c.toBlob((b) => { cardBlob = b; res(URL.createObjectURL(b)); }, "image/png");
   });
 }
@@ -1441,7 +1682,7 @@ addEventListener("keydown", (e) => {
 addEventListener("keyup", (e) => { if (KEYMAP[e.code]) keys[KEYMAP[e.code]] = 0; });
 $("bFlip").addEventListener("pointerdown", (e) => { e.stopPropagation(); flip(); });
 $("bBoost").addEventListener("pointerdown", (e) => { e.stopPropagation(); boost(); });
-function togglePause() { if (state === "play" && G.alive) { state = "paused"; drag = null; stopMusic(); show("pause"); } else if (state === "paused") { state = "play"; show(null); startMusic(sel.city); } }
+function togglePause() { if (state === "play" && G.alive) { state = "paused"; drag = null; stopMusic(); show("pause"); } else if (state === "paused") { state = "play"; show(null); startMusic(sel.city, G.t); } }
 $("bPause").onclick = togglePause; $("resume").onclick = togglePause;
 $("bClean").onclick = toggleClean;
 $("quit").onclick = toMenu;
@@ -1459,12 +1700,13 @@ if (qs.get("debug") === "1") window.__fh = { get G() { return G; }, get state() 
   // renders the 1200×630 link-preview image (og.png) from the live 3D scene
   og: () => new Promise((res) => {
     const c = heroShot(1200, 630), g = c.getContext("2d");
-    const v = g.createLinearGradient(0, 0, 1200, 0); v.addColorStop(0, "rgba(7,6,12,0)"); v.addColorStop(0.45, "rgba(7,6,12,.15)"); v.addColorStop(0.65, "rgba(7,6,12,.6)"); v.addColorStop(1, "rgba(7,6,12,.85)"); g.fillStyle = v; g.fillRect(0, 0, 1200, 630);
-    g.shadowColor = "rgba(0,0,0,.5)"; g.shadowBlur = 18; g.fillStyle = "#fff"; g.font = '900 104px "Inter Tight",Arial'; g.textAlign = "left"; g.fillText("FLYING", 670, 220);
-    const gr = g.createLinearGradient(670, 240, 1120, 330); gr.addColorStop(0, "#fff"); gr.addColorStop(0.45, "#ff9ccc"); gr.addColorStop(1, "#ff4fa3"); g.fillStyle = gr; g.fillText("HEARTS", 670, 320);
-    g.fillStyle = "#ffe3f1"; g.font = '800 27px "Inter Tight",Arial'; g.fillText("Tokyo · Singapore · Seoul · Da Nang", 674, 385);
-    g.fillStyle = "#c9bfd0"; g.font = '700 26px "Inter Tight",Arial'; g.fillText("60-second runs · steer · flip · boost", 674, 428);
-    g.fillStyle = "#ff9ccc"; g.font = '800 28px "Inter Tight",Arial'; g.fillText("$IMD  ·  @mememaxxers", 674, 520);
+    const v = g.createLinearGradient(0, 0, 0, 630); v.addColorStop(0, "rgba(7,6,12,.8)"); v.addColorStop(0.5, "rgba(7,6,12,.2)"); v.addColorStop(1, "rgba(7,6,12,.65)"); g.fillStyle = v; g.fillRect(0, 0, 1200, 630);
+    drawPilotCard(g, 830, 60, 310, 455, 0.045);
+    g.shadowColor = "rgba(0,0,0,.5)"; g.shadowBlur = 18; g.textAlign = "left"; g.fillStyle = "#fff"; g.font = '900 96px "Inter Tight",Arial'; g.fillText("FLYING", 54, 128);
+    const gr = g.createLinearGradient(54, 140, 520, 230); gr.addColorStop(0, "#fff"); gr.addColorStop(0.45, "#ff9ccc"); gr.addColorStop(1, "#ff4fa3"); g.fillStyle = gr; g.fillText("HEARTS", 54, 222);
+    g.fillStyle = "#ffe3f1"; g.font = '800 26px "Inter Tight",Arial'; g.fillText("Tokyo · Singapore · Seoul · Da Nang", 58, 272);
+    g.fillStyle = "#c9bfd0"; g.font = '700 24px "Inter Tight",Arial'; g.fillText("60-second runs · 50 Paper Hearts pilots", 58, 308);
+    g.fillStyle = "#ff9ccc"; g.font = '800 28px "Inter Tight",Arial'; g.fillText("$IMD  ·  @mememaxxers", 58, 590);
     c.toBlob(res, "image/png");
   }) };
 
