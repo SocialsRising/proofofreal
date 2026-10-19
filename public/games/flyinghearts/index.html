@@ -312,7 +312,7 @@ const SPAWN_AHEAD = 320, LANDMARK_Z = 470;
 /* ------------------------------------------------------------------ renderer */
 const cv = $("c");
 let renderer;
-try { renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: true, powerPreference: "high-performance" }); }
+try { renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: false, powerPreference: "high-performance" }); }
 catch (e) { $("loading").innerHTML = `<div class="panel" style="text-align:center;max-width:420px"><div class="logo" style="font-size:2rem">3D needed</div><p class="sub">Your browser couldn't start WebGL. Try Chrome or Safari, or turn on hardware acceleration.</p></div>`; throw e; }
 renderer.toneMapping = THREE.NeutralToneMapping; renderer.toneMappingExposure = 1.05;
 const scene = new THREE.Scene();
@@ -320,17 +320,27 @@ scene.fog = new THREE.Fog(0x000000, 45, 330);
 const camera = new THREE.PerspectiveCamera(55, 1, 0.1, 2400);
 const MAXDPR = Math.min(2, window.devicePixelRatio || 1);
 // quality ladder: bloom + film grade first, then resolution. Drops a step automatically if a device can't hold ~50fps.
-const QSTEPS = [{ pr: 1, post: true }, { pr: 0.8, post: true }, { pr: 0.8, post: false }, { pr: 0.65, post: false }, { pr: 0.5, post: false }];
-let qi = clamp(store.get("q2", 0), 0, QSTEPS.length - 1), baseFov = 55, fovKick = 0, camBack = 1;
-const composer = new EffectComposer(renderer), renderPass = new RenderPass(scene, camera);
+// quality ladder by megapixels rendered (not devicePixelRatio): bloom + grade + MSAA first, then resolution. Steps down live if fps < 50.
+const QSTEPS = [{ mp: 2.2, post: true }, { mp: 1.4, post: true }, { mp: 0.95, post: true }, { mp: 0.7, post: true }, { mp: 0.7, post: false }, { mp: 0.45, post: false }];
+// integrated / mobile GPUs start at a resolution they can hold at 60fps; everyone retries one step better than last visit
+const GPU = (() => { try { const g = renderer.getContext(), e = g.getExtension("WEBGL_debug_renderer_info"); return e ? g.getParameter(e.UNMASKED_RENDERER_WEBGL) : ""; } catch { return ""; } })();
+const WEAK_GPU = /Intel|UHD|Iris|HD Graphics|Mali|Adreno|PowerVR|Microsoft Basic|SwiftShader|llvmpipe/i.test(GPU) || (TOUCH && !/Apple Md/i.test(GPU));
+let qi = clamp(store.get("q4", WEAK_GPU ? 3 : 1) - 1, 0, QSTEPS.length - 1), baseFov = 55, fovKick = 0, camBack = 1;   // each visit retries one step better than last time
+const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(4, 4, { type: THREE.HalfFloatType })), renderPass = new RenderPass(scene, camera);
 const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), 0.55, 0.5, 0.9);
 const gradePass = new ShaderPass({
-  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uTint: { value: new THREE.Color() } },
+  uniforms: { tDiffuse: { value: null }, uTime: { value: 0 }, uTint: { value: new THREE.Color() }, uBoost: { value: 0 }, uTexel: { value: new THREE.Vector2(1 / 1280, 1 / 720) } },
   vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime; uniform vec3 uTint; varying vec2 vUv;
+  fragmentShader: `uniform sampler2D tDiffuse; uniform float uTime; uniform vec3 uTint; uniform float uBoost; uniform vec2 uTexel; varying vec2 vUv;
+    float lum(vec3 c) { return dot(c, vec3(0.299, 0.587, 0.114)); }
     void main(){
       vec2 c = vUv - 0.5; float r = dot(c, c), ca = 0.012 * r;
       vec3 col = vec3(texture2D(tDiffuse, vUv + c * ca).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - c * ca).b);
+      float lN = lum(texture2D(tDiffuse, vUv + vec2(0.0, uTexel.y)).rgb), lS = lum(texture2D(tDiffuse, vUv - vec2(0.0, uTexel.y)).rgb);
+      float lE = lum(texture2D(tDiffuse, vUv + vec2(uTexel.x, 0.0)).rgb), lW = lum(texture2D(tDiffuse, vUv - vec2(uTexel.x, 0.0)).rgb), lM = lum(col);
+      float rng = max(max(max(lN, lS), max(lE, lW)), lM) - min(min(min(lN, lS), min(lE, lW)), lM);
+      if (rng > 0.07) { vec2 tg = normalize(vec2(lS - lN, lE - lW) + 1e-5) * uTexel; col = mix(col, (texture2D(tDiffuse, vUv + tg * 0.8).rgb + texture2D(tDiffuse, vUv - tg * 0.8).rgb) * 0.5, clamp(rng * 2.5, 0.0, 0.6)); }   // edge AA
+      if (uBoost > 0.01) { vec3 acc = col; for (int i = 1; i < 6; i++) acc += texture2D(tDiffuse, vUv - c * float(i) * 0.016 * uBoost).rgb; col = mix(col, acc / 6.0, smoothstep(0.01, 0.16, r)); }   // boost zoom blur
       float l = dot(col, vec3(0.299, 0.587, 0.114));
       col = mix(col, col + uTint * 0.07, (1.0 - l) * 0.9);          // tint the shadows with the city colour
       col = mix(col, col * col * (3.0 - 2.0 * col), 0.18);            // a touch of filmic contrast
@@ -342,8 +352,9 @@ const gradePass = new ShaderPass({
 });
 composer.addPass(renderPass); composer.addPass(bloom); composer.addPass(new OutputPass()); composer.addPass(gradePass);
 function resize() {
-  const pr = Math.max(0.6, MAXDPR * QSTEPS[qi].pr);
+  const Q = QSTEPS[qi], pr = clamp(Math.sqrt(Q.mp * 1e6 / (innerWidth * innerHeight)), 0.5, MAXDPR);
   renderer.setPixelRatio(pr); renderer.setSize(innerWidth, innerHeight, false); composer.setPixelRatio(pr); composer.setSize(innerWidth, innerHeight);
+  gradePass.uniforms.uTexel.value.set(1 / (innerWidth * pr), 1 / (innerHeight * pr));
   const a = innerWidth / innerHeight; camera.aspect = a;
   // keep ~78° of horizontal view; portrait phones get a taller FOV (capped) and a camera pulled further back
   baseFov = clamp(2 * Math.atan(Math.tan(THREE.MathUtils.degToRad(39)) / a) * 180 / Math.PI, 52, 80);
@@ -414,6 +425,7 @@ void main() {
   }
   #ifdef USE_FOG
   if (vFogDepth > fogFar) discard;
+  col = mix(col, fogColor, (1.0 - smoothstep(0.0, 24.0, vWP.y)) * smoothstep(45.0, 230.0, vFogDepth) * 0.55);
   #endif
   gl_FragColor = vec4(col, 1.0);
   #include <tonemapping_fragment>
@@ -479,6 +491,7 @@ const GROUND_FRAG = /* glsl */`
 #include <common>
 #include <fog_pars_fragment>
 uniform vec3 uBase; uniform vec3 uLine; uniform vec3 uWin; uniform float uWater; uniform float uCross; uniform float uTime;
+uniform float uLPhase; uniform vec3 uL0; uniform vec3 uL1; uniform vec3 uL2;
 varying vec3 vWP; varying vec3 vN; varying vec3 vSeed; varying vec2 vUv; varying float vH;
 ${HASH}
 void main() {
@@ -506,6 +519,16 @@ void main() {
     col = mix(col, uBase * 1.6 + 0.01, step(14.5, ax));
     col += uLine * (1.0 - smoothstep(0.1, 0.1 + fw, abs(ax - 14.5))) * 1.2;
   }
+  // reflections of the lanterns hanging over the street: long glossy streaks stretched toward the camera
+  if (ax < 13.5) {
+    float lx = clamp(floor(x / 3.0 + 0.5) * 3.0, -12.0, 12.0), dx = x - lx + sin(z * 1.7 + uTime * 2.2) * (0.05 + 0.07 * uWater);
+    float n0 = floor((z - uLPhase) / 34.0); vec3 refl = vec3(0.0);
+    for (int k = 0; k < 4; k++) {
+      float zl = uLPhase + 34.0 * (n0 - float(k)), sp = 0.62 * (cameraPosition.z - zl), q = (z - zl) / max(sp, 1.0);
+      if (q >= 0.0 && q <= 1.0) { float hh = hash(vec2(lx * 0.37, n0 - float(k))); vec3 lc = hh < 0.34 ? uL0 : hh < 0.67 ? uL1 : uL2; refl += lc * pow(1.0 - q, 1.4) * exp(-dx * dx / (0.035 + 0.22 * q)); }
+    }
+    col += refl * mix(0.32, 0.55, uWater);
+  }
   gl_FragColor = vec4(col, 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -514,7 +537,7 @@ void main() {
 const SKY_VERT = `varying vec3 vDir; void main(){ vDir = position; vec4 p = projectionMatrix * modelViewMatrix * vec4(position, 1.0); gl_Position = p.xyww; }`;
 const SKY_FRAG = /* glsl */`
 #include <common>
-uniform vec3 c0; uniform vec3 c1; uniform vec3 c2; uniform vec3 c3; uniform vec3 uSun; uniform vec3 uSunDir;
+uniform vec3 c0; uniform vec3 c1; uniform vec3 c2; uniform vec3 c3; uniform vec3 uSun; uniform vec3 uSunDir; uniform float uT;
 varying vec3 vDir;
 ${HASH}
 void main() {
@@ -527,7 +550,9 @@ void main() {
   col += uSun * (pow(s, 50.0) * 0.45 + pow(s, 6.0) * 0.12);
   col = mix(col, uSun * 1.25, smoothstep(0.9988, 0.9993, s));
   vec2 st = floor(d.xz / (d.y + 0.2) * 220.0);
-  col += vec3(0.9) * step(0.9975, hash(st)) * smoothstep(0.35, 0.7, h);
+  col += vec3(0.95) * step(0.9972, hash(st)) * (0.5 + 0.5 * sin(uT * 3.0 + hash(st + 3.1) * 40.0)) * smoothstep(0.3, 0.7, h);
+  float neb = (sin(d.x * 4.0 + d.z * 2.0 + uT * 0.03) * 0.5 + 0.5) * (sin(d.x * 9.0 - d.y * 14.0 + 1.3 + uT * 0.02) * 0.5 + 0.5);
+  col += mix(c1, uSun, 0.35) * neb * neb * smoothstep(0.18, 0.55, h) * 0.24;
   gl_FragColor = vec4(col, 1.0);
   #include <tonemapping_fragment>
   #include <colorspace_fragment>
@@ -556,8 +581,8 @@ const TEX = {
 /* ------------------------------------------------------------------ sky, horizon band, ground */
 const SUN_DIR = new THREE.Vector3(0.32, 0.1, -1).normalize();
 const skyMat = new THREE.ShaderMaterial({ vertexShader: SKY_VERT, fragmentShader: SKY_FRAG, side: THREE.BackSide, depthWrite: false, fog: false,
-  uniforms: { c0: { value: new THREE.Color() }, c1: { value: new THREE.Color() }, c2: { value: new THREE.Color() }, c3: { value: new THREE.Color() }, uSun: { value: new THREE.Color() }, uSunDir: { value: SUN_DIR } } });
-const sky = new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 16), skyMat); sky.renderOrder = -3; sky.frustumCulled = false; scene.add(sky);
+  uniforms: { c0: { value: new THREE.Color() }, c1: { value: new THREE.Color() }, c2: { value: new THREE.Color() }, c3: { value: new THREE.Color() }, uSun: { value: new THREE.Color() }, uSunDir: { value: SUN_DIR }, uT: { value: 0 } } });
+const sky = new THREE.Mesh(new THREE.SphereGeometry(1500, 32, 16), skyMat); sky.renderOrder = 999; sky.frustumCulled = false; scene.add(sky);
 const cloudTex = canvasTex(256, 128, (g) => {
   const blob = (x, y, r, a) => { const gr = g.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, `rgba(255,255,255,${a})`); gr.addColorStop(0.6, `rgba(255,255,255,${a * 0.6})`); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2); };
   const r = rng(7); for (let i = 0; i < 26; i++) blob(30 + r() * 196, 52 + r() * 40 - Math.abs(r() - 0.5) * 30, 18 + r() * 34, 0.35 + r() * 0.4);
@@ -565,9 +590,17 @@ const cloudTex = canvasTex(256, 128, (g) => {
 });
 const clouds = Array.from({ length: 14 }, (_, i) => { const m = new THREE.Sprite(new THREE.SpriteMaterial({ map: cloudTex, transparent: true, depthWrite: false, fog: false, opacity: 0.6 }));
   const a = (i / 14 - 0.5) * 2.6 + rand(-0.08, 0.08), R = rand(540, 680); m.userData = { a, R, y: rand(85, 210) }; m.scale.set(rand(200, 340), rand(70, 120), 1); m.renderOrder = -1.5; m.frustumCulled = false; scene.add(m); return m; });
+const raysTex = canvasTex(512, 512, (g) => {
+  const r = rng(5); g.translate(256, 256);
+  for (let i = 0; i < 34; i++) { const a = r() * Math.PI * 2, w = 0.02 + r() * 0.06, len = 160 + r() * 96, gr = g.createLinearGradient(0, 0, Math.cos(a) * len, Math.sin(a) * len);
+    gr.addColorStop(0, `rgba(255,255,255,${0.25 + r() * 0.35})`); gr.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = gr; g.beginPath(); g.moveTo(0, 0); g.arc(0, 0, len, a - w, a + w); g.closePath(); g.fill(); }
+  const c = g.createRadialGradient(0, 0, 0, 0, 0, 120); c.addColorStop(0, "rgba(255,255,255,.9)"); c.addColorStop(1, "rgba(255,255,255,0)"); g.fillStyle = c; g.fillRect(-120, -120, 240, 240);
+});
+const rays = new THREE.Sprite(new THREE.SpriteMaterial({ map: raysTex, transparent: true, depthWrite: false, fog: false, blending: THREE.AdditiveBlending, opacity: 0.5 })); rays.scale.set(640, 640, 1); rays.renderOrder = -2.5; rays.frustumCulled = false; scene.add(rays);
+const carPool = new THREE.Mesh(new THREE.PlaneGeometry(1, 1).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: TEX.glow, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false })); carPool.frustumCulled = false; carPool.renderOrder = 1; scene.add(carPool);
 const bandMat = new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, fog: false, side: THREE.BackSide });
 const band = new THREE.Mesh(new THREE.CylinderGeometry(760, 760, 150, 96, 1, true), bandMat); band.renderOrder = -2; band.frustumCulled = false; scene.add(band);
-const groundMat = shaderMat(GROUND_FRAG, { uBase: { value: new THREE.Color() }, uLine: { value: new THREE.Color() }, uWin: { value: new THREE.Color() }, uWater: { value: 0 }, uCross: { value: 0 }, uTime: { value: 0 } });
+const groundMat = shaderMat(GROUND_FRAG, { uBase: { value: new THREE.Color() }, uLine: { value: new THREE.Color() }, uWin: { value: new THREE.Color() }, uWater: { value: 0 }, uCross: { value: 0 }, uTime: { value: 0 }, uLPhase: { value: 0 }, uL0: { value: new THREE.Color() }, uL1: { value: new THREE.Color() }, uL2: { value: new THREE.Color() } });
 const ground = new THREE.Mesh(new THREE.PlaneGeometry(260, 820).rotateX(-Math.PI / 2), groundMat); ground.frustumCulled = false; scene.add(ground);
 
 const hemi = new THREE.HemisphereLight(0xffffff, 0x222222, 0.7); scene.add(hemi);
@@ -585,7 +618,7 @@ const UNIT = {
   box: new THREE.BoxGeometry(1, 1, 1), boxBase: new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), cyl: new THREE.CylinderGeometry(1, 1, 1, 16), taper: new THREE.CylinderGeometry(0.6, 1, 1, 16),
   canopy: new THREE.CylinderGeometry(2.4, 0.35, 1.2, 18, 1, true), roof: roofGeo(), sphere: new THREE.SphereGeometry(1, 24, 16), plane: new THREE.PlaneGeometry(1, 1),
   lantern: new THREE.LatheGeometry([[0, -0.5], [0.3, -0.47], [0.48, -0.25], [0.52, 0], [0.48, 0.25], [0.3, 0.47], [0, 0.5]].map(([x, y]) => new THREE.Vector2(x, y)), 14),
-  heart: new THREE.ExtrudeGeometry(heartShape(), { depth: 0.35, bevelEnabled: true, bevelThickness: 0.18, bevelSize: 0.14, bevelSegments: 4, curveSegments: 14 }).center().scale(0.5, 0.5, 0.5),
+  heart: new THREE.ExtrudeGeometry(heartShape(), { depth: 0.35, bevelEnabled: true, bevelThickness: 0.18, bevelSize: 0.14, bevelSegments: 2, curveSegments: 9 }).center().scale(0.5, 0.5, 0.5),
 };
 const SHARED = new Set(Object.values(UNIT));
 
@@ -595,10 +628,14 @@ const ZERO = new THREE.Matrix4().makeScale(0, 0, 0);
 function pool(geo, mat, n, order = 0) {
   const mesh = new THREE.InstancedMesh(geo, mat, n); mesh.frustumCulled = false; mesh.renderOrder = order; mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
   for (let i = 0; i < n; i++) { mesh.setMatrixAt(i, ZERO); mesh.setColorAt(i, _c.setRGB(1, 1, 1)); }
-  scene.add(mesh); return { mesh, free: Array.from({ length: n }, (_, i) => n - 1 - i) };
+  scene.add(mesh); return { mesh, cap: n, used: new Uint8Array(n), hi: -1, dyn: false, free: Array.from({ length: n }, (_, i) => n - 1 - i) };
 }
-const take = (pl) => (pl.free.length ? pl.free.pop() : -1);
-function give(pl, i) { if (i < 0) return; pl.mesh.setMatrixAt(i, ZERO); pl.free.push(i); pl.mesh.instanceMatrix.needsUpdate = true; }
+const dyn = (pl) => { pl.dyn = true; pl.mesh.count = 0; return pl; };
+function take(pl) { if (!pl.free.length) return -1; const i = pl.free.pop(); pl.used[i] = 1; if (i > pl.hi) { pl.hi = i; if (pl.dyn) pl.mesh.count = i + 1; } return i; }
+function give(pl, i) {
+  if (i < 0) return; pl.mesh.setMatrixAt(i, ZERO); pl.free.push(i); pl.mesh.instanceMatrix.needsUpdate = true; pl.used[i] = 0;
+  if (i === pl.hi) { while (pl.hi >= 0 && !pl.used[pl.hi]) pl.hi--; if (pl.dyn) pl.mesh.count = pl.hi + 1; }
+}
 function put(pl, i, x, y, z, sx, sy, sz, rx = 0, ry = 0, rz = 0) { _m.compose(_p.set(x, y, z), _q.setFromEuler(_e.set(rx, ry, rz)), _s.set(sx, sy, sz)); pl.mesh.setMatrixAt(i, _m); pl.mesh.instanceMatrix.needsUpdate = true; }
 function hide(pl, i) { pl.mesh.setMatrixAt(i, ZERO); pl.mesh.instanceMatrix.needsUpdate = true; }
 function tint(pl, i, col) { pl.mesh.setColorAt(i, col); pl.mesh.instanceColor.needsUpdate = true; }
@@ -627,13 +664,13 @@ function layBuilding(b) {
 
 // obstacles, drones, hearts (+ halos), golden hearts, street traffic
 const barMat = shaderMat(BAR_FRAG, { uTime: { value: 0 }, uStyle: { value: 0 } }, { transparent: true, depthWrite: false });
-const BAR = pool(UNIT.box, barMat, 160, 3);
+const BAR = dyn(pool(UNIT.box, barMat, 160, 3));
 const droneMat = new THREE.MeshStandardMaterial({ color: 0x15121c, metalness: 0.9, roughness: 0.25, emissive: 0xffffff, emissiveIntensity: 0.25 });
-const DRONE = pool(new THREE.IcosahedronGeometry(1, 2), droneMat, 24);
-const RING = pool(new THREE.TorusGeometry(1.7, 0.09, 8, 40).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ toneMapped: false }), 24);
-const HEART = pool(UNIT.heart, new THREE.MeshPhysicalMaterial({ color: 0xff4fa3, emissive: 0xff2d8f, emissiveIntensity: 0.55, metalness: 0.2, roughness: 0.18, clearcoat: 1 }), 160, 1);
+const DRONE = dyn(pool(new THREE.IcosahedronGeometry(1, 2), droneMat, 24));
+const RING = dyn(pool(new THREE.TorusGeometry(1.7, 0.09, 8, 40).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ toneMapped: false }), 24));
+const HEART = dyn(pool(UNIT.heart, new THREE.MeshPhysicalMaterial({ color: 0xff4fa3, emissive: 0xff2d8f, emissiveIntensity: 0.55, metalness: 0.2, roughness: 0.18, clearcoat: 1 }), 160, 1));
 const HALO = pool(UNIT.plane, new THREE.MeshBasicMaterial({ map: TEX.glow, color: 0xff6fb5, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }), 160, 2);
-const GOLD = pool(UNIT.heart, new THREE.MeshPhysicalMaterial({ color: 0xffd34d, emissive: 0xff9a00, emissiveIntensity: 0.6, metalness: 1, roughness: 0.18, clearcoat: 1 }), 24, 1);
+const GOLD = dyn(pool(UNIT.heart, new THREE.MeshPhysicalMaterial({ color: 0xffd34d, emissive: 0xff9a00, emissiveIntensity: 0.6, metalness: 1, roughness: 0.18, clearcoat: 1 }), 24, 1));
 const GHALO = pool(UNIT.plane, new THREE.MeshBasicMaterial({ map: TEX.glow, color: 0xffc23a, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false }), 24, 2);
 const TRAFFIC = pool(new THREE.BoxGeometry(0.35, 0.22, 1.8), new THREE.MeshBasicMaterial({ toneMapped: false }), 56);
 const traffic = []; for (let k = 0; k < 56; k++) traffic.push({ i: take(TRAFFIC), x: 0, z: 0, v: 0 });
@@ -690,7 +727,7 @@ function drawJumbo() {
   const g = jctx, th = THEMES[cityKey], W = 512, H = 288;
   const bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, th.sky[0]); bg.addColorStop(1, th.sky[1]); g.fillStyle = bg; g.fillRect(0, 0, W, H);
   const slide = Math.floor(clock / 2.4) % 4, fever = G && G.fever && !G.ended;
-  g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#fff"; g.shadowColor = th.line; g.shadowBlur = 24;
+  g.textAlign = "center"; g.textBaseline = "middle"; g.fillStyle = "#fff"; g.shadowColor = th.line; g.shadowBlur = 12;
   const chrome = () => { const gr = g.createLinearGradient(0, 40, 0, 220); gr.addColorStop(0, "#fff"); gr.addColorStop(0.5, "#ff9ccc"); gr.addColorStop(1, "#ff4fa3"); return gr; };
   if (fever) { const s = 1 + Math.sin(clock * 12) * 0.06; g.save(); g.translate(W / 2, 110); g.scale(s, s); g.font = '900 110px "Inter Tight",sans-serif'; g.fillStyle = chrome(); g.fillText("FEVER", 0, 0); g.restore(); g.font = '900 46px "Inter Tight",sans-serif'; g.fillText("💖 ×2 💖", W / 2, 200); }
   else if (slide === 0) {
@@ -762,6 +799,7 @@ function buildLandmark(key, th) {
     // Lady Buddha of Son Tra on the far hill
     add(new THREE.ConeGeometry(9, 50, 16), basic("#f4efe6"), 230, 95, -150); add(new THREE.SphereGeometry(5, 16, 12), basic("#f4efe6"), 230, 124, -150);
   }
+  mergeStatic(g);
   g.traverse((o) => { if (o.isMesh) { o.frustumCulled = false; o.renderOrder = -1; } });
   return g;
 }
@@ -852,8 +890,25 @@ function buildSet(k, th) {
       for (let i = 0; i < 6; i++) emit(-18, 19, setPiece.z + rand(-0.5, 0.5), rand(15, 18), rand(4, 6.5), rand(-0.7, 0.7), 3.2, -rand(0.5, 0.9), _c, -9.8);
     };
   }
-  scene.add(g);
+  mergeStatic(g); scene.add(g);
   return { g, z: 0, ...U };
+}
+function mergeStatic(root) {
+  const buckets = new Map();
+  for (const c of [...root.children]) {
+    if (c.isMesh && !c.isInstancedMesh) { if (!buckets.has(c.material)) buckets.set(c.material, []); buckets.get(c.material).push(c); }
+    else if (c.children && c.children.length) mergeStatic(c);
+  }
+  for (const [mat, list] of buckets) {
+    if (list.length < 2) continue;
+    const parts = list.map((m) => { m.updateMatrix(); const g = m.geometry.index ? m.geometry.toNonIndexed() : m.geometry.clone(); g.applyMatrix4(m.matrix); return g; });
+    const n = parts.reduce((a, g) => a + g.attributes.position.count, 0), pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), uv = new Float32Array(n * 2); let o = 0;
+    for (const g of parts) { const c = g.attributes.position.count; pos.set(g.attributes.position.array, o * 3); if (g.attributes.normal) nor.set(g.attributes.normal.array, o * 3); if (g.attributes.uv) uv.set(g.attributes.uv.array, o * 2); o += c; g.dispose(); }
+    const geo = new THREE.BufferGeometry(); geo.setAttribute("position", new THREE.BufferAttribute(pos, 3)); geo.setAttribute("normal", new THREE.BufferAttribute(nor, 3)); geo.setAttribute("uv", new THREE.BufferAttribute(uv, 2));
+    const mesh = new THREE.Mesh(geo, mat); mesh.frustumCulled = false; mesh.renderOrder = list[0].renderOrder;
+    for (const m of list) { root.remove(m); if (!SHARED.has(m.geometry)) m.geometry.dispose(); }
+    root.add(mesh);
+  }
 }
 function placeSet(z) {
   if (!setPiece) return; setPiece.z = z; setPiece.g.position.z = z;
@@ -908,7 +963,7 @@ const PTS = (() => {
   const mat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     uniforms: { uMap: { value: TEX.heart }, uMap2: { value: TEX.glow }, uPx: { value: 600 } },
     vertexShader: `attribute vec3 aColor; attribute float aSize; attribute float aAlpha; uniform float uPx; varying vec3 vC; varying float vA; varying float vK;
-      void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv; vC = aColor; vA = aAlpha; vK = step(0.0, aSize); gl_PointSize = min(abs(aSize) * uPx / max(0.5, -mv.z), 256.0); }`,
+      void main(){ vec4 mv = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mv; vC = aColor; vA = aAlpha; vK = step(0.0, aSize); gl_PointSize = aAlpha > 0.003 ? min(abs(aSize) * uPx / max(0.5, -mv.z), 200.0) : 0.0; if (aAlpha <= 0.003) gl_Position = vec4(2.0, 2.0, 2.0, 1.0); }`,
     fragmentShader: `uniform sampler2D uMap; uniform sampler2D uMap2; varying vec3 vC; varying float vA; varying float vK;
       void main(){ vec4 t = vK > 0.5 ? texture2D(uMap, gl_PointCoord) : texture2D(uMap2, gl_PointCoord); gl_FragColor = vec4(vC * t.rgb * 1.6, t.a * vA);
       #include <colorspace_fragment>
@@ -1263,7 +1318,7 @@ function applyCity(k) {
   gradePass.uniforms.uTint.value.set(th.line);
   droneMat.emissive.set(th.ob[1]);
   ambMat.map = TEX[th.amb.tex]; ambMat.size = th.amb.size; ambMat.blending = th.amb.add ? THREE.AdditiveBlending : THREE.NormalBlending; ambMat.needsUpdate = true;
-  hemi.color.set(th.sky[1]); hemi.groundColor.set(th.ground); key.color.set("#ffe6f2"); rim.color.set(th.sun);
+  hemi.color.set(th.sky[1]); hemi.groundColor.set(th.ground); key.color.set("#ffe6f2"); rim.color.set(th.sun); rays.material.color.set(th.sun);
   // far skyline silhouette band
   if (bandMat.map) bandMat.map.dispose();
   const r = rng(k.length * 131);
@@ -1303,6 +1358,7 @@ function layWorld(z0) {
   signs.forEach((s, k) => { s.z = z0 - 20 - k * SIGN_GAP; laySign(s, k); });
   jumbos.forEach((j, k) => { j.z = z0 - 60 - k * JUMBO_GAP; layJumbo(j, k); });
   strings.forEach((s, k) => { s.z = z0 - 30 - k * LSPACE; layString(s); });
+  groundMat.uniforms.uLPhase.value = z0 - 30; const L = THEMES[cityKey].lanterns; groundMat.uniforms.uL0.value.set(L[0]); groundMat.uniforms.uL1.value.set(L[1 % L.length]); groundMat.uniforms.uL2.value.set(L[L.length - 1]);
   const th = THEMES[cityKey];
   traffic.forEach((t) => { const lane = [-10.5, -3.5, 3.5, 10.5][(Math.random() * 4) | 0]; t.x = lane + rand(-0.6, 0.6); t.z = z0 - rand(-10, 400); t.v = lane < 0 ? rand(12, 30) : -rand(8, 22);
     if (th.water) t.v *= 0.3; tint(TRAFFIC, t.i, _c.set(th.water ? (Math.random() < 0.6 ? "#ffb347" : th.win) : t.v > 0 ? "#fff3d6" : "#ff3355")); });
@@ -1328,7 +1384,7 @@ function recycle(cz, dt) {
 
 /* ------------------------------------------------------------------ menu state */
 const now = () => Date.now();
-const cityOpen = (c, i) => PREVIEW_ALL || i === 0 || now() >= Date.parse(c.unlock);
+const cityOpen = () => true;   // all four cities are playable
 const dayName = (iso) => new Date(iso).toLocaleDateString(undefined, { weekday: "short", timeZone: "America/Los_Angeles" });
 const PILOTS = CONFIG.pilots.map(([name, bg]) => { const key = name.toLowerCase().replace(/\s+/g, "-"); return { key, name, bg, src: `waifus/${key}-face.webp`, full: `waifus/${key}.webp` }; });
 let sel = { city: store.get("city", "tokyo"), car: store.get("car", "paper"), pilot: store.get("pilot", "") };
@@ -1370,7 +1426,7 @@ function renderMenu() {
     const th = THEMES[c.key]; b.className += " city"; b.innerHTML = `<span class="cimg" style="background-image:url(cities/${c.key}.webp),linear-gradient(180deg,${th.sky.join(",")})"><i>${c.native || ""}</i></span><b>${c.name}</b>` + (open ? "" : `<span class="lock">🔒 ${dayName(c.unlock)}</span>`);
     b.onclick = () => { sel.city = c.key; store.set("city", c.key); applyCity(c.key); previews = {}; renderMenu(); }; $("cities").appendChild(b);
   });
-  const openCount = CONFIG.cities.filter(cityOpen).length; $("cityNote").textContent = openCount < CONFIG.cities.length ? "a new city unlocks daily" : "all cities open";
+  const openCount = CONFIG.cities.filter(cityOpen).length; $("cityNote").textContent = `${openCount} cities`;
   $("cars").innerHTML = ""; CONFIG.cars.forEach((car) => {
     const b = document.createElement("button"); b.className = "opt" + (sel.car === car.key ? " on" : ""); b.disabled = !!car.locked;
     const im = new Image(); im.alt = car.name; im.src = carPreview(car); b.appendChild(im); b.insertAdjacentHTML("beforeend", `<b>${car.name}</b><small>${car.tier}</small>` + (car.locked ? `<span class="lock">🔒</span>` : ""));
@@ -1410,7 +1466,7 @@ function newGame() {
   clearPools(); PTS.life.fill(0); layWorld(0); camera.position.set(0, 9, 10); trailHist[0].length = trailHist[1].length = 0;
 }
 function clearPools() {
-  for (const pl of [BAR, DRONE, RING, HEART, HALO, GOLD, GHALO]) { pl.free = []; for (let i = pl.mesh.count - 1; i >= 0; i--) { pl.mesh.setMatrixAt(i, ZERO); pl.free.push(i); } pl.mesh.instanceMatrix.needsUpdate = true; }
+  for (const pl of [BAR, DRONE, RING, HEART, HALO, GOLD, GHALO]) { pl.free = []; pl.used.fill(0); pl.hi = -1; if (pl.dyn) pl.mesh.count = 0; for (let i = pl.cap - 1; i >= 0; i--) { pl.mesh.setMatrixAt(i, ZERO); pl.free.push(i); } pl.mesh.instanceMatrix.needsUpdate = true; }
   for (const f of [...FRAMES, ...TRAINS]) { f.busy = false; f.g.visible = false; }
   if (G) { G.obs = []; G.items = []; }
 }
@@ -1553,7 +1609,7 @@ function update(dt) {
   // heart trail
   _c.set(boosting ? "#ffb3d6" : THEMES[sel.city].particle);
   if (Math.random() < (boosting ? 1 : 0.55)) emit(P.x + rand(-0.4, 0.4), P.y - 0.2 + rand(-0.2, 0.2), P.z + 2.4, rand(-0.5, 0.5), rand(-0.2, 0.6), rand(1, 4), 0.9, rand(0.25, 0.45), _c, 0);
-  // HUD
+  if (G.hudClock === clock) return; G.hudClock = clock;   // HUD once per rendered frame
   $("hScore").textContent = fmt(score()); $("hHearts").textContent = "💖 " + G.hearts; $("hDist").textContent = fmt(G.dist) + "m"; $("hCombo").textContent = "×" + G.combo;
   $("fuel").firstElementChild.style.width = G.fuel + "%"; $("fuel").classList.toggle("full", G.fuel >= 100); $("bBoost").classList.toggle("ready", G.fuel >= 100 && G.boostT <= 0);
   if (G.t > 5) $("tip").hidden = true;
@@ -1607,6 +1663,8 @@ function world(dt) {
   const cz = camera.position.z;
   // sky, band, landmark, ground and lights follow the camera
   sky.position.copy(camera.position); band.position.set(camera.position.x, 60, cz);
+  skyMat.uniforms.uT.value = clock; rays.position.copy(camera.position).addScaledVector(SUN_DIR, 900); rays.material.rotation = clock * 0.012;
+  if (carObj) { const k = clamp(1.35 - P.y / 13, 0.12, 1); carPool.position.set(P.x, 0.06, P.z + 0.6); carPool.scale.set(5 + P.y * 0.25, 1, 8 + P.y * 0.3); carPool.material.color.copy(carObj.userData.tierCol || _c.set("#ff4fa3")); carPool.material.opacity = k * (boosting ? 0.95 : 0.6); }
   for (const c of clouds) { const u = c.userData; u.a += dt * 0.004; c.position.set(camera.position.x + Math.sin(u.a) * u.R, u.y, cz - Math.cos(u.a) * u.R); }
   bldMat.uniforms.uTime.value = clock; beaconMat.opacity = Math.sin(clock * 2.6) > 0.55 ? 1 : 0.18;
   if (landmark) {
@@ -1628,7 +1686,7 @@ function world(dt) {
   // fireworks over the skyline
   fwT -= dt; if (fwT <= 0) { fwT = (cityKey === "singapore" ? rand(0.7, 1.8) : rand(1.4, 3.2)) * (G && G.fever ? 0.35 : 1); firework(rand(-55, 55), rand(48, 88), cz - rand(140, 230)); }
   // jumbotrons
-  jumboT -= dt; if (jumboT <= 0) { jumboT = 0.08; drawJumbo(); }
+  jumboT -= dt; if (jumboT <= 0) { jumboT = 0.14; drawJumbo(); }
   // hearts, halos, drones, trains
   if (G) {
     for (const it of G.items) { if (it.got) continue; const bob = Math.sin(clock * 3 + it.ph) * 0.2, s = it.gold ? 1.5 : 1;
@@ -1637,47 +1695,8 @@ function world(dt) {
       if (o.train) o.train.g.position.set(o.train.x, o.train.y, o.train.z); }
   }
   barMat.uniforms.uTime.value = clock; groundMat.uniforms.uTime.value = clock;
-  // neon contrails: two ribbons streaming from the tail, fading out
-const TRAIL_N = 46, trailHist = [[], []], trailGeo = new THREE.BufferGeometry();
-const trailPos = new Float32Array(2 * TRAIL_N * 2 * 3), trailA = new Float32Array(2 * TRAIL_N * 2), trailIdx = [];
-for (let r = 0; r < 2; r++) for (let i = 0; i < TRAIL_N - 1; i++) { const a = (r * TRAIL_N + i) * 2; trailIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
-trailGeo.setIndex(trailIdx); trailGeo.setAttribute("position", new THREE.BufferAttribute(trailPos, 3).setUsage(THREE.DynamicDrawUsage)); trailGeo.setAttribute("aA", new THREE.BufferAttribute(trailA, 1).setUsage(THREE.DynamicDrawUsage));
-const trailMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, uniforms: { uCol: { value: new THREE.Color("#ff4fa3") } },
-  vertexShader: `attribute float aA; varying float vA; void main(){ vA = aA; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-  fragmentShader: `uniform vec3 uCol; varying float vA; void main(){ gl_FragColor = vec4(uCol * 1.8, vA); }` });
-const trail = new THREE.Mesh(trailGeo, trailMat); trail.frustumCulled = false; trail.renderOrder = 4; scene.add(trail);
-const _tv = new THREE.Vector3();
-function stepTrail(boosting) {
-  if (!carObj) return;
-  for (let r = 0; r < 2; r++) {
-    _tv.set(r ? 0.95 : -0.95, -0.15, 2.0); carObj.localToWorld(_tv);
-    const h = trailHist[r]; h.unshift([_tv.x, _tv.y, _tv.z]); if (h.length > TRAIL_N) h.pop();
-    for (let i = 0; i < TRAIL_N; i++) {
-      const p = h[Math.min(i, h.length - 1)], w = (boosting ? 0.32 : 0.16) * (1 - i / TRAIL_N), a = (r * TRAIL_N + i) * 2, fade = (1 - i / TRAIL_N) * (boosting ? 0.9 : 0.55);
-      trailPos.set([p[0] - w, p[1], p[2], p[0] + w, p[1], p[2]], a * 3); trailA[a] = trailA[a + 1] = fade;
-    }
-  }
-  trailGeo.attributes.position.needsUpdate = true; trailGeo.attributes.aA.needsUpdate = true;
-}
-
-// searchlights sweeping the sky from behind the skyline
-const beamMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false, uniforms: { uCol: { value: new THREE.Color() } },
-  vertexShader: `varying float vY; void main(){ vY = uv.y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
-  fragmentShader: `uniform vec3 uCol; varying float vY; void main(){ gl_FragColor = vec4(uCol, 0.05 * pow(1.0 - vY, 1.8) * smoothstep(0.0, 0.08, vY)); }` });
-const beamGeo = new THREE.CylinderGeometry(9, 0.6, 200, 20, 1, true).translate(0, 100, 0);
-const beams = [-1, 1, -1, 1].map((s, i) => { const m = new THREE.Mesh(beamGeo, beamMat); m.frustumCulled = false; m.renderOrder = -1; m.userData = { s, z: 230 + i * 45, ph: i * 1.7 }; scene.add(m); return m; });
-
-// shooting stars
-const starMat = new THREE.MeshBasicMaterial({ map: TEX.glow, color: 0xffffff, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, toneMapped: false });
-const star = new THREE.Mesh(UNIT.plane, starMat); star.frustumCulled = false; star.visible = false; star.renderOrder = -1; scene.add(star);
-let starT = 3, starLife = 0;
-
-// gate-pass shockwave rings
-const ringMat = () => new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide });
-const passRings = Array.from({ length: 4 }, () => { const m = new THREE.Mesh(new THREE.TorusGeometry(1, 0.06, 8, 64), ringMat()); m.visible = false; m.frustumCulled = false; m.renderOrder = 4; scene.add(m); return { m, t: 0 }; });
-function passRing(x, y, z, col) { const r = passRings.find((q) => !q.m.visible) || passRings[0]; r.m.position.set(x, y, z); r.m.material.color.set(col); r.t = 0; r.m.visible = true; }
-
-// boost warp streaks
+  HALO.mesh.count = HEART.mesh.count; GHALO.mesh.count = GOLD.mesh.count;
+  // boost warp streaks
   warpMat.opacity = lerp(warpMat.opacity, boosting ? 0.75 : 0, Math.min(1, dt * 6));
   if (warpMat.opacity > 0.01) { warpSeed.forEach((w, i) => { w.z += dt * 140; if (w.z > 12) { w.z = rand(-70, -20); w.a = Math.random() * Math.PI * 2; w.r = rand(3, 14); }
     const x = P.x + Math.cos(w.a) * w.r, y = P.y + Math.sin(w.a) * w.r * 0.7, z = P.z + w.z; warpPos.set([x, y, z, x, y, z + w.l], i * 6); }); warpGeo.attributes.position.needsUpdate = true; }
@@ -1691,34 +1710,37 @@ function passRing(x, y, z, col) { const r = passRings.find((q) => !q.m.visible) 
 }
 
 /* ------------------------------------------------------------------ adaptive resolution (keeps 60fps on phones) */
-let perfT = 0, perfN = 0, perfLock = false;
-function perf(dt) {
-  if (perfLock || state !== "play") return; perfT += dt; perfN++;
-  if (perfT > 2.5) { const fps = perfN / perfT; perfT = 0; perfN = 0;
-    if (fps < 48 && qi < QSTEPS.length - 1) { qi++; store.set("q2", qi); resize(); }
-    else if (fps > 58) perfLock = true; }
+let perfT = 0, perfN = 0, perfCool = 0, perfLow = 0;
+function perf(dt) {   // live: 1.5 s windows of real play; two slow windows in a row → one step down. Hitches (> 0.25 s) are ignored.
+  if (state !== "play" || !G || !G.alive || G.cd > 0 || dt > 0.25 || qs.get("debug") === "1") { perfT = perfN = 0; return; }
+  perfT += dt; perfN++; perfCool -= dt;
+  if (perfT >= 1.5) { const fps = perfN / perfT; perfT = perfN = 0; perfLow = fps < 50 ? perfLow + 1 : 0;
+    if (perfLow >= 2 && perfCool <= 0 && qi < QSTEPS.length - 1) { qi++; store.set("q4", qi); resize(); perfCool = 3; perfLow = 0; } }
 }
 
 function step(dt) {
   if (dt > 0) {
-    if (state === "play" && G && G.alive) { if (G.cd > 0) countdown(dt); else update(dt); }
+    if (state === "play" && G && G.alive) {   // fixed 60 Hz sub-steps: game time always matches real time, even when frames drop
+      let left = dt; while (left > 1e-6 && state === "play" && G && G.alive) { const h = Math.min(left, 1 / 60); if (G.cd > 0) countdown(h); else update(h); left -= h; }
+    }
     else if (G && G.ended) cruise(dt);
     else if (state === "menu") attract(dt);
   }
   world(dt);
-  if (QSTEPS[qi].post) { gradePass.uniforms.uTime.value = clock; composer.render(dt); } else renderer.render(scene, camera);
+  if (QSTEPS[qi].post) { gradePass.uniforms.uTime.value = clock; gradePass.uniforms.uBoost.value = fovKick / 13; composer.render(dt); } else renderer.render(scene, camera);
   perf(dt);
 }
-function frame(ts) { const t = ts / 1000, dt = Math.min(0.033, Math.max(0, t - (last || t))); last = t; step(dt); requestAnimationFrame(frame); }
+function frame(ts) { const t = ts / 1000, dt = Math.min(0.1, Math.max(0, t - (last || t))); last = t; step(dt); requestAnimationFrame(frame); }
 
 /* ------------------------------------------------------------------ snapshots (share card, car thumbnails, og image) */
 function snapshot(w, h, scn, cam) {
   const pr = renderer.getPixelRatio(), size = renderer.getSize(new THREE.Vector2()), aspect = cam.aspect;
   renderer.setPixelRatio(1); renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
-  const post = scn === scene && QSTEPS[qi].post;
+  const post = scn === scene && QSTEPS[qi].post, kb = gradePass.uniforms.uBoost.value; gradePass.uniforms.uBoost.value = 0;
   if (post) { composer.setPixelRatio(1); composer.setSize(w, h); renderPass.camera = cam; composer.render(0); renderPass.camera = camera; } else renderer.render(scn, cam);
   const c = document.createElement("canvas"); c.width = w; c.height = h; c.getContext("2d").drawImage(renderer.domElement, 0, 0, w, h);
   cam.aspect = aspect; cam.updateProjectionMatrix(); renderer.setPixelRatio(pr); renderer.setSize(size.x, size.y, false);
+  gradePass.uniforms.uBoost.value = kb;
   if (post) { composer.setPixelRatio(pr); composer.setSize(size.x, size.y); composer.render(0); } else renderer.render(scene, camera); return c;
 }
 function heroShot(w, h) {   // 3/4 rear view of the car with the city ahead
@@ -1877,7 +1899,7 @@ document.addEventListener("visibilitychange", () => { if (document.hidden && sta
 if (qs.get("debug") === "1") window.__fh = { skipIntro: () => { if (G) { G.cd = 0.0001; } }, cityShot: (w = 480, h = 384) => snapshot(w, h, scene, camera).toDataURL("image/png"), get G() { return G; }, get state() { return state; }, P, steer, flip, boost, setCity: (k) => { sel.city = k; applyCity(k); }, tick: (dt) => step(dt),
   endNow: () => { if (G) G.t = RUN; }, get set() { return setPiece; }, toSet: (d = 70) => { P.z = setPiece.z + d; camera.position.z = P.z + 10; }, firework: () => firework(0, 50, camera.position.z - 120),
   hero: (w = 1200, h = 675) => { const c = heroShot(w, h); c.id = "dbgHero"; c.style.cssText = "position:fixed;inset:0;width:100%;z-index:99"; document.getElementById("dbgHero")?.remove(); document.body.appendChild(c); },
-  info: () => renderer.info.render, quality: () => ({ qi, dpr: renderer.getPixelRatio() }),
+  info: () => renderer.info.render, quality: () => ({ qi, dpr: renderer.getPixelRatio(), gpu: GPU, weak: WEAK_GPU }), setQ: (i) => { qi = i; resize(); }, scene, M: { BLD, TIER, ANT, BEACON, BAR, HEART, HALO, LANT, LGLOW, TRAFFIC, ground, sky, band, amb, warp, wire, rays, carPool, clouds, beams, signs, jumbos }, set Q(v) { Object.assign(QSTEPS[qi], v); resize(); }, gl: () => { const g = renderer.getContext(), e = g.getExtension("WEBGL_debug_renderer_info"); return e ? g.getParameter(e.UNMASKED_RENDERER_WEBGL) : "?"; },
   // renders the 1200×630 link-preview image (og.png) from the live 3D scene
   og: () => new Promise((res) => {
     const c = heroShot(1200, 630), g = c.getContext("2d");
