@@ -98,6 +98,15 @@ body.clean .hud .r{opacity:.22}
 .result-main{text-align:center}
 .result-main .big-score{margin-top:2px}
 .quip{font-size:.92rem;font-weight:700;color:#ffe3f1;background:rgba(255,79,163,.12);border:1px solid rgba(255,156,204,.25);border-radius:14px;padding:9px 11px;margin:6px 0 0;text-align:left}
+.mint-box{margin:14px 0 4px;padding:12px;border-radius:18px;border:1px solid rgba(255,215,106,.3);background:linear-gradient(160deg,rgba(255,215,106,.1),rgba(180,123,255,.08))}
+.mint-title{font-weight:900;font-size:1.05rem;text-align:center;margin-bottom:8px}
+.mint-title span{color:#ffd76a}
+.mint-cars{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.mint-cars div{border:1px solid var(--line);border-radius:12px;padding:4px 4px 6px;text-align:center;background:rgba(0,0,0,.25);font-size:.66rem;font-weight:800;color:var(--fg2)}
+.mint-cars div.on{border-color:#ffd76a;box-shadow:0 0 18px -4px rgba(255,215,106,.7);color:#fff}
+.mint-cars img{width:100%;border-radius:8px;display:block;margin-bottom:3px}
+.mint-cars b{display:block;color:#ffd76a;font-size:.7rem}
+.btn.mint.soon{opacity:.75;pointer-events:none}
 .btn.mint{background:linear-gradient(135deg,#ffd76a,#ff9ccc 55%,#b47bff);color:#2a0716;border-color:transparent;margin-top:6px;box-shadow:0 10px 30px -10px rgba(255,190,90,.7)}
 .bark{position:fixed;left:14px;bottom:max(16px,env(safe-area-inset-bottom));z-index:4;display:flex;gap:9px;align-items:center;max-width:min(320px,62vw);background:rgba(20,10,28,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,156,204,.35);border-radius:18px;padding:6px 12px 6px 6px;opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s;pointer-events:none}
 .bark.show{opacity:1;transform:none}
@@ -118,7 +127,8 @@ const CONFIG = {
   tags: ["$IMD", "@mememaxxers"],          // always in the share post (add the game token ticker below once it exists)
   tokenTicker: "",                          // e.g. "$VROOM" — added to the share post when set
   runSeconds: 60,                           // length of one run
-  mint: { label: "Mint Paper Hearts", url: "https://opensea.io/collection/paper-hearts-uwu" },
+  // Roadster mints (priced in $IMD, tiers below). Paste the mint page here when it's live — until then the results screen says "mint opens soon".
+  mintUrl: "",
   // Social row at the bottom of the menu and results screen. A link with no url shows as "soon".
   links: [
     { icon: "opensea", label: "Paper Hearts", url: "https://opensea.io/collection/paper-hearts-uwu" },
@@ -179,7 +189,7 @@ const CONFIG = {
     <p class="sub">60-second runs through Tokyo, Singapore, Seoul &amp; Da Nang. Thread the gates, grab hearts, flip for combos, boost through everything.</p>
     <div class="label"><span>City</span><span id="cityNote"></span></div>
     <div class="row cities" id="cities"></div>
-    <div class="label"><span>Roadster</span><span>by $IMD tier</span></div>
+    <div class="label"><span>Roadster</span><span>4 mints in $IMD</span></div>
     <div class="row cars" id="cars"></div>
     <div class="label"><span>Pilot</span><span>50 Paper Hearts · or upload your NFT</span></div>
     <div class="chosen"><img id="chosenImg" alt=""><div><div class="cname" id="chosenName"></div><div class="csub">Tap a face to choose who flies with you 💖</div></div></div>
@@ -210,8 +220,12 @@ const CONFIG = {
       </div>
     </div>
     <div class="kvs" id="oKvs"></div>
-    <a class="btn mint big" id="mintBtn" target="_blank" rel="noreferrer">💖 Mint Paper Hearts</a>
-    <div class="hint" id="mintNote"></div>
+    <div class="mint-box">
+      <div class="mint-title">Mint your Roadster <span>in $IMD</span></div>
+      <div class="mint-cars" id="mintCars"></div>
+      <a class="btn mint big" id="mintBtn" target="_blank" rel="noreferrer">Mint</a>
+      <div class="hint" id="mintNote"></div>
+    </div>
     <img class="card-preview" id="cardImg" alt="Your share card">
     <div class="btns">
       <button class="btn primary" id="share">Share on X</button>
@@ -914,6 +928,46 @@ function stepParticles(dt) {
   for (const k of ["position", "aColor", "aSize", "aAlpha"]) PTS.geo.attributes[k].needsUpdate = true;
 }
 
+// neon contrails: two ribbons streaming from the tail, fading out
+const TRAIL_N = 46, trailHist = [[], []], trailGeo = new THREE.BufferGeometry();
+const trailPos = new Float32Array(2 * TRAIL_N * 2 * 3), trailA = new Float32Array(2 * TRAIL_N * 2), trailIdx = [];
+for (let r = 0; r < 2; r++) for (let i = 0; i < TRAIL_N - 1; i++) { const a = (r * TRAIL_N + i) * 2; trailIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+trailGeo.setIndex(trailIdx); trailGeo.setAttribute("position", new THREE.BufferAttribute(trailPos, 3).setUsage(THREE.DynamicDrawUsage)); trailGeo.setAttribute("aA", new THREE.BufferAttribute(trailA, 1).setUsage(THREE.DynamicDrawUsage));
+const trailMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, uniforms: { uCol: { value: new THREE.Color("#ff4fa3") } },
+  vertexShader: `attribute float aA; varying float vA; void main(){ vA = aA; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `uniform vec3 uCol; varying float vA; void main(){ gl_FragColor = vec4(uCol * 1.8, vA); }` });
+const trail = new THREE.Mesh(trailGeo, trailMat); trail.frustumCulled = false; trail.renderOrder = 4; scene.add(trail);
+const _tv = new THREE.Vector3();
+function stepTrail(boosting) {
+  if (!carObj) return;
+  for (let r = 0; r < 2; r++) {
+    _tv.set(r ? 0.95 : -0.95, -0.15, 2.0); carObj.localToWorld(_tv);
+    const h = trailHist[r]; h.unshift([_tv.x, _tv.y, _tv.z]); if (h.length > TRAIL_N) h.pop();
+    for (let i = 0; i < TRAIL_N; i++) {
+      const p = h[Math.min(i, h.length - 1)], w = (boosting ? 0.32 : 0.16) * (1 - i / TRAIL_N), a = (r * TRAIL_N + i) * 2, fade = (1 - i / TRAIL_N) * (boosting ? 0.9 : 0.55);
+      trailPos.set([p[0] - w, p[1], p[2], p[0] + w, p[1], p[2]], a * 3); trailA[a] = trailA[a + 1] = fade;
+    }
+  }
+  trailGeo.attributes.position.needsUpdate = true; trailGeo.attributes.aA.needsUpdate = true;
+}
+
+// searchlights sweeping the sky from behind the skyline
+const beamMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false, uniforms: { uCol: { value: new THREE.Color() } },
+  vertexShader: `varying float vY; void main(){ vY = uv.y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `uniform vec3 uCol; varying float vY; void main(){ gl_FragColor = vec4(uCol, 0.05 * pow(1.0 - vY, 1.8) * smoothstep(0.0, 0.08, vY)); }` });
+const beamGeo = new THREE.CylinderGeometry(9, 0.6, 200, 20, 1, true).translate(0, 100, 0);
+const beams = [-1, 1, -1, 1].map((s, i) => { const m = new THREE.Mesh(beamGeo, beamMat); m.frustumCulled = false; m.renderOrder = -1; m.userData = { s, z: 230 + i * 45, ph: i * 1.7 }; scene.add(m); return m; });
+
+// shooting stars
+const starMat = new THREE.MeshBasicMaterial({ map: TEX.glow, color: 0xffffff, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, toneMapped: false });
+const star = new THREE.Mesh(UNIT.plane, starMat); star.frustumCulled = false; star.visible = false; star.renderOrder = -1; scene.add(star);
+let starT = 3, starLife = 0;
+
+// gate-pass shockwave rings
+const ringMat = () => new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide });
+const passRings = Array.from({ length: 4 }, () => { const m = new THREE.Mesh(new THREE.TorusGeometry(1, 0.06, 8, 64), ringMat()); m.visible = false; m.frustumCulled = false; m.renderOrder = 4; scene.add(m); return { m, t: 0 }; });
+function passRing(x, y, z, col) { const r = passRings.find((q) => !q.m.visible) || passRings[0]; r.m.position.set(x, y, z); r.m.material.color.set(col); r.t = 0; r.m.visible = true; }
+
 // boost warp streaks
 const WARP_N = 70, warpPos = new Float32Array(WARP_N * 6), warpGeo = new THREE.BufferGeometry();
 warpGeo.setAttribute("position", new THREE.BufferAttribute(warpPos, 3).setUsage(THREE.DynamicDrawUsage));
@@ -1156,6 +1210,7 @@ function applyCity(k) {
   bldMat.uniforms.uBase.value.set(th.mid).lerp(new THREE.Color(th.far), 0.4); bldMat.uniforms.uWin.value.set(th.win); bldMat.uniforms.uAcc.value.set(th.line);
   groundMat.uniforms.uBase.value.set(th.ground); groundMat.uniforms.uLine.value.set(th.line); groundMat.uniforms.uWin.value.set(th.win); groundMat.uniforms.uWater.value = th.water ? 1 : 0; groundMat.uniforms.uCross.value = th.cross;
   barMat.uniforms.uStyle.value = th.style;
+  beamMat.uniforms.uCol.value.set({ tokyo: "#ffb3d9", seoul: "#c9a6ff", danang: "#ffd98a", singapore: "#9ff7ff" }[k]);
   bldMat.uniforms.uAcc2.value.set({ tokyo: "#5fe1ff", seoul: "#62f0ff", danang: "#ff5a4a", singapore: "#ff6ad5" }[k]);
   const cc = new THREE.Color(th.sky[2]).lerp(new THREE.Color(th.sun), 0.55); clouds.forEach((c) => c.material.color.copy(cc));
   gradePass.uniforms.uTint.value.set(th.line);
@@ -1298,7 +1353,7 @@ $("file").addEventListener("change", (e) => {
   rd.onload = () => { const im = new Image(); im.onload = () => { const s = 256, c = document.createElement("canvas"); c.width = c.height = s; const g = c.getContext("2d"); const k = Math.max(s / im.width, s / im.height); g.drawImage(im, (s - im.width * k) / 2, (s - im.height * k) / 2, im.width * k, im.height * k); const d = c.toDataURL("image/jpeg", 0.88); store.set("customPilot", d); choosePilot("custom"); }; im.src = rd.result; };
   rd.readAsDataURL(f); e.target.value = "";
 });
-$("mintBtn").href = CONFIG.mint.url; $("mintBtn").textContent = "💖 " + CONFIG.mint.label;
+
 
 /* ------------------------------------------------------------------ game state */
 let state = "menu", G = null, last = 0, lastTap = 0, clock = 0, carObj = null;
@@ -1309,7 +1364,7 @@ function newGame() {
   G = { t: 0, speed: 58, dist: 0, hearts: 0, golds: 0, tricks: 0, bonus: 0, penalty: 0, flips: 0, smashed: 0, nears: 0, hits: 0, combo: 1, maxCombo: 1, comboT: 0, flipT: -1, fuel: 0, boostT: 0, inv: 0,
     obs: [], items: [], nextZ: -210, alive: true, ended: false, fever: false, lastSec: RUN, best: store.get("best-" + sel.city, 0), shake: 0 };
   Object.assign(P, { x: 0, y: 7, z: 0, vx: 0, vy: 0, roll: 0, spin: 0, pitch: 0 }); steer.x = 0; steer.y = 7;
-  clearPools(); PTS.life.fill(0); layWorld(0); camera.position.set(0, 9, 10);
+  clearPools(); PTS.life.fill(0); layWorld(0); camera.position.set(0, 9, 10); trailHist[0].length = trailHist[1].length = 0;
 }
 function clearPools() {
   for (const pl of [BAR, DRONE, RING, HEART, HALO, GOLD, GHALO]) { pl.free = []; for (let i = pl.mesh.count - 1; i >= 0; i--) { pl.mesh.setMatrixAt(i, ZERO); pl.free.push(i); } pl.mesh.instanceMatrix.needsUpdate = true; }
@@ -1337,6 +1392,7 @@ function spawnPattern(z) {
     wall(o, -WALL, x0, 0, TOPY, z - 0.5, z + 0.5, col); wall(o, x1, WALL, 0, TOPY, z - 0.5, z + 0.5, col);
     wall(o, x0, x1, 0, y0, z - 0.5, z + 0.5, col); wall(o, x0, x1, y1, TOPY, z - 0.5, z + 0.5, col);
     const fr = FRAMES.find((f) => !f.busy); if (fr) { setFrame(fr, cx, y1, w, z); o.frame = fr; }
+    o.hole = { x: cx, y: (y0 + y1) / 2, w, h: y1 - y0 };
     heartLine(clamp(cx * 0.4, -XMAX, XMAX), lerp(7, cy, 0.5), cx, clamp(cy, YMIN, YMAX), z + 22, z, 4); heartAt(cx, clamp(cy, YMIN, YMAX), z - 7);
   } else if (kind === "beams") {                     // sky bridges: go over / under
     const lv = [3.6, 9.4, 15.2], n = Math.random() < lvl * 0.75 ? 2 : 1, pk = lv.slice().sort(() => Math.random() - 0.5), used = pk.slice(0, n), free = pk.slice(n);
@@ -1431,7 +1487,9 @@ function update(dt) {
   for (const o of G.obs) {
     if (o.train) { const tr = o.train; tr.x += tr.v * dt; tr.box.x0 = tr.x - 26; tr.box.x1 = tr.x + 26; }
     if (o.hit) continue;
-    if (o.zMin - 3 > P.z + HZ) { if (!o.passed) { o.passed = true; if (!o.touched && o.near < 0.9) closeCall(); } continue; }
+    if (o.zMin - 3 > P.z + HZ) { if (!o.passed) { o.passed = true;
+      if (o.hole && !o.touched) { passRing(o.hole.x, o.hole.y, o.z, THEMES[sel.city].ob[0]); if (Math.hypot(P.x - o.hole.x, P.y - o.hole.y) < 1.4) { const pts = 120 * G.combo; G.tricks += pts; G.perfects = (G.perfects || 0) + 1; addCombo(); sfx.near(); toast(`PERFECT +${pts}`); burst(P.x, P.y, P.z - 2, "#fff7c2", 24, 10, 0.55); continue; } }
+      if (!o.touched && o.near < 0.9) closeCall(); } continue; }
     if (o.zMax < P.z - 40) { for (const d of o.drones) droneStep(d); continue; }
     let hit = false;
     for (const b of o.boxes) {
@@ -1526,11 +1584,57 @@ function world(dt) {
       if (o.train) o.train.g.position.set(o.train.x, o.train.y, o.train.z); }
   }
   barMat.uniforms.uTime.value = clock; groundMat.uniforms.uTime.value = clock;
-  // boost warp streaks
+  // neon contrails: two ribbons streaming from the tail, fading out
+const TRAIL_N = 46, trailHist = [[], []], trailGeo = new THREE.BufferGeometry();
+const trailPos = new Float32Array(2 * TRAIL_N * 2 * 3), trailA = new Float32Array(2 * TRAIL_N * 2), trailIdx = [];
+for (let r = 0; r < 2; r++) for (let i = 0; i < TRAIL_N - 1; i++) { const a = (r * TRAIL_N + i) * 2; trailIdx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
+trailGeo.setIndex(trailIdx); trailGeo.setAttribute("position", new THREE.BufferAttribute(trailPos, 3).setUsage(THREE.DynamicDrawUsage)); trailGeo.setAttribute("aA", new THREE.BufferAttribute(trailA, 1).setUsage(THREE.DynamicDrawUsage));
+const trailMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, uniforms: { uCol: { value: new THREE.Color("#ff4fa3") } },
+  vertexShader: `attribute float aA; varying float vA; void main(){ vA = aA; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `uniform vec3 uCol; varying float vA; void main(){ gl_FragColor = vec4(uCol * 1.8, vA); }` });
+const trail = new THREE.Mesh(trailGeo, trailMat); trail.frustumCulled = false; trail.renderOrder = 4; scene.add(trail);
+const _tv = new THREE.Vector3();
+function stepTrail(boosting) {
+  if (!carObj) return;
+  for (let r = 0; r < 2; r++) {
+    _tv.set(r ? 0.95 : -0.95, -0.15, 2.0); carObj.localToWorld(_tv);
+    const h = trailHist[r]; h.unshift([_tv.x, _tv.y, _tv.z]); if (h.length > TRAIL_N) h.pop();
+    for (let i = 0; i < TRAIL_N; i++) {
+      const p = h[Math.min(i, h.length - 1)], w = (boosting ? 0.32 : 0.16) * (1 - i / TRAIL_N), a = (r * TRAIL_N + i) * 2, fade = (1 - i / TRAIL_N) * (boosting ? 0.9 : 0.55);
+      trailPos.set([p[0] - w, p[1], p[2], p[0] + w, p[1], p[2]], a * 3); trailA[a] = trailA[a + 1] = fade;
+    }
+  }
+  trailGeo.attributes.position.needsUpdate = true; trailGeo.attributes.aA.needsUpdate = true;
+}
+
+// searchlights sweeping the sky from behind the skyline
+const beamMat = new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, fog: false, uniforms: { uCol: { value: new THREE.Color() } },
+  vertexShader: `varying float vY; void main(){ vY = uv.y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
+  fragmentShader: `uniform vec3 uCol; varying float vY; void main(){ gl_FragColor = vec4(uCol, 0.05 * pow(1.0 - vY, 1.8) * smoothstep(0.0, 0.08, vY)); }` });
+const beamGeo = new THREE.CylinderGeometry(9, 0.6, 200, 20, 1, true).translate(0, 100, 0);
+const beams = [-1, 1, -1, 1].map((s, i) => { const m = new THREE.Mesh(beamGeo, beamMat); m.frustumCulled = false; m.renderOrder = -1; m.userData = { s, z: 230 + i * 45, ph: i * 1.7 }; scene.add(m); return m; });
+
+// shooting stars
+const starMat = new THREE.MeshBasicMaterial({ map: TEX.glow, color: 0xffffff, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, fog: false, toneMapped: false });
+const star = new THREE.Mesh(UNIT.plane, starMat); star.frustumCulled = false; star.visible = false; star.renderOrder = -1; scene.add(star);
+let starT = 3, starLife = 0;
+
+// gate-pass shockwave rings
+const ringMat = () => new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide });
+const passRings = Array.from({ length: 4 }, () => { const m = new THREE.Mesh(new THREE.TorusGeometry(1, 0.06, 8, 64), ringMat()); m.visible = false; m.frustumCulled = false; m.renderOrder = 4; scene.add(m); return { m, t: 0 }; });
+function passRing(x, y, z, col) { const r = passRings.find((q) => !q.m.visible) || passRings[0]; r.m.position.set(x, y, z); r.m.material.color.set(col); r.t = 0; r.m.visible = true; }
+
+// boost warp streaks
   warpMat.opacity = lerp(warpMat.opacity, boosting ? 0.75 : 0, Math.min(1, dt * 6));
   if (warpMat.opacity > 0.01) { warpSeed.forEach((w, i) => { w.z += dt * 140; if (w.z > 12) { w.z = rand(-70, -20); w.a = Math.random() * Math.PI * 2; w.r = rand(3, 14); }
     const x = P.x + Math.cos(w.a) * w.r, y = P.y + Math.sin(w.a) * w.r * 0.7, z = P.z + w.z; warpPos.set([x, y, z, x, y, z + w.l], i * 6); }); warpGeo.attributes.position.needsUpdate = true; }
   stepParticles(dt);
+  if (dt > 0) stepTrail(boosting);
+  trailMat.uniforms.uCol.value.set(boosting ? "#ffffff" : carObj ? carObj.userData.cfg.trim === "#7a4d06" ? "#ffd76a" : carObj.userData.cfg.shine ? "#7fe3ff" : carObj.userData.cfg.trim : "#ff4fa3");
+  for (const b of beams) { const u = b.userData; b.position.set(u.s * 75 + camera.position.x * 0.3, 0, cz - u.z); b.rotation.set(Math.sin(clock * 0.35 + u.ph) * 0.3, 0, u.s * (0.3 + Math.sin(clock * 0.5 + u.ph) * 0.22)); }
+  starT -= dt; if (starT <= 0 && !star.visible) { star.visible = true; starLife = 0; star.userData = { x: rand(-200, 200), y: rand(170, 260), vx: rand(-1, 1) > 0 ? 260 : -260 }; starT = rand(3, 7); }
+  if (star.visible) { starLife += dt; const u = star.userData; star.position.set(camera.position.x + u.x + u.vx * starLife, u.y - 90 * starLife, cz - 420); star.scale.set(46, 1.6, 1); star.rotation.z = Math.atan2(-90, u.vx); starMat.opacity = Math.max(0, 1 - starLife / 0.8); if (starLife > 0.8) star.visible = false; }
+  for (const r of passRings) if (r.m.visible) { r.t += dt; const k = 1 + r.t * 14; r.m.scale.set(k, k, k); r.m.material.opacity = Math.max(0, 1 - r.t / 0.55); if (r.t > 0.55) r.m.visible = false; }
 }
 
 /* ------------------------------------------------------------------ adaptive resolution (keeps 60fps on phones) */
@@ -1571,6 +1675,7 @@ function heroShot(w, h) {   // 3/4 rear view of the car with the city ahead
   const vis = [];
   scene.traverse((o) => { if ((o.isPoints && o !== amb) || o === BAR.mesh || o === HEART.mesh || o === HALO.mesh || o === GOLD.mesh || o === GHALO.mesh || o === DRONE.mesh || o === RING.mesh) { vis.push([o, o.visible]); o.visible = false; } });
   for (const f of [...FRAMES, ...TRAINS]) { vis.push([f.g, f.g.visible]); f.g.visible = false; }
+  for (const r of passRings) { vis.push([r.m, r.m.visible]); r.m.visible = false; }
   world(0); sky.position.copy(cam.position);
   const c = snapshot(w, h, scene, cam);
   Object.assign(P, { roll: keep.roll, spin: keep.spin, pitch: keep.pitch, vx: keep.vx, vy: keep.vy }); if (G) G.inv = keep.inv; vis.forEach(([o, v]) => (o.visible = v)); return c;
@@ -1596,11 +1701,18 @@ function endRun() {
   setTimeout(() => { if (!G || !G.ended) return; state = "over"; $("oScore").textContent = fmt(s); $("newBest").hidden = !isBest;
     const p = pilot(); $("oWaifu").src = p.full; $("oName").textContent = p.name; $("oCard").style.background = `linear-gradient(${p.bg},${p.bg}) padding-box, var(--chrome) border-box`;
     $("oSub").textContent = `${city} · ${car().name} Roadster · ${RUN}s · best ${fmt(best)}`; $("oQuip").textContent = quip(s);
-    $("mintNote").textContent = p.key === "custom" ? "Collect the Paper Hearts waifus on OpenSea 💖" : `Love ${p.name}? Mint & collect the Paper Hearts on OpenSea 💖`;
-    $("oKvs").innerHTML = [["Distance", fmt(G.dist) + " m"], ["Hearts", G.hearts + (G.golds ? `  + ${G.golds} golden` : "")], ["Flips", G.flips], ["Close calls", G.nears], ["Best combo", "×" + G.maxCombo], ["Smashes", G.smashed],
+    renderMint();
+    $("oKvs").innerHTML = [["Distance", fmt(G.dist) + " m"], ["Hearts", G.hearts + (G.golds ? `  + ${G.golds} golden` : "")], ["Flips", G.flips], ["Close calls", G.nears], ["Perfect gates", G.perfects || 0], ["Best combo", "×" + G.maxCombo], ["Smashes", G.smashed],
       ["Hits", G.hits ? `${G.hits}  (−${fmt(G.penalty)})` : "0 — clean run +500 ✨"], ["Trick points", fmt(G.tricks)]].map(([k, v]) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`).join("");
     cardP.then((url) => { $("cardImg").src = url; });
     show("over"); }, 1600);
+}
+function renderMint() {
+  const c = car();
+  $("mintCars").innerHTML = CONFIG.cars.map((k) => `<div class="${k.key === c.key ? "on" : ""}"><img src="${carPreview(k)}" alt="">${k.name}<b>${k.tier}</b></div>`).join("");
+  const b = $("mintBtn"); b.classList.toggle("soon", !CONFIG.mintUrl);
+  if (CONFIG.mintUrl) { b.href = CONFIG.mintUrl; b.textContent = `🔥 Mint the ${c.name} Roadster · ${c.tier}`; } else { b.removeAttribute("href"); b.textContent = "⏳ Roadster mint opens soon"; }
+  $("mintNote").textContent = `You flew the ${c.name}. Own it — every Roadster is a mint in $IMD: ${CONFIG.cars.map((k) => `${k.name} ${k.tier}`).join(" · ")}.`;
 }
 function myLink() { const h = store.get("handle", ""); return CONFIG.site + (h ? `?ref=${encodeURIComponent(h)}` : ""); }
 function shareText(s, city) {
@@ -1615,7 +1727,8 @@ function drawPilotCard(g, x, y, w, h, rot = 0.05) {
   const fr = g.createLinearGradient(0, 0, w, h); fr.addColorStop(0, "#fff"); fr.addColorStop(0.35, "#ffd6ea"); fr.addColorStop(0.6, "#ff7fbf"); fr.addColorStop(1, "#ffe3f1");
   g.fillStyle = fr; g.beginPath(); g.roundRect(-7, -7, w + 14, h + 14, 26); g.fill(); g.shadowColor = "transparent";
   g.save(); g.beginPath(); g.roundRect(0, 0, w, h, 20); g.clip(); g.fillStyle = p.bg; g.fillRect(0, 0, w, h);
-  if (pilotFullReady) { const iw = pilotFull.width, ih = pilotFull.height, k = Math.max(w / iw, h / ih); g.drawImage(pilotFull, (w - iw * k) / 2, 0, iw * k, ih * k); }
+  const art = pilotFullReady ? pilotFull : pilotReady ? pilotImg : null;
+  if (art) { const iw = art.width, ih = art.height, k = Math.max(w / iw, h / ih); g.drawImage(art, (w - iw * k) / 2, 0, iw * k, ih * k); }
   const sh = g.createLinearGradient(0, h * 0.62, 0, h); sh.addColorStop(0, "rgba(10,4,16,0)"); sh.addColorStop(1, "rgba(10,4,16,.88)"); g.fillStyle = sh; g.fillRect(0, h * 0.6, w, h * 0.4);
   g.fillStyle = "#fff"; g.textAlign = "center"; g.font = '900 38px "Inter Tight",Arial'; g.fillText(p.name.toUpperCase(), w / 2, h - 46, w - 30);
   g.fillStyle = "#ff9ccc"; g.font = '800 17px "Inter Tight",Arial'; g.fillText("PAPER HEARTS · PILOT", w / 2, h - 20);
