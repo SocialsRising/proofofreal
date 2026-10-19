@@ -79,6 +79,10 @@ body.clean .hud .r{opacity:.22}
 .kv b{font-variant-numeric:tabular-nums}
 .badge{display:inline-block;background:var(--chrome);color:#2a0716;font-weight:900;font-size:.72rem;border-radius:999px;padding:3px 10px}
 .card-preview{width:100%;border-radius:14px;border:1px solid var(--line);display:block;margin-top:6px}
+.city{padding:5px 5px 7px}
+.cimg{position:relative;display:block;width:100%;aspect-ratio:1.25;border-radius:10px;background-size:cover;background-position:center;box-shadow:inset 0 -30px 30px -10px rgba(0,0,0,.6)}
+.cimg i{position:absolute;left:0;right:0;bottom:4px;font-style:normal;font-weight:900;font-size:.82rem;text-shadow:0 1px 6px #000;color:#fff}
+.opt.city:disabled{opacity:.7}.opt.city:disabled .cimg{filter:grayscale(.75) brightness(.6)}
 .pilots{max-height:236px;overflow-y:auto;padding:2px;grid-template-columns:repeat(auto-fill,minmax(54px,1fr))}
 .pilots img{background:#2a1636}
 .chosen{display:flex;gap:12px;align-items:center;margin-bottom:10px}
@@ -114,6 +118,13 @@ body.clean .hud .r{opacity:.22}
 .bark b{display:block;font-size:.7rem;color:#ff9ccc;letter-spacing:.06em;text-transform:uppercase}
 .bark span{font-size:.88rem;font-weight:800}
 body.clean .bark{display:none}
+.intro{position:fixed;inset:0;z-index:4;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;text-align:center;text-shadow:0 4px 30px rgba(0,0,0,.6)}
+.intro-native{font-weight:900;font-size:clamp(3rem,16vw,7rem);line-height:1;color:transparent;background:var(--chrome);-webkit-background-clip:text;background-clip:text;filter:drop-shadow(0 6px 24px rgba(255,79,163,.6));animation:introIn .6s cubic-bezier(.2,1.4,.4,1)}
+.intro-city{font-weight:900;letter-spacing:.4em;font-size:clamp(.9rem,3.6vw,1.3rem);margin:6px 0 18px;text-indent:.4em}
+.intro-count{font-weight:900;font-size:clamp(3.5rem,18vw,8rem);line-height:1;animation:pop .5s ease-out}
+.intro-song{margin-top:18px;font-weight:800;font-size:.85rem;color:var(--fg2);background:rgba(10,4,16,.55);border:1px solid var(--line);border-radius:999px;padding:6px 14px}
+@keyframes pop{from{transform:scale(1.8);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes introIn{from{transform:translateY(30px) scale(.9);opacity:0}to{transform:none;opacity:1}}
 .loading{position:fixed;inset:0;display:grid;place-items:center;z-index:6;background:var(--bg);font-weight:900;letter-spacing:-.03em;font-size:1.4rem}
 </style>
 </head>
@@ -138,10 +149,11 @@ const CONFIG = {
   ],
   // One city unlocks per day (midnight Pacific). The first city is always open.
   cities: [
-    { key: "tokyo", name: "Tokyo", unlock: "2026-10-19T07:00:00Z", track: "" },
-    { key: "singapore", name: "Singapore", unlock: "2026-10-20T07:00:00Z", track: "" },
-    { key: "seoul", name: "Seoul", unlock: "2026-10-21T07:00:00Z", track: "" },
-    { key: "danang", name: "Da Nang", unlock: "2026-10-22T07:00:00Z", track: "" },
+    // track: 60s mp3 in music/ (leave "" to use the built-in composed song) · song: credit shown on the intro card
+    { key: "tokyo", name: "Tokyo", native: "東京", unlock: "2026-10-19T07:00:00Z", track: "music/tokyo.mp3", song: "Tokyo Drift — Teriyaki Boyz (Caster Remix)" },
+    { key: "singapore", name: "Singapore", native: "新加坡", unlock: "2026-10-20T07:00:00Z", track: "music/singapore.mp3", song: "大展鸿图 — SKAI ISYOURGOD ft. AR刘夫阳" },
+    { key: "seoul", name: "Seoul", native: "서울", unlock: "2026-10-21T07:00:00Z", track: "music/seoul.mp3", song: "Perfect Night — LE SSERAFIM" },
+    { key: "danang", name: "Da Nang", native: "Đà Nẵng", unlock: "2026-10-22T07:00:00Z", track: "music/danang.mp3", song: "See Tình — Hoàng Thùy Linh (Cukak Remix)" },
   ],
   // Roadster designs by $IMD tier. Set locked: true to gate one later.
   cars: [
@@ -178,6 +190,7 @@ const CONFIG = {
   <button id="bFlip" aria-label="Flip"><span>⟳</span>FLIP</button>
   <button id="bBoost" aria-label="Boost"><span>🔥</span>BOOST</button>
 </div>
+<div class="intro" id="intro" hidden><div class="intro-native" id="introNative"></div><div class="intro-city" id="introCity"></div><div class="intro-count" id="introCount"></div><div class="intro-song" id="introSong"></div></div>
 <div class="toast" id="toast"></div>
 <div class="bark" id="bark"><img id="barkImg" alt=""><div><b id="barkName"></b><span id="barkText"></span></div></div>
 <div class="tip" id="tip" hidden></div>
@@ -186,12 +199,12 @@ const CONFIG = {
 <div class="ui" id="menu" hidden>
   <div class="panel">
     <div class="logo">FLYING<br><span>HEARTS</span></div>
-    <p class="sub">60-second runs through Tokyo, Singapore, Seoul &amp; Da Nang. Thread the gates, grab hearts, flip for combos, boost through everything.</p>
+    <p class="sub">60-second runs through Tokyo, Singapore, Seoul &amp; Da Nang. Pick your Paper Hearts pilot, thread the gates, flip for combos, boost through everything.</p>
     <div class="label"><span>City</span><span id="cityNote"></span></div>
     <div class="row cities" id="cities"></div>
     <div class="label"><span>Roadster</span><span>4 mints in $IMD</span></div>
     <div class="row cars" id="cars"></div>
-    <div class="label"><span>Pilot</span><span>50 Paper Hearts · or upload your NFT</span></div>
+    <div class="label"><span>Pilot</span><span>50 Paper Hearts</span></div>
     <div class="chosen"><img id="chosenImg" alt=""><div><div class="cname" id="chosenName"></div><div class="csub">Tap a face to choose who flies with you 💖</div></div></div>
     <div class="row pilots" id="pilots"></div>
     <input type="file" id="file" accept="image/*" hidden>
@@ -1043,12 +1056,39 @@ function makeCar(cfg) {
   const flames = [], discs = [];
   for (const s of [-1, 1]) { const f = add(CAR_GEO.flame, glow(new THREE.Color("#ff8a3c"), 0.85), s * 0.42, 0.36, 2.47); flames.push(f); }
   const flameCore = add(new THREE.SphereGeometry(0.22, 12, 8), glow(new THREE.Color("#fff0f6"), 0.9), 0, 0.36, 2.5); flameCore.scale.set(2.2, 0.7, 1);
+  const TIER = { paper: "#ff4fa3", midnight: "#8a5cff", gold: "#ffc23a", diamond: "#7fe3ff" }, tierCol = new THREE.Color(TIER[cfg.key] || cfg.trim);
   for (const [x, z] of [[0.98, 1.32], [-0.98, 1.32], [0.98, -1.3], [-0.98, -1.3]]) {
     add(CAR_GEO.wheel, dark, x, 0.27, z); add(CAR_GEO.hub, chrome, x, 0.27, z);
-    discs.push(add(CAR_GEO.disc, glow(new THREE.Color(cfg.shine ? "#7fe3ff" : "#ff4fa3"), 0.7), x, 0.1, z));
+    discs.push(add(CAR_GEO.disc, glow(tierCol, 0.7), x, 0.1, z));
   }
+  // soft neon underglow
+  const under = add(UNIT.plane, new THREE.MeshBasicMaterial({ map: TEX.glow, color: tierCol, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }), 0, 0.04, 0);
+  under.rotation.x = -Math.PI / 2; under.scale.set(3.6, 6.4, 1);
+  // per-tier body kit
+  const extras = { wings: [], spin: null };
+  if (cfg.key === "paper") {          // heart-shaped rear wing
+    const heartMat = new THREE.MeshPhysicalMaterial({ color: "#ff6fb5", emissive: "#ff2d8f", emissiveIntensity: 0.5, clearcoat: 1, roughness: 0.2 });
+    const h = add(UNIT.heart, heartMat, 0, 1.38, 2.0); h.scale.setScalar(0.5);
+    for (const s of [-1, 1]) add(new THREE.BoxGeometry(0.05, 0.3, 0.06), chrome, s * 0.18, 1.12, 2.0);
+  } else if (cfg.key === "midnight") { // carbon GT wing with a neon edge + neon rocker strips
+    const carbon = new THREE.MeshStandardMaterial({ color: 0x15151c, metalness: 0.4, roughness: 0.35 });
+    add(new THREE.BoxGeometry(1.9, 0.06, 0.42), carbon, 0, 1.36, 2.02);
+    add(new THREE.BoxGeometry(1.92, 0.025, 0.03), glow(new THREE.Color("#62f0ff")), 0, 1.36, 2.24);
+    for (const s of [-1, 1]) { add(new THREE.BoxGeometry(0.05, 0.36, 0.12), carbon, s * 0.6, 1.14, 2.0); add(new THREE.BoxGeometry(0.06, 0.22, 0.5), carbon, s * 0.96, 1.38, 2.02); }
+    for (const s of [-1, 1]) add(new THREE.BoxGeometry(0.03, 0.03, 3.9), glow(new THREE.Color("#8a5cff")), s * 0.99, 0.2, 0);
+  } else if (cfg.key === "gold") {    // golden angel wings that flap
+    const ws = new THREE.Shape(); ws.moveTo(0, 0); ws.bezierCurveTo(0.35, 0.6, 1.15, 1.0, 1.95, 0.88); ws.quadraticCurveTo(1.9, 0.62, 1.66, 0.6); ws.quadraticCurveTo(1.6, 0.4, 1.36, 0.42); ws.quadraticCurveTo(1.28, 0.22, 1.04, 0.26); ws.quadraticCurveTo(0.94, 0.06, 0.7, 0.12); ws.quadraticCurveTo(0.5, -0.04, 0.3, 0.04); ws.closePath();
+    const wingMat = new THREE.MeshPhysicalMaterial({ color: "#ffe39a", metalness: 1, roughness: 0.22, clearcoat: 1, emissive: "#a86f00", emissiveIntensity: 0.45 });
+    const wGeo = new THREE.ExtrudeGeometry(ws, { depth: 0.04, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2, curveSegments: 14 });
+    for (const s of [-1, 1]) { const piv = new THREE.Group(); piv.position.set(s * 0.95, 0.95, 0.35); g.add(piv); const w = new THREE.Mesh(wGeo, wingMat); w.scale.set(s * 0.9, 0.9, 0.9); w.rotation.y = s * 0.35; piv.add(w); piv.userData.s = s; extras.wings.push(piv); }
+  } else if (cfg.shine) {             // crystal fins + a floating diamond
+    const crystal = new THREE.MeshPhysicalMaterial({ color: "#dffbff", metalness: 0, roughness: 0.02, iridescence: 1, iridescenceIOR: 1.8, clearcoat: 1, emissive: "#7fe3ff", emissiveIntensity: 0.35, transparent: true, opacity: 0.85 });
+    for (const [x, sc] of [[-0.45, 0.22], [0, 0.3], [0.45, 0.22]]) { const c = add(new THREE.OctahedronGeometry(1, 0), crystal, x, 1.1 + sc, 1.95); c.scale.set(sc * 0.6, sc * 1.6, sc * 0.6); }
+    extras.spin = add(new THREE.OctahedronGeometry(0.22, 0), crystal, 0, 2.15, 0.5); extras.spin.scale.y = 1.5;
+  }
+  extras.under = under;
   const pilot = new THREE.Sprite(new THREE.SpriteMaterial({ map: pilotTex, fog: false, toneMapped: false })); pilot.scale.set(0.95, 0.95, 1); pilot.position.set(0, 1.6, 0.5); g.add(pilot);
-  root.userData = { flames, flameCore, discs, bodyMat, cfg };
+  root.userData = { flames, flameCore, discs, bodyMat, cfg, extras, tierCol };
   root.traverse((o) => { if (o.isMesh || o.isSprite) o.frustumCulled = false; });
   return root;
 }
@@ -1157,7 +1197,7 @@ const INST = {
 function startMusic(cityKey, offset = 0) {
   stopMusic(); if (!audio()) return;
   const city = CONFIG.cities.find((c) => c.key === cityKey);
-  if (city && city.track) { trackEl = new Audio(city.track); trackEl.muted = muted; trackEl.currentTime = offset; trackEl.play().catch(() => {}); return; }
+  if (city && city.track) { trackEl = trackFor(city); clearInterval(trackEl._fade); trackEl.volume = 0.85; trackEl.muted = muted; try { trackEl.currentTime = offset; } catch {} trackEl.play().catch(() => {}); return; }
   if (!musicBus()) return;
   const S = SONGS[cityKey], D = DRUMS[S.style], sd = 60 / S.bpm / 4, A = motif(S.seed, S.style), B = motif(S.seed + 7, S.style, 2);
   const barLen = sd * 16, feverBar = Math.floor((RUN - 10) / barLen), marks = [0, Math.round(6 / barLen), Math.round(24 / barLen), Math.round(44 / barLen), feverBar];
@@ -1196,7 +1236,14 @@ function startMusic(cityKey, offset = 0) {
     }
   }, 25);
 }
-function stopMusic() { if (seq) clearInterval(seq); seq = null; if (trackEl) { trackEl.pause(); trackEl = null; } }
+function stopMusic(fade = 0) {
+  if (seq) clearInterval(seq); seq = null;
+  if (!trackEl) return; const el = trackEl; trackEl = null; clearInterval(el._fade);
+  if (!fade) { el.pause(); return; }
+  const v0 = el.volume, t0 = performance.now(); el._fade = setInterval(() => { const k = (performance.now() - t0) / (fade * 1000); if (k >= 1) { el.pause(); el.volume = v0; clearInterval(el._fade); } else el.volume = v0 * (1 - k); }, 50);
+}
+const TRACKS = {};
+function trackFor(city) { if (!TRACKS[city.key]) { const a = new Audio(city.track); a.preload = "auto"; TRACKS[city.key] = a; } return TRACKS[city.key]; }
 function setMuted(v) { muted = v; store.set("muted", v); if (master) master.gain.value = v ? 0 : 0.5; if (trackEl) trackEl.muted = v; $("bMute").textContent = v ? "🔇" : "🔊"; }
 
 /* ------------------------------------------------------------------ city theming */
@@ -1285,7 +1332,7 @@ const cityOpen = (c, i) => PREVIEW_ALL || i === 0 || now() >= Date.parse(c.unloc
 const dayName = (iso) => new Date(iso).toLocaleDateString(undefined, { weekday: "short", timeZone: "America/Los_Angeles" });
 const PILOTS = CONFIG.pilots.map(([name, bg]) => { const key = name.toLowerCase().replace(/\s+/g, "-"); return { key, name, bg, src: `waifus/${key}-face.webp`, full: `waifus/${key}.webp` }; });
 let sel = { city: store.get("city", "tokyo"), car: store.get("car", "paper"), pilot: store.get("pilot", "") };
-if (sel.pilot !== "custom" && !PILOTS.some((p) => p.key === sel.pilot)) sel.pilot = pick(PILOTS).key;
+if (!PILOTS.some((p) => p.key === sel.pilot)) sel.pilot = pick(PILOTS).key;
 if (!CONFIG.cities.some((c, i) => c.key === sel.city && cityOpen(c, i))) sel.city = CONFIG.cities[0].key;
 if (!CONFIG.cars.some((c) => c.key === sel.car && !c.locked)) sel.car = CONFIG.cars[0].key;
 $("handle").value = store.get("handle", "") ? "@" + store.get("handle", "") : "";
@@ -1320,7 +1367,7 @@ function carPreview(cfg) {
 function renderMenu() {
   $("cities").innerHTML = ""; CONFIG.cities.forEach((c, i) => {
     const open = cityOpen(c, i), b = document.createElement("button"); b.className = "opt" + (sel.city === c.key ? " on" : ""); b.disabled = !open;
-    const th = THEMES[c.key]; b.innerHTML = `<span style="width:100%;aspect-ratio:1.4;border-radius:8px;background:linear-gradient(180deg,${th.sky.join(",")})"></span><b>${c.name}</b>` + (open ? "" : `<span class="lock">🔒 ${dayName(c.unlock)}</span>`);
+    const th = THEMES[c.key]; b.className += " city"; b.innerHTML = `<span class="cimg" style="background-image:url(cities/${c.key}.webp),linear-gradient(180deg,${th.sky.join(",")})"><i>${c.native || ""}</i></span><b>${c.name}</b>` + (open ? "" : `<span class="lock">🔒 ${dayName(c.unlock)}</span>`);
     b.onclick = () => { sel.city = c.key; store.set("city", c.key); applyCity(c.key); previews = {}; renderMenu(); }; $("cities").appendChild(b);
   });
   const openCount = CONFIG.cities.filter(cityOpen).length; $("cityNote").textContent = openCount < CONFIG.cities.length ? "a new city unlocks daily" : "all cities open";
@@ -1331,12 +1378,8 @@ function renderMenu() {
   });
   const cur = pilot(); $("chosenImg").src = cur.full; $("chosenName").textContent = cur.name;
   if (!$("pilots").childElementCount) {   // build the 50-face grid once, then just move the highlight
-    const up = document.createElement("button"); up.className = "opt pilot up"; up.title = "Upload your NFT or art"; up.textContent = "＋"; up.onclick = () => $("file").click(); $("pilots").appendChild(up);
-    const custom = document.createElement("button"); custom.className = "opt pilot"; custom.dataset.key = "custom"; custom.title = "Your upload"; custom.onclick = () => choosePilot("custom"); $("pilots").appendChild(custom);
     PILOTS.forEach((p) => { const b = document.createElement("button"); b.className = "opt pilot"; b.dataset.key = p.key; b.title = p.name; b.innerHTML = `<img src="${p.src}" alt="${p.name}" loading="lazy" decoding="async">`; b.onclick = () => choosePilot(p.key); $("pilots").appendChild(b); });
   }
-  const customSrc = store.get("customPilot", null), cb = $("pilots").querySelector('[data-key="custom"]');
-  cb.hidden = !customSrc; if (customSrc && !cb.firstChild) cb.innerHTML = `<img src="${customSrc}" alt="Your pilot">`; else if (customSrc) cb.firstChild.src = customSrc;
   $("pilots").querySelectorAll("[data-key]").forEach((b) => b.classList.toggle("on", b.dataset.key === sel.pilot));
 }
 const ICONS = {
@@ -1371,7 +1414,7 @@ function clearPools() {
   for (const f of [...FRAMES, ...TRAINS]) { f.busy = false; f.g.visible = false; }
   if (G) { G.obs = []; G.items = []; }
 }
-function toMenu() { state = "menu"; G = null; clearPools(); stopMusic(); document.body.classList.remove("fever"); show("menu"); renderMenu(); }
+function toMenu() { $("intro").hidden = true; state = "menu"; G = null; clearPools(); stopMusic(); document.body.classList.remove("fever"); show("menu"); renderMenu(); }
 function addObs(z) { const o = { z, boxes: [], drones: [], zMax: z, zMin: z - 2, hit: false, near: Infinity, touched: false, passed: false }; G.obs.push(o); return o; }
 function wall(o, x0, x1, y0, y1, z0, z1, hex) {
   if (x1 - x0 < 0.05 || y1 - y0 < 0.05) return; const i = take(BAR); if (i < 0) return;
@@ -1543,6 +1586,14 @@ function world(dt) {
     u.flameCore.scale.set(boosting ? 2.8 : 2, boosting ? 0.9 : 0.6, 1); u.flameCore.material.opacity = boosting ? 0.9 : 0.55;
     u.discs.forEach((d, i) => { d.material.opacity = 0.45 + Math.sin(clock * 9 + i) * 0.2; });
     if (u.cfg.shine) u.bodyMat.emissiveIntensity = 0.05 + (Math.sin(clock * 3) * 0.5 + 0.5) * 0.12;
+    const X = u.extras;
+    if (X) {
+      for (const w of X.wings) w.rotation.z = w.userData.s * (0.25 + Math.sin(clock * (boosting ? 14 : 6)) * 0.35);
+      if (X.spin) { X.spin.rotation.y += dt * 2.5; X.spin.position.y = 2.15 + Math.sin(clock * 2) * 0.08; }
+      X.under.material.opacity = 0.45 + Math.sin(clock * 4) * 0.12; if (u.cfg.shine) X.under.material.color.setHSL((clock * 0.15) % 1, 0.8, 0.65);
+      if (dt > 0 && (u.cfg.key === "gold" || u.cfg.shine) && Math.random() < 0.55) { if (u.cfg.shine) _c.setHSL(Math.random(), 0.9, 0.75); else _c.set("#ffd76a");
+        emit(P.x + rand(-1.3, 1.3), P.y + rand(-0.3, 0.7), P.z + rand(0, 2), 0, rand(0, 1), rand(2, 5), 0.7, -rand(0.15, 0.3), _c, 0); }
+    }
   }
   // camera: chase from behind, slightly above
   const back = 10.5 * camBack, up = 3.3 * camBack;
@@ -1572,6 +1623,8 @@ function world(dt) {
   rim.position.set(P.x + 6, P.y + 4, P.z - 12); rim.target.position.set(P.x, P.y, P.z);
   recycle(cz, dt);
   if (setPiece && setPiece.update && dt > 0) setPiece.update(dt);
+  // FEVER: it rains hearts
+  if (dt > 0 && G && G.fever && !G.ended) { _c.set(pick(["#ff4fa3", "#ff9ccc", "#ffffff", "#ffd76a"])); for (let i = 0; i < 3; i++) emit(P.x + rand(-26, 26), P.y + rand(14, 26), P.z - rand(10, 70), rand(-1, 1), -rand(6, 10), -worldV * 0.5, 2.2, rand(0.5, 0.9), _c, -2); }
   // fireworks over the skyline
   fwT -= dt; if (fwT <= 0) { fwT = (cityKey === "singapore" ? rand(0.7, 1.8) : rand(1.4, 3.2)) * (G && G.fever ? 0.35 : 1); firework(rand(-55, 55), rand(48, 88), cz - rand(140, 230)); }
   // jumbotrons
@@ -1648,7 +1701,7 @@ function perf(dt) {
 
 function step(dt) {
   if (dt > 0) {
-    if (state === "play" && G && G.alive) update(dt);
+    if (state === "play" && G && G.alive) { if (G.cd > 0) countdown(dt); else update(dt); }
     else if (G && G.ended) cruise(dt);
     else if (state === "menu") attract(dt);
   }
@@ -1687,12 +1740,27 @@ function startGame() {
   store.set("handle", cleanHandle($("handle").value)); audio(); applyCity(sel.city); newGame(); state = "play"; show(null);
   document.body.classList.remove("fever"); $("hTime").textContent = RUN; $("hTime").classList.remove("low");
   $("tip").innerHTML = TOUCH ? `${RUN}s run · drag anywhere to steer ✋<br>Double-tap or ⟳ to flip · 🔥 when fuel is full` : `${RUN}s run · steer with the mouse, arrows or WASD<br>Double-click / Space to flip · B or Shift to boost · H hides the HUD`;
-  $("tip").hidden = false; startMusic(sel.city, 0); setTimeout(() => state === "play" && bark("start", true), 700);
+  $("tip").hidden = true; G.cd = 3; G.cdShown = 0;
+  const c = CONFIG.cities.find((x) => x.key === sel.city);
+  $("introNative").textContent = c.native || c.name; $("introCity").textContent = c.name.toUpperCase(); $("introSong").textContent = c.song ? "♪ " + c.song : ""; $("introSong").hidden = !c.song; $("intro").hidden = false;
+  if (c.track) trackFor(c).load();
+}
+function countdown(dt) {   // car idles forward while the 3-2-1 plays; the run clock and the song start on GO
+  worldV = 26; P.z -= worldV * dt; P.vx = 0; P.vy = 0; G.cd -= dt;
+  const n = Math.ceil(G.cd);
+  if (n !== G.cdShown && n > 0) { G.cdShown = n; const el = $("introCount"); el.textContent = n; el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; if (AC) tone(660, AC.currentTime, 0.12, "square", 0.05); }
+  if (G.cd <= 0) {
+    const el = $("introCount"); el.textContent = "GO!"; el.style.animation = "none"; void el.offsetWidth; el.style.animation = "";
+    if (AC) tone(1320, AC.currentTime, 0.25, "square", 0.06);
+    setTimeout(() => { $("intro").hidden = true; }, 650);
+    $("tip").innerHTML = TOUCH ? `${RUN}s run · drag anywhere to steer ✋<br>Double-tap or ⟳ to flip · 🔥 when fuel is full` : `${RUN}s run · steer with the mouse, arrows or WASD<br>Double-click / Space to flip · B or Shift to boost · H hides the HUD`;
+    $("tip").hidden = false; startMusic(sel.city, 0); setTimeout(() => state === "play" && bark("start", true), 700);
+  }
 }
 function endRun() {
   if (G.ended) return; G.ended = true; G.alive = false; G.boostT = 0; P.spin = 0; G.flipT = -1;
   if (G.hits === 0) G.bonus += 500;
-  if (trackEl) stopMusic(); sfx.time(); document.body.classList.remove("fever"); $("hTime").textContent = "0";
+  if (trackEl) stopMusic(1.8); sfx.time(); document.body.classList.remove("fever"); $("hTime").textContent = "0";
   toast(G.hits === 0 ? "TIME! ✨ CLEAN RUN +500" : "TIME! ⏱");
   for (let i = 0; i < 4; i++) firework(rand(-30, 30), rand(30, 55), P.z - rand(60, 110));
   const s = score(), best = Math.max(G.best, s); const isBest = s > G.best && s > 0; store.set("best-" + sel.city, best);
@@ -1717,7 +1785,7 @@ function renderMint() {
 function myLink() { const h = store.get("handle", ""); return CONFIG.site + (h ? `?ref=${encodeURIComponent(h)}` : ""); }
 function shareText(s, city) {
   const tags = [...CONFIG.tags, CONFIG.tokenTicker].filter(Boolean).join(" ");
-  return `I scored ${fmt(s)} in ${RUN} seconds flying my ${car().name} Roadster through ${city} in Flying Hearts 💖🚗\n\nBeat me 👇 ${tags}${invitedBy ? `\n(invited by @${invitedBy})` : ""}`;
+  return `I scored ${fmt(s)} in ${RUN} seconds flying my ${car().name} Roadster through ${city} in Flying Hearts 💖\n\nBeat me 🚗 ${tags} ${myLink()}`;
 }
 let cardBlob = null;
 // the pilot's portrait as a tilted collectible card (shared by the share card and the og image)
@@ -1753,9 +1821,9 @@ function makeCard(s, city) {
 async function share() {
   const city = CONFIG.cities.find((c) => c.key === sel.city).name, s = score(), text = shareText(s, city), url = myLink();
   const file = cardBlob ? new File([cardBlob], "flying-hearts.png", { type: "image/png" }) : null;
-  try { if (file && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text: `${text}\n${url}` }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
+  try { if (file && navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], text }); return; } } catch (e) { if (e && e.name === "AbortError") return; }
   if (cardBlob) { const a = document.createElement("a"); a.href = URL.createObjectURL(cardBlob); a.download = "flying-hearts.png"; document.body.appendChild(a); a.click(); a.remove(); }
-  window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, "_blank", "noopener");
+  window.open(`https://x.com/intent/tweet?text=${encodeURIComponent(text)}`, "_blank", "noopener");
   toast("Card saved — attach it to your post 📎");
 }
 
@@ -1795,7 +1863,7 @@ addEventListener("keydown", (e) => {
 addEventListener("keyup", (e) => { if (KEYMAP[e.code]) keys[KEYMAP[e.code]] = 0; });
 $("bFlip").addEventListener("pointerdown", (e) => { e.stopPropagation(); flip(); });
 $("bBoost").addEventListener("pointerdown", (e) => { e.stopPropagation(); boost(); });
-function togglePause() { if (state === "play" && G.alive) { state = "paused"; drag = null; stopMusic(); show("pause"); } else if (state === "paused") { state = "play"; show(null); startMusic(sel.city, G.t); } }
+function togglePause() { if (state === "play" && G.alive && !(G.cd > 0)) { state = "paused"; drag = null; stopMusic(); show("pause"); } else if (state === "paused") { state = "play"; show(null); startMusic(sel.city, G.t); } }
 $("bPause").onclick = togglePause; $("resume").onclick = togglePause;
 $("bClean").onclick = toggleClean;
 $("quit").onclick = toMenu;
@@ -1806,7 +1874,7 @@ $("share").onclick = share;
 $("copyRef").onclick = async () => { const h = cleanHandle($("handle").value) || store.get("handle", ""); if (!h) { toast("Add your X handle in setup first"); return; } try { await navigator.clipboard.writeText(myLink()); toast("Link copied 🔗"); } catch { prompt("Your link", myLink()); } };
 document.addEventListener("visibilitychange", () => { if (document.hidden && state === "play") togglePause(); });
 
-if (qs.get("debug") === "1") window.__fh = { get G() { return G; }, get state() { return state; }, P, steer, flip, boost, setCity: (k) => { sel.city = k; applyCity(k); }, tick: (dt) => step(dt),
+if (qs.get("debug") === "1") window.__fh = { skipIntro: () => { if (G) { G.cd = 0.0001; } }, cityShot: (w = 480, h = 384) => snapshot(w, h, scene, camera).toDataURL("image/png"), get G() { return G; }, get state() { return state; }, P, steer, flip, boost, setCity: (k) => { sel.city = k; applyCity(k); }, tick: (dt) => step(dt),
   endNow: () => { if (G) G.t = RUN; }, get set() { return setPiece; }, toSet: (d = 70) => { P.z = setPiece.z + d; camera.position.z = P.z + 10; }, firework: () => firework(0, 50, camera.position.z - 120),
   hero: (w = 1200, h = 675) => { const c = heroShot(w, h); c.id = "dbgHero"; c.style.cssText = "position:fixed;inset:0;width:100%;z-index:99"; document.getElementById("dbgHero")?.remove(); document.body.appendChild(c); },
   info: () => renderer.info.render, quality: () => ({ qi, dpr: renderer.getPixelRatio() }),
