@@ -5,7 +5,7 @@ export const metadata: Metadata = gameMetadata({
   slug: "flyinghearts",
   title: "Flying Hearts",
   description:
-    "60-second 3D runs through Tokyo, Singapore, Seoul and Da Nang with your Paper Hearts pilot. Thread the gates, flip for combos, boost through everything — then share your card and tag $IMD.",
+    "60-second 3D runs through Tokyo, Singapore, Seoul and Da Nang with your Paper Hearts pilot. Thread the gates, flip for combos, boost through everything — then share your card.",
   twitterSite: "@mememaxxers",
 });
 

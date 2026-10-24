@@ -89,7 +89,7 @@ body.clean .hud .r{opacity:.22}
 .chosen img{width:84px;height:84px;border-radius:14px;object-fit:cover;border:2px solid transparent;background:linear-gradient(#1d1026,#1d1026) padding-box,var(--chrome) border-box}
 .cname{font-weight:900;font-size:1.25rem;letter-spacing:-.02em}
 .csub{font-size:.76rem;color:var(--fg3)}
-.socials{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:14px}
+.socials{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:14px}
 .socials a,.socials span{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 4px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--fg2);text-decoration:none;font-size:.68rem;font-weight:800;text-align:center}
 .socials a:hover{border-color:var(--pink2);color:var(--fg)}
 .socials svg{width:20px;height:20px;fill:currentColor}
@@ -102,16 +102,6 @@ body.clean .hud .r{opacity:.22}
 .result-main{text-align:center}
 .result-main .big-score{margin-top:2px}
 .quip{font-size:.92rem;font-weight:700;color:#ffe3f1;background:rgba(255,79,163,.12);border:1px solid rgba(255,156,204,.25);border-radius:14px;padding:9px 11px;margin:6px 0 0;text-align:left}
-.mint-box{margin:14px 0 4px;padding:12px;border-radius:18px;border:1px solid rgba(255,215,106,.3);background:linear-gradient(160deg,rgba(255,215,106,.1),rgba(180,123,255,.08))}
-.mint-title{font-weight:900;font-size:1.05rem;text-align:center;margin-bottom:8px}
-.mint-title span{color:#ffd76a}
-.mint-cars{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.mint-cars div{border:1px solid var(--line);border-radius:12px;padding:4px 4px 6px;text-align:center;background:rgba(0,0,0,.25);font-size:.66rem;font-weight:800;color:var(--fg2)}
-.mint-cars div.on{border-color:#ffd76a;box-shadow:0 0 18px -4px rgba(255,215,106,.7);color:#fff}
-.mint-cars img{width:100%;border-radius:8px;display:block;margin-bottom:3px}
-.mint-cars b{display:block;color:#ffd76a;font-size:.7rem}
-.btn.mint.soon{opacity:.75;pointer-events:none}
-.btn.mint{background:linear-gradient(135deg,#ffd76a,#ff9ccc 55%,#b47bff);color:#2a0716;border-color:transparent;margin-top:6px;box-shadow:0 10px 30px -10px rgba(255,190,90,.7)}
 .bark{position:fixed;left:14px;bottom:max(16px,env(safe-area-inset-bottom));z-index:4;display:flex;gap:9px;align-items:center;max-width:min(320px,62vw);background:rgba(20,10,28,.78);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border:1px solid rgba(255,156,204,.35);border-radius:18px;padding:6px 12px 6px 6px;opacity:0;transform:translateY(10px);transition:opacity .25s,transform .25s;pointer-events:none}
 .bark.show{opacity:1;transform:none}
 .bark img{width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none;border:2px solid #ff9ccc}
@@ -146,6 +136,8 @@ body.boost-ready::after{content:"";position:fixed;inset:0;pointer-events:none;z-
 .ctrl button.ready{animation:bpulse .55s ease-in-out infinite alternate}
 @keyframes bpulse{to{transform:scale(1.14)}}
 body.clean .banner,body.clean .combo-big,body.clean.boost-ready::after{display:none!important}
+.lheart{font-size:3rem;text-align:center;animation:beat .9s ease-in-out infinite}
+@keyframes beat{0%,100%{transform:scale(1)}30%{transform:scale(1.25)}50%{transform:scale(.95)}}
 .loading{position:fixed;inset:0;display:grid;place-items:center;z-index:6;background:var(--bg);font-weight:900;letter-spacing:-.03em;font-size:1.4rem}
 </style>
 </head>
@@ -156,17 +148,13 @@ body.clean .banner,body.clean .combo-big,body.clean.boost-ready::after{display:n
    ===================================================================================================== */
 const CONFIG = {
   site: "https://proofofreal.app/games/flyinghearts",
-  tags: ["$IMD", "@mememaxxers"],          // always in the share post (add the game token ticker below once it exists)
-  tokenTicker: "",                          // e.g. "$VROOM" — added to the share post when set
+  tags: ["@mememaxxers"],                  // always in the share post
   runSeconds: 60,                           // length of one run
-  // Roadster mints (priced in $IMD, tiers below). Paste the mint page here when it's live — until then the results screen says "mint opens soon".
-  mintUrl: "",
   // Social row at the bottom of the menu and results screen. A link with no url shows as "soon".
   links: [
     { icon: "opensea", label: "Paper Hearts", url: "https://opensea.io/collection/paper-hearts-uwu" },
     { icon: "x", label: "@mememaxxers", url: "https://x.com/mememaxxers" },
     { icon: "discord", label: "Discord", url: "https://discord.gg/krVPuyksQy" },
-    { icon: "token", label: "Token", url: "" },   // incoming — paste the link here when it's live
   ],
   // One city unlocks per day (midnight Pacific). The first city is always open.
   cities: [
@@ -176,12 +164,12 @@ const CONFIG = {
     { key: "seoul", name: "Seoul", native: "서울", unlock: "2026-10-21T07:00:00Z", track: "music/seoul.mp3", song: "Perfect Night — LE SSERAFIM" },
     { key: "danang", name: "Da Nang", native: "Đà Nẵng", unlock: "2026-10-22T07:00:00Z", track: "music/danang.mp3", song: "See Tình — Hoàng Thùy Linh (Cukak Remix)" },
   ],
-  // Roadster designs by $IMD tier. Set locked: true to gate one later.
+  // Roadster designs. Set locked: true to gate one later.
   cars: [
-    { key: "paper", name: "Paper", tier: "0.5 IMD", body: ["#fff7fb", "#ffd3e8"], trim: "#ff4fa3", locked: false },
-    { key: "midnight", name: "Midnight", tier: "5 IMD", body: ["#2a2a33", "#0d0d12"], trim: "#c9cbd3", locked: false },
-    { key: "gold", name: "Gold", tier: "50 IMD", body: ["#fff1b8", "#d9a62e"], trim: "#7a4d06", locked: false },
-    { key: "diamond", name: "Diamond", tier: "500 IMD", body: ["#e6fdff", "#7fe3ff"], trim: "#ff4fa3", locked: false, shine: true },
+    { key: "paper", name: "Paper", tier: "Classic", body: ["#fff7fb", "#ffd3e8"], trim: "#ff4fa3", locked: false },
+    { key: "midnight", name: "Midnight", tier: "Stealth", body: ["#2a2a33", "#0d0d12"], trim: "#c9cbd3", locked: false },
+    { key: "gold", name: "Gold", tier: "Luxe", body: ["#fff1b8", "#d9a62e"], trim: "#7a4d06", locked: false },
+    { key: "diamond", name: "Diamond", tier: "Legendary", body: ["#e6fdff", "#7fe3ff"], trim: "#ff4fa3", locked: false, shine: true },
   ],
   // Playable pilots: [name, card colour]. Art lives in waifus/<name-lowercase-dashed>.webp (card) and -face.webp (cockpit).
   pilots: [
@@ -199,7 +187,7 @@ const CONFIG = {
 </script>
 
 <canvas id="c"></canvas>
-<div class="loading" id="loading">Loading…</div>
+<div class="loading" id="loading"><div><div class="lheart">💖</div><div class="logo" style="font-size:2.2rem">FLYING<br><span>HEARTS</span></div><div class="hint">warming up the Roadster…</div></div></div>
 <div class="flash" id="flash"></div>
 
 <div class="hud" id="hud" hidden>
@@ -225,7 +213,7 @@ const CONFIG = {
     <p class="sub">60-second runs through Tokyo, Singapore, Seoul &amp; Da Nang. Pick your Paper Hearts pilot, thread the gates, flip for combos, boost through everything.</p>
     <div class="label"><span>City</span><span id="cityNote"></span></div>
     <div class="row cities" id="cities"></div>
-    <div class="label"><span>Roadster</span><span>4 mints in $IMD</span></div>
+    <div class="label"><span>Roadster</span><span>pick your ride</span></div>
     <div class="row cars" id="cars"></div>
     <div class="label"><span>Pilot</span><span>50 Paper Hearts</span></div>
     <div class="chosen"><img id="chosenImg" alt=""><div><div class="cname" id="chosenName"></div><div class="csub">Tap a face to choose who flies with you 💖</div></div></div>
@@ -257,12 +245,6 @@ const CONFIG = {
       </div>
     </div>
     <div class="kvs" id="oKvs"></div>
-    <div class="mint-box">
-      <div class="mint-title">Mint your Roadster <span>in $IMD</span></div>
-      <div class="mint-cars" id="mintCars"></div>
-      <a class="btn mint big" id="mintBtn" target="_blank" rel="noreferrer">Mint</a>
-      <div class="hint" id="mintNote"></div>
-    </div>
     <img class="card-preview" id="cardImg" alt="Your share card">
     <div class="btns">
       <button class="btn primary" id="share">Share on X</button>
@@ -273,7 +255,7 @@ const CONFIG = {
       <button class="btn" id="copyRef">Copy my link</button>
       <button class="btn" id="toMenu">Change setup</button>
     </div>
-    <div class="reward">🏆 Post your card tagging <b>$IMD</b> &amp; <b>@mememaxxers</b> — top scores, most-viral posts and referrals <b>get rewarded with Paper Hearts NFTs</b> 💖</div>
+    <div class="reward">🏆 Post your card tagging <b>@mememaxxers</b> — top scores, most-viral posts and referrals <b>get rewarded with Paper Hearts NFTs</b> 💖</div>
     <div class="socials" data-socials></div>
   </div>
 </div>
@@ -321,10 +303,10 @@ const THEMES = {
     music: { bpm: 100, root: 261.63, scale: [0, 2, 5, 7, 9], wave: "triangle" } },
 };
 const SIGNS = {
-  tokyo: [["東京", 1], ["ハート", 1], ["$IMD", 0], ["カラオケ", 1], ["MEME MAXXERS", 0], ["ラーメン", 1], ["渋谷", 1], ["愛", 1]],
-  singapore: [["SINGAPORE", 0], ["狮城", 1], ["$IMD", 0], ["HAWKER", 0], ["MEME MAXXERS", 0], ["LAH!", 0], ["CHILLI CRAB", 0], ["牛车水", 1]],
-  seoul: [["서울", 1], ["사랑해", 0], ["$IMD", 0], ["노래방", 1], ["MEME MAXXERS", 0], ["치킨", 0], ["대박", 1], ["PC방", 0]],
-  danang: [["ĐÀ NẴNG", 0], ["PHỞ", 0], ["$IMD", 0], ["CÀ PHÊ", 0], ["MEME MAXXERS", 0], ["BÁNH MÌ", 0], ["HỘI AN", 0], ["MỘT HAI BA YO!", 0]],
+  tokyo: [["東京", 1], ["ハート", 1], ["居酒屋", 1], ["カラオケ", 1], ["MEME MAXXERS", 0], ["ラーメン", 1], ["渋谷", 1], ["愛", 1]],
+  singapore: [["SINGAPORE", 0], ["狮城", 1], ["KOPI", 0], ["HAWKER", 0], ["MEME MAXXERS", 0], ["LAH!", 0], ["CHILLI CRAB", 0], ["牛车水", 1]],
+  seoul: [["서울", 1], ["사랑해", 0], ["카페", 1], ["노래방", 1], ["MEME MAXXERS", 0], ["치킨", 0], ["대박", 1], ["PC방", 0]],
+  danang: [["ĐÀ NẴNG", 0], ["PHỞ", 0], ["BIA HƠI", 0], ["CÀ PHÊ", 0], ["MEME MAXXERS", 0], ["BÁNH MÌ", 0], ["HỘI AN", 0], ["MỘT HAI BA YO!", 0]],
 };
 const GREET = { tokyo: ["こんにちは", "TOKYO"], seoul: ["안녕하세요", "SEOUL"], danang: ["XIN CHÀO", "ĐÀ NẴNG"], singapore: ["HELLO LAH!", "SINGAPORE"] };
 
@@ -740,7 +722,7 @@ function laySign(s, k) {
   s.mesh.material = mat; s.mesh.scale.set(ud.w, ud.h, 1); s.mesh.rotation.set(0, -side * Math.PI / 2, 0);
   s.mesh.position.set(side * 14.85, rand(5, 24), s.z);
 }
-// jumbotrons: one shared animated canvas — your pilot, $IMD, the city greeting, your live score
+// jumbotrons: one shared animated canvas — your pilot, FLYING HEARTS, the city greeting, your live score
 const JC = document.createElement("canvas"); JC.width = 512; JC.height = 288; const jctx = JC.getContext("2d");
 const jumboTex = new THREE.CanvasTexture(JC); jumboTex.colorSpace = THREE.SRGBColorSpace;
 const jumboMat = new THREE.MeshBasicMaterial({ map: jumboTex, toneMapped: false, side: THREE.DoubleSide });
@@ -760,12 +742,12 @@ function drawJumbo() {
     const h = store.get("handle", ""); g.textAlign = "left"; g.font = '900 54px "Inter Tight",sans-serif'; g.fillText(pilot().name.toUpperCase(), 260, 92, 240);
     g.font = '800 30px "Inter Tight",sans-serif'; g.fillStyle = "#ffc2dd"; g.fillText(h ? `& @${h}` : "is flying 💖", 260, 146, 240); if (h) g.fillText("are flying 💖", 260, 186, 240);
   }
-  else if (slide === 1) { g.font = '900 150px "Inter Tight",sans-serif'; g.fillStyle = chrome(); g.fillText("$IMD", W / 2, 124); }
+  else if (slide === 1) { g.font = '900 92px "Inter Tight",sans-serif'; g.fillText("FLYING", W / 2, 84); g.fillStyle = chrome(); g.fillText("HEARTS", W / 2, 168, 480); }
   else if (slide === 2) { const [a, b] = GREET[cityKey]; g.font = '900 62px "Inter Tight","Hiragino Sans","Malgun Gothic",sans-serif'; g.fillText(a, W / 2, 88, 470); g.font = '900 72px "Inter Tight",sans-serif'; g.fillStyle = th.win; g.fillText(b, W / 2, 168, 470); }
   else if (state === "play" && G) { g.font = '800 36px "Inter Tight",sans-serif'; g.fillText("SCORE", W / 2, 62); g.font = '900 110px "Inter Tight",sans-serif'; g.fillStyle = chrome(); g.fillText(fmt(score()), W / 2, 150, 480); }
   else { g.font = '900 78px "Inter Tight",sans-serif'; g.fillText("MEME", W / 2, 84); g.fillStyle = chrome(); g.fillText("MAXXERS", W / 2, 166, 480); }
   g.shadowBlur = 0; g.fillStyle = "rgba(0,0,0,.55)"; g.fillRect(0, H - 44, W, 44); g.fillStyle = th.win; g.font = '800 26px "Inter Tight",sans-serif'; g.textAlign = "left";
-  const tk = "💖 $IMD   💖 @mememaxxers   💖 FLYING HEARTS   💖 proofofreal.app   ", tw = g.measureText(tk).width, off = -((clock * 110) % tw);
+  const tk = "💖 FLYING HEARTS   💖 @mememaxxers   💖 PAPER HEARTS   💖 proofofreal.app   ", tw = g.measureText(tk).width, off = -((clock * 110) % tw);
   for (let x = off; x < W; x += tw) g.fillText(tk, x, H - 21);
   g.fillStyle = "rgba(0,0,0,.16)"; for (let y = 0; y < H; y += 4) g.fillRect(0, y, W, 1.5);
   g.strokeStyle = th.line; g.lineWidth = 8; g.strokeRect(4, 4, W - 8, H - 8);
@@ -859,7 +841,7 @@ function buildSet(k, th) {
     S(add(UNIT.plane, new THREE.MeshBasicMaterial({ map: face, transparent: true }), 0, 20, 7.15, cat), 10.5, 8.2, 1);
     const collar = add(new THREE.TorusGeometry(5.3, 0.6, 10, 32), std("#e0262b"), 0, 15.3, 0, cat); collar.rotation.x = Math.PI / 2;
     add(UNIT.sphere, gold, 0, 14.1, 5.6, cat).scale.setScalar(1.15);
-    const coinTex = canvasTex(128, 192, (c) => { c.fillStyle = "#ffcf40"; c.beginPath(); c.ellipse(64, 96, 60, 92, 0, 0, Math.PI * 2); c.fill(); c.strokeStyle = "#a8780a"; c.lineWidth = 6; c.stroke(); c.fillStyle = "#7a4d06"; c.font = '900 40px "Inter Tight",sans-serif'; c.textAlign = "center"; c.textBaseline = "middle"; c.fillText("$IMD", 64, 96); });
+    const coinTex = canvasTex(128, 192, (c) => { c.fillStyle = "#ffcf40"; c.beginPath(); c.ellipse(64, 96, 60, 92, 0, 0, Math.PI * 2); c.fill(); c.strokeStyle = "#a8780a"; c.lineWidth = 6; c.stroke(); c.fillStyle = "#7a4d06"; c.font = '900 40px "Inter Tight",sans-serif'; c.textAlign = "center"; c.textBaseline = "middle"; c.font = '900 60px "Noto Serif JP","Yu Mincho",serif'; c.fillText("福", 64, 98); });
     S(add(UNIT.plane, new THREE.MeshBasicMaterial({ map: coinTex, transparent: true, side: THREE.DoubleSide }), -3.6, 8.5, 6.3, cat), 4.2, 6.2, 1);
     const arm = new THREE.Group(); arm.position.set(4.6, 14, 2); cat.add(arm);
     S(add(UNIT.cyl, white, 0, 3, 0, arm), 1.5, 6, 1.5); add(UNIT.sphere, white, 0, 6.4, 0, arm).scale.setScalar(2);
@@ -1508,7 +1490,7 @@ function carPreview(cfg) {
 function renderMenu() {
   $("cities").innerHTML = ""; CONFIG.cities.forEach((c, i) => {
     const open = cityOpen(c, i), b = document.createElement("button"); b.className = "opt" + (sel.city === c.key ? " on" : ""); b.disabled = !open;
-    const th = THEMES[c.key]; b.className += " city"; b.innerHTML = `<span class="cimg" style="background-image:url(cities/${c.key}.webp),linear-gradient(180deg,${th.sky.join(",")})"><i>${c.native || ""}</i></span><b>${c.name}</b>` + (open ? "" : `<span class="lock">🔒 ${dayName(c.unlock)}</span>`);
+    const th = THEMES[c.key]; b.className += " city"; b.innerHTML = `<span class="cimg" style="background-image:url(cities/${c.key}.webp),linear-gradient(180deg,${th.sky.join(",")})"><i>${c.native || ""}</i></span><b>${c.name}</b>${store.get("best-" + c.key, 0) ? `<small>best ${fmt(store.get("best-" + c.key, 0))}</small>` : "<small>new</small>"}` + (open ? "" : `<span class="lock">🔒 ${dayName(c.unlock)}</span>`);
     b.onclick = () => { sel.city = c.key; store.set("city", c.key); applyCity(c.key); previews = {}; renderMenu(); }; $("cities").appendChild(b);
   });
   const openCount = CONFIG.cities.filter(cityOpen).length; $("cityNote").textContent = `${openCount} cities`;
@@ -1527,7 +1509,7 @@ const ICONS = {
   opensea: '<svg viewBox="0 0 24 24"><path d="M12 1a11 11 0 1 0 0 22 11 11 0 0 0 0-22Zm-5.6 11.4 3-4.7c.1-.2.4-.2.5 0 .6 1.3 1 2.9.8 3.9l-.4.8H6.6c-.2 0-.3-.2-.2-.3v.3Zm12.4 1.6v.6c0 .1 0 .2-.2.2-.4.2-1.6.8-2.1 1.5-1.3 1.8-2.3 2.2-4.2 2.2H8.1c-2.4 0-4.3-2-4.3-4.4v-.1c0-.1.1-.2.2-.2h3.8c.1 0 .2.1.2.2 0 .3.1.5.2.7.3.5.8.8 1.4.8h1.9v-1.5H9.6c-.1 0-.2-.2-.1-.3l.2-.3c.2-.3.6-.9.9-1.5.3-.4.5-.9.6-1.3l.1-.4V8.5l-.1-.2V6.9c0-.3.3-.6.6-.6s.6.3.6.6v.8c1.5.4 2.6 1.6 3.4 2.7 1 1.4 1.6 2.9 1.6 3.5v.5c0 .1-.1.2-.2.2h-.1l.1-.1Z"/></svg>',
   x: '<svg viewBox="0 0 24 24"><path d="M17.8 2h3.3l-7.2 8.3L22.4 22h-6.6l-5.2-6.8L4.6 22H1.3l7.7-8.8L.9 2h6.8l4.7 6.2L17.8 2Zm-1.2 18h1.8L6.8 3.9H4.9L16.6 20Z"/></svg>',
   discord: '<svg viewBox="0 0 24 24"><path d="M20.3 4.4A19.6 19.6 0 0 0 15.4 3l-.6 1.3a18 18 0 0 0-5.6 0L8.6 3a19.5 19.5 0 0 0-4.9 1.5C.6 9.1-.3 13.6.1 18.1a19.7 19.7 0 0 0 6 3l1.3-2.1c-.7-.3-1.4-.6-2-1l.5-.4a14 14 0 0 0 12.1 0l.5.4c-.6.4-1.3.7-2 1l1.3 2.1a19.6 19.6 0 0 0 6-3c.5-5.2-.8-9.7-3.5-13.7ZM8 15.3c-1.2 0-2.2-1.1-2.2-2.4S6.8 10.5 8 10.5s2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Zm8 0c-1.2 0-2.2-1.1-2.2-2.4s1-2.4 2.2-2.4 2.2 1.1 2.2 2.4-1 2.4-2.2 2.4Z"/></svg>',
-  token: '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 15.6-1-.9C7.5 13.6 5.3 11.6 5.3 9.2 5.3 7.2 6.8 5.7 8.8 5.7c1.1 0 2.2.5 2.9 1.4.7-.9 1.8-1.4 2.9-1.4 2 0 3.5 1.5 3.5 3.5 0 2.4-2.2 4.4-5.5 7.5l-.6.9Z"/></svg>',
+  heart: '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm0 15.6-1-.9C7.5 13.6 5.3 11.6 5.3 9.2 5.3 7.2 6.8 5.7 8.8 5.7c1.1 0 2.2.5 2.9 1.4.7-.9 1.8-1.4 2.9-1.4 2 0 3.5 1.5 3.5 3.5 0 2.4-2.2 4.4-5.5 7.5l-.6.9Z"/></svg>',
 };
 document.querySelectorAll("[data-socials]").forEach((el) => {
   el.innerHTML = CONFIG.links.map((l) => l.url ? `<a href="${l.url}" target="_blank" rel="noreferrer">${ICONS[l.icon] || ""}${l.label}</a>` : `<span>${ICONS[l.icon] || ""}${l.label}<small>coming soon</small></span>`).join("");
@@ -1911,23 +1893,15 @@ function endRun() {
   setTimeout(() => { if (!G || !G.ended) return; state = "over"; $("oScore").textContent = fmt(s); $("newBest").hidden = !isBest;
     const p = pilot(); $("oWaifu").src = p.full; $("oName").textContent = p.name; $("oCard").style.background = `linear-gradient(${p.bg},${p.bg}) padding-box, var(--chrome) border-box`;
     $("oSub").textContent = `${city} · ${car().name} Roadster · ${RUN}s · best ${fmt(best)}`; $("oQuip").textContent = quip(s);
-    renderMint();
     $("oKvs").innerHTML = [["Distance", fmt(G.dist) + " m"], ["Hearts", G.hearts + (G.golds ? `  + ${G.golds} golden` : "")], ["Flips", G.flips], ["Close calls", G.nears], ["Train flips", G.trainFlips || 0], ["Corkscrew", G.corkscrew ? "✓ +1,000" : "—"], ["Perfect gates", G.perfects || 0], ["Best combo", "×" + G.maxCombo], ["Smashes", G.smashed],
       ["Hits", G.hits ? `${G.hits}  (−${fmt(G.penalty)})` : "0 — clean run +500 ✨"], ["Trick points", fmt(G.tricks)]].map(([k, v]) => `<div class="kv"><span>${k}</span><b>${v}</b></div>`).join("");
     cardP.then((url) => { $("cardImg").src = url; });
     show("over"); }, 1600);
 }
-function renderMint() {
-  const c = car();
-  $("mintCars").innerHTML = CONFIG.cars.map((k) => `<div class="${k.key === c.key ? "on" : ""}"><img src="${carPreview(k)}" alt="">${k.name}<b>${k.tier}</b></div>`).join("");
-  const b = $("mintBtn"); b.classList.toggle("soon", !CONFIG.mintUrl);
-  if (CONFIG.mintUrl) { b.href = CONFIG.mintUrl; b.textContent = `🔥 Mint the ${c.name} Roadster · ${c.tier}`; } else { b.removeAttribute("href"); b.textContent = "⏳ Roadster mint opens soon"; }
-  $("mintNote").textContent = `You flew the ${c.name}. Own it — every Roadster is a mint in $IMD: ${CONFIG.cars.map((k) => `${k.name} ${k.tier}`).join(" · ")}.`;
-}
 function myLink() { const h = store.get("handle", ""); return CONFIG.site + (h ? `?ref=${encodeURIComponent(h)}` : ""); }
 function shareText(s, city) {
-  const tags = [...CONFIG.tags, CONFIG.tokenTicker].filter(Boolean).join(" ");
-  return `I scored ${fmt(s)} in ${RUN} seconds flying my ${car().name} Roadster through ${city} in Flying Hearts 💖\n\nBeat me 🚗 ${tags} ${myLink()}`;
+  const tags = CONFIG.tags.join(" ");
+  return `I scored ${fmt(s)} in ${RUN} seconds flying my ${car().name} Roadster through ${city} 💖\n\nBeat me 🚗 ${tags} ${myLink()}`;
 }
 let cardBlob = null;
 // the pilot's portrait as a tilted collectible card (shared by the share card and the og image)
@@ -1956,7 +1930,7 @@ function makeCard(s, city) {
     g.font = '800 25px "Inter Tight",Arial'; g.fillStyle = "#ffe3f1"; g.fillText(`💖 ${G.hearts}  ·  ⟳ ${G.flips} flips  ·  ⚡ ${G.nears} close calls`, 58, 284);
     if (G.hits === 0) { g.fillStyle = "#ffd34d"; g.fillText("✨ CLEAN RUN", 58, 322); }
     const h = store.get("handle", ""); g.font = '800 26px "Inter Tight",Arial'; g.fillStyle = "#fff"; g.fillText(h ? `@${h}  ×  ${pilot().name}` : `flying with ${pilot().name}`, 58, 590);
-    g.font = '800 24px "Inter Tight",Arial'; g.fillStyle = "#ff9ccc"; g.fillText([...CONFIG.tags, CONFIG.tokenTicker].filter(Boolean).join("  ") + "   ·   proofofreal.app/games/flyinghearts", 58, 630);
+    g.font = '800 24px "Inter Tight",Arial'; g.fillStyle = "#ff9ccc"; g.fillText(CONFIG.tags.join("  ") + "   ·   proofofreal.app/games/flyinghearts", 58, 630);
     c.toBlob((b) => { cardBlob = b; res(URL.createObjectURL(b)); }, "image/png");
   });
 }
@@ -2027,7 +2001,7 @@ if (qs.get("debug") === "1") window.__fh = { skipIntro: () => { if (G) { G.cd = 
     const gr = g.createLinearGradient(54, 140, 520, 230); gr.addColorStop(0, "#fff"); gr.addColorStop(0.45, "#ff9ccc"); gr.addColorStop(1, "#ff4fa3"); g.fillStyle = gr; g.fillText("HEARTS", 54, 222);
     g.fillStyle = "#ffe3f1"; g.font = '800 26px "Inter Tight",Arial'; g.fillText("Tokyo · Singapore · Seoul · Da Nang", 58, 272);
     g.fillStyle = "#c9bfd0"; g.font = '700 24px "Inter Tight",Arial'; g.fillText("60-second runs · 50 Paper Hearts pilots", 58, 308);
-    g.fillStyle = "#ff9ccc"; g.font = '800 28px "Inter Tight",Arial'; g.fillText("$IMD  ·  @mememaxxers", 58, 590);
+    g.fillStyle = "#ff9ccc"; g.font = '800 28px "Inter Tight",Arial'; g.fillText("@mememaxxers  ·  proofofreal.app", 58, 590);
     c.toBlob(res, "image/png");
   }) };
 
