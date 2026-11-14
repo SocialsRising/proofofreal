@@ -9,6 +9,15 @@ export const robinhood = defineChain({
   blockExplorers: { default: { name: "Blockscout", url: "https://robinhoodchain.blockscout.com" } },
 });
 
+/** Elysium: Kinetiq's rollup on HyperEVM (gas in HYPE). Home of the Montra and Volta launchpads; used by /incubator/elysium. */
+export const elysium = defineChain({
+  id: 99901,
+  name: "Elysium",
+  nativeCurrency: { name: "HYPE", symbol: "HYPE", decimals: 18 },
+  rpcUrls: { default: { http: [process.env.NEXT_PUBLIC_ELYSIUM_RPC ?? "https://rpc.montramarkets.xyz"] } },
+  blockExplorers: { default: { name: "Elysium Explorer", url: "https://elysium.kinetiq.xyz" } },
+});
+
 export type ChainKey = "base" | "robinhood" | "base-sepolia";
 
 export type SupportedChainId = 8453 | 4663 | 84532;
