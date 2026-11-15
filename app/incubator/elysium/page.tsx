@@ -68,7 +68,7 @@ export default function IncubatorHome() {
         <div className="eyebrow live"><i />Live on Elysium · Montra today, Volta next</div>
         <h1 style={{ marginTop: 14, maxWidth: "15ch" }}>Launch like you <span className="chrome-text">already have a team.</span></h1>
         <p className="sub muted" style={{ maxWidth: "58ch", marginTop: 16, fontSize: "1.08rem" }}>
-          {BRAND} sits on top of the launchpads you already use. Launch through us and your token gets an AI growth agent, a spot in this directory, and a fee split that funds your community — with {PARENT} marketing support for the projects that earn it.
+          {BRAND} sits on top of the launchpads you already use. Launch through us and your token gets a ready-made launch kit, a spot in this directory, a fee split that funds your community, and hands-on help from the team — with {PARENT} marketing support for the projects that earn it.
         </p>
         <div className="ctarow" style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 22 }}>
           <Link className="btn primary lg" href="/incubator/elysium/launch">Launch through EARLY →</Link>
@@ -101,7 +101,7 @@ export default function IncubatorHome() {
         <div className="sechead"><div><div className="eyebrow">How it works</div><h2>Three steps. No new contracts.</h2></div></div>
         <div className="steps3">
           <div className="step-card"><div className="n">1</div><h3>Launch on Montra, through EARLY</h3><p className="muted">Same Montra factory, same locked liquidity, same one transaction from your own wallet. We add the incubator split and credit the launch to EARLY.</p></div>
-          <div className="step-card"><div className="n">2</div><h3>Your AI growth agent goes to work</h3><p className="muted">It reads your token&apos;s live data and writes your launch post, thread, pinned welcome, FAQ and a 7-day plan — and answers your community&apos;s questions on your project page.</p></div>
+          <div className="step-card"><div className="n">2</div><h3>Get your launch kit and the team</h3><p className="muted">Your project page comes with a launch post, thread, pinned welcome, FAQ and a 7-day plan filled in from your live data — and we review every incubated launch by hand to help you grow.</p></div>
           <div className="step-card"><div className="n">3</div><h3>Grow with the network</h3><p className="muted">You&apos;re listed in the directory and can apply for {PARENT} spotlights, art, memes and campaigns. Support is approved case by case, never automatic.</p></div>
         </div>
       </section>
@@ -113,7 +113,7 @@ export default function IncubatorHome() {
           <div className="bar3"><i className="c" style={{ width: `${SPLIT.creator / 100}%` }} /><i className="t" style={{ width: `${SPLIT.treasury / 100}%` }} /><i className="h" style={{ width: `${SPLIT.community / 100}%` }} /></div>
           <div className="split3" style={{ marginTop: 14 }}>
             <div className="slot"><div className="p">{SPLIT.creator / 100}%</div><div className="who">You</div><small>Your wallet, claimable any time on Montra.</small></div>
-            <div className="slot"><div className="p">{SPLIT.treasury / 100}%</div><div className="who">EARLY treasury</div><small>Funds the agents, the directory and ecosystem development. <a href={explorerAddr(TREASURY)} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>Public wallet ↗</a></small></div>
+            <div className="slot"><div className="p">{SPLIT.treasury / 100}%</div><div className="who">EARLY treasury</div><small>Funds the incubator, the directory and ecosystem development. <a href={explorerAddr(TREASURY)} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>Public wallet ↗</a></small></div>
             <div className="slot"><div className="p">{SPLIT.community / 100}%</div><div className="who">Community rewards</div><small>Funds bounties, meme contests and rewards for incubated communities. <a href={explorerAddr(COMMUNITY)} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>Public wallet ↗</a></small></div>
           </div>
           <p className="muted" style={{ fontSize: ".84rem", marginTop: 14 }}>Montra may also pay EARLY a share of its own 0.4% protocol fee through the Montra Builders programme — that comes out of Montra&apos;s cut, never yours or your holders&apos;.</p>
@@ -140,14 +140,14 @@ export default function IncubatorHome() {
 
       {trending.length > 0 && (
         <section className="blk">
-          <div className="sechead"><div><div className="eyebrow">Market context</div><h2>Trending on Montra right now</h2></div><span className="muted" style={{ fontSize: ".85rem" }}>Not incubated — shown for context. Open any to try the growth agent.</span></div>
+          <div className="sechead"><div><div className="eyebrow">Market context</div><h2>Trending on Montra right now</h2></div><span className="muted" style={{ fontSize: ".85rem" }}>Not incubated — shown for context. Open any to see a project page.</span></div>
           <TokenTable tokens={trending} empty={null} />
         </section>
       )}
 
       <section className="blk">
         <div className="cta-band">
-          <div><div className="big" style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "1.6rem" }}>Ready when you are.</div><div>One transaction on Montra. Your agent is ready the moment it confirms.</div></div>
+          <div><div className="big" style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "1.6rem" }}>Ready when you are.</div><div>One transaction on Montra. Your launch kit is ready the moment it confirms.</div></div>
           <Link className="btn dark lg" href="/incubator/elysium/launch">Launch through EARLY →</Link>
         </div>
       </section>

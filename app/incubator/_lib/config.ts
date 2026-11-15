@@ -9,8 +9,8 @@ export const PARENT = "Socials Rising";
 /** Wallet that receives EARLY's 10% slot of every incubated token's creator fees. Set NEXT_PUBLIC_EARLY_TREASURY in Vercel to change it. */
 export const TREASURY = ((process.env.NEXT_PUBLIC_EARLY_TREASURY ?? "0xa823786b8417AD2d8D7318ac6f8a199017Ff70F5").toLowerCase()) as `0x${string}`;
 
-/** Montra Builders code (register once at montramarkets.xyz/builders/join with the treasury wallet). Empty = launches aren't attributed. */
-export const MONTRA_BUILDER_CODE = (process.env.NEXT_PUBLIC_MONTRA_BUILDER_CODE ?? "").trim().toLowerCase();
+/** Montra Builders code: credits every launch through EARLY to the "early" builder account (25% of Montra's protocol fee for 90 days). */
+export const MONTRA_BUILDER_CODE = (process.env.NEXT_PUBLIC_MONTRA_BUILDER_CODE || "early").trim().toLowerCase();
 
 /** The incubator split of the creator side of every trade fee, in basis points of that side (must total 10,000). */
 export const SPLIT = { creator: 8000, treasury: 1000, community: 1000 } as const;

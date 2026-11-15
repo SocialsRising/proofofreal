@@ -1,13 +1,10 @@
 "use client";
 import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useToast } from "../../../../launchpad/_components/Toast";
 import { LINKS, PARENT, explorerAddr, explorerTx } from "../../../_lib/config";
 import { isIncubated, montra, pct, recipientLabel, short, units, usd, type Holders, type TokenDetail } from "../../../_lib/montra";
-
-type Kit = { tagline: string; launchPost: string; thread: string[]; communityWelcome: string; faq: { q: string; a: string }[]; memeIdeas: string[]; weekOne: { day: string; action: string }[] };
-type Msg = { role: "user" | "assistant"; content: string };
 
 function Copy({ text }: { text: string }) {
   const toast = useToast();
@@ -17,70 +14,74 @@ function Block({ title, text, children }: { title: string; text: string; childre
   return <div className="kitblock"><div className="h"><b>{title}</b><Copy text={text} /></div>{children ?? <pre>{text}</pre>}</div>;
 }
 
-function GrowthAgent({ token, symbol }: { token: string; symbol: string }) {
-  const [kit, setKit] = useState<Kit | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [err, setErr] = useState("");
-  async function run() {
-    setLoading(true); setErr("");
-    try {
-      const r = await fetch("/api/incubator/agent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode: "kit", token }) });
-      const b = await r.json(); if (!r.ok) throw new Error(b.error); setKit(b.kit);
-    } catch (e) { setErr((e as Error).message || "The agent couldn't finish. Try again."); } finally { setLoading(false); }
-  }
+/** Launch kit filled in from the token's own Montra data: no AI, no server, no cost. Creators edit before posting. */
+function buildKit(d: TokenDetail, label: (r: string) => string) {
+  const t = `$${d.symbol}`, url = `https://montramarkets.xyz/token/${d.address.toLowerCase()}`;
+  const first = (d.description ?? d.metadata?.description ?? "").trim().split(/\n+/)[0] ?? "";
+  const sentence = first.match(/^.{20,200}?[.!?](\s|$)/)?.[0].trim();
+  const about = sentence || (first.length > 200 ? `${first.slice(0, 200).replace(/[\s,;:]+\S*$/, "")}…` : first) || "[one line on what it is]";
+  const fee = `${d.totalFeePips / 10000}%`;
+  const split = d.splitter ? d.splitter.recipients.map((r, i) => `${label(r)} ${d.splitter!.shares[i] / 100}%`).join(" · ") : d.recipientKind === "holders" ? "100% to holders" : `100% to ${d.recipient ? label(d.recipient) : "the creator"}`;
+  const x = d.metadata?.twitter, tg = d.metadata?.telegram, dc = d.metadata?.discord, web = d.metadata?.website;
+  const socials = [x && `X: ${x}`, tg && `Telegram: ${tg}`, dc && `Discord: ${dc}`, web && `Website: ${web}`].filter(Boolean).join("\n");
+  return {
+    launchPost: `${d.name} (${t}) is live on Montra 🚀\n\n${about}\n\nLiquidity locked forever on Uniswap v4 · Elysium\n\nTrade: ${url}`,
+    thread: [
+      `${d.name} (${t}) just launched on @montramarkets, incubated by EARLY. 🧵`,
+      `What it is: ${about}`,
+      `How it launched: the whole supply went into a Uniswap v4 pool with liquidity locked forever. No bonding curve, no team unlocks.`,
+      `Fees: every trade pays ${fee}. The creator side is split on-chain: ${split}.`,
+      `Trade ${t}: ${url}`,
+    ],
+    welcome: `Welcome to ${d.name} (${t}) 👋\n\n${about}\n\n📈 Trade: ${url}\n📄 Contract: ${d.address}${socials ? `\n\n${socials}` : ""}\n\nNever share your seed phrase. Admins will never DM you first.`,
+    faq: [
+      { q: `Where do I buy ${t}?`, a: `On Montra: ${url}. You'll need HYPE on Elysium.` },
+      { q: "Is liquidity locked?", a: "Yes. Montra puts the full supply in a Uniswap v4 pool and the liquidity is locked forever." },
+      { q: "What are the fees?", a: `${fee} per trade. The creator side is split on-chain: ${split}.` },
+      { q: "What's the contract?", a: d.address },
+    ],
+    week: [
+      ["Day 1", "Post the launch post + thread, pin the welcome message, share your Montra link."],
+      ["Day 2", "Introduce yourself / the team and explain why you built it."],
+      ["Day 3", "Run a meme or art contest for holders."],
+      ["Day 4", "Host a short X Space or voice chat; answer questions live."],
+      ["Day 5", "Share progress: holders, volume, what's next."],
+      ["Day 6", "Reach out to related communities for a collab or shout-out."],
+      ["Day 7", "Recap the week and post your plan for next week. Apply for a Socials Rising spotlight."],
+    ] as [string, string][],
+  };
+}
+
+function LaunchKit({ d, label }: { d: TokenDetail; label: (r: string) => string }) {
+  const k = buildKit(d, label);
   const tweetUrl = (t: string) => `https://x.com/intent/tweet?text=${encodeURIComponent(t)}`;
   return (
     <div className="card pad">
-      <div className="sechead" style={{ marginBottom: 10 }}><div><div className="eyebrow">AI growth agent</div><h3 style={{ fontSize: "1.3rem" }}>Your launch kit</h3></div>
-        <button className="btn ink" onClick={run} disabled={loading}>{loading ? "Writing… (~30s)" : kit ? "Write a fresh one" : "Write my launch kit"}</button></div>
-      <p className="muted" style={{ fontSize: ".9rem" }}>Reads ${symbol}&apos;s live data from Montra and writes your launch post, thread, pinned welcome, FAQ, meme ideas and a 7-day plan. It only uses what&apos;s on-chain and in your description — edit before you post.</p>
-      {err && <div className="warn" style={{ marginTop: 12 }}>{err}</div>}
-      {kit && (
-        <div className="kitgrid" style={{ marginTop: 14 }}>
-          <Block title="Tagline" text={kit.tagline} />
-          <Block title="Launch post" text={kit.launchPost}><pre>{kit.launchPost}</pre><a className="btn sm" style={{ marginTop: 10 }} href={tweetUrl(kit.launchPost)} target="_blank" rel="noreferrer">Post on X ↗</a></Block>
-          <Block title="Thread" text={kit.thread.join("\n\n")}><ol>{kit.thread.map((t, i) => <li key={i}>{t}</li>)}</ol></Block>
-          <Block title="Pinned community welcome" text={kit.communityWelcome} />
-          <Block title="FAQ" text={kit.faq.map((x) => `Q: ${x.q}\nA: ${x.a}`).join("\n\n")}><ul>{kit.faq.map((x, i) => <li key={i}><b>{x.q}</b><br /><span className="muted">{x.a}</span></li>)}</ul></Block>
-          <Block title="Meme ideas" text={kit.memeIdeas.join("\n")}><ul>{kit.memeIdeas.map((t, i) => <li key={i}>{t}</li>)}</ul></Block>
-          <Block title="Your first week" text={kit.weekOne.map((d) => `${d.day}: ${d.action}`).join("\n")}><ul>{kit.weekOne.map((d, i) => <li key={i}><b>{d.day}</b> — {d.action}</li>)}</ul></Block>
-        </div>
-      )}
+      <div className="eyebrow">Launch kit</div>
+      <h3 style={{ fontSize: "1.3rem", marginTop: 4 }}>Ready-to-post copy for ${d.symbol}</h3>
+      <p className="muted" style={{ fontSize: ".9rem", marginTop: 6 }}>Filled in from your token&apos;s live Montra data. Edit anything in [brackets] and make it yours before posting.</p>
+      <div className="kitgrid" style={{ marginTop: 14 }}>
+        <Block title="Launch post" text={k.launchPost}><pre>{k.launchPost}</pre><a className="btn sm" style={{ marginTop: 10 }} href={tweetUrl(k.launchPost)} target="_blank" rel="noreferrer">Post on X ↗</a></Block>
+        <Block title="Thread" text={k.thread.join("\n\n")}><ol>{k.thread.map((t, i) => <li key={i}>{t}</li>)}</ol></Block>
+        <Block title="Pinned community welcome" text={k.welcome} />
+        <Block title="FAQ" text={k.faq.map((x) => `Q: ${x.q}\nA: ${x.a}`).join("\n\n")}><ul>{k.faq.map((x, i) => <li key={i}><b>{x.q}</b><br /><span className="muted" style={{ wordBreak: "break-all" }}>{x.a}</span></li>)}</ul></Block>
+        <Block title="Your first week" text={k.week.map(([a, b]) => `${a}: ${b}`).join("\n")}><ul>{k.week.map(([a, b]) => <li key={a}><b>{a}</b> — {b}</li>)}</ul></Block>
+      </div>
     </div>
   );
 }
 
-function AskDesk({ token, symbol }: { token: string; symbol: string }) {
-  const [msgs, setMsgs] = useState<Msg[]>([]);
-  const [q, setQ] = useState("");
-  const [busy, setBusy] = useState(false);
-  const end = useRef<HTMLDivElement>(null);
-  useEffect(() => { end.current?.scrollIntoView({ block: "nearest" }); }, [msgs]);
-  async function ask(text = q) {
-    const question = text.trim(); if (!question || busy) return;
-    const history = msgs; setMsgs([...history, { role: "user", content: question }]); setQ(""); setBusy(true);
-    try {
-      const r = await fetch("/api/incubator/agent", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ mode: "ask", token, question, history }) });
-      const b = await r.json();
-      setMsgs((m) => [...m, { role: "assistant", content: r.ok ? b.answer : b.error ?? "Couldn't answer that one." }]);
-    } catch { setMsgs((m) => [...m, { role: "assistant", content: "Couldn't reach the agent. Try again." }]); } finally { setBusy(false); }
-  }
-  const starters = [`What is $${symbol}?`, "How do the fees work?", "Do holders earn anything?", "Is this safe?"];
+function Support({ symbol }: { symbol: string }) {
   return (
     <div className="card pad">
-      <div className="eyebrow">Ask the desk</div>
-      <h3 style={{ fontSize: "1.2rem", marginTop: 4 }}>Community support, instantly</h3>
-      <p className="muted" style={{ fontSize: ".86rem", marginTop: 6 }}>Answers from ${symbol}&apos;s live on-chain data. Not financial advice.</p>
-      <div className="chat" style={{ marginTop: 12 }}>
-        {msgs.length === 0 && <div className="chips">{starters.map((s) => <button key={s} className="chip" style={{ padding: "7px 12px", fontSize: ".85rem" }} onClick={() => ask(s)}>{s}</button>)}</div>}
-        {msgs.map((m, i) => <div key={i} className={`msg ${m.role === "user" ? "u" : "a"}`}>{m.content}</div>)}
-        {busy && <div className="msg a muted">Thinking…</div>}
-        <div ref={end} />
+      <div className="eyebrow">Support from the team</div>
+      <h3 style={{ fontSize: "1.2rem", marginTop: 4 }}>Real people, not a bot</h3>
+      <p className="muted" style={{ fontSize: ".9rem", marginTop: 6 }}>We look at every incubated launch by hand. Drop ${symbol} in our Discord or tag us on X — we help with launch posts and community setup, and pick projects each week for {PARENT} spotlights, art, memes and campaigns.</p>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 12 }}>
+        {LINKS.discord && <a className="btn sm ink" href={LINKS.discord} target="_blank" rel="noreferrer">Join the Discord ↗</a>}
+        <a className="btn sm" href={LINKS.x} target="_blank" rel="noreferrer">Message us on X ↗</a>
       </div>
-      <form className="askrow" onSubmit={(e) => { e.preventDefault(); ask(); }}>
-        <input className="inp" value={q} onChange={(e) => setQ(e.target.value)} maxLength={600} placeholder={`Ask anything about $${symbol}`} />
-        <button className="btn ink" disabled={busy || !q.trim()}>Ask</button>
-      </form>
+      <p className="muted" style={{ fontSize: ".8rem", marginTop: 10 }}>Support is case by case, never automatic or guaranteed.</p>
     </div>
   );
 }
@@ -112,7 +113,7 @@ function Project() {
 
   return (
     <>
-      {isNew && <div className="note" style={{ marginTop: 24 }}>🚀 <b>${d.symbol} is live.</b> Write your launch kit below, then share your Montra link. Your project appears in the directory after its first trade.</div>}
+      {isNew && <div className="note" style={{ marginTop: 24 }}>🚀 <b>${d.symbol} is live.</b> Your launch kit is below — post it, then share your Montra link. Your project appears in the directory after its first trade.</div>}
       <section className="blk" style={{ paddingTop: 30 }}>
         <div style={{ display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap" }}>
           {d.imageUrl ? <img src={d.imageUrl} alt="" style={{ width: 84, height: 84, borderRadius: 20, objectFit: "cover", border: "1px solid var(--line)" }} /> : null}
@@ -141,9 +142,9 @@ function Project() {
 
       <section className="blk" style={{ paddingTop: 0 }}>
         <div className="grid2">
-          <GrowthAgent token={d.address} symbol={d.symbol} />
+          <LaunchKit d={d} label={label} />
           <div style={{ display: "grid", gap: 14 }}>
-            <AskDesk token={d.address} symbol={d.symbol} />
+            <Support symbol={d.symbol} />
             <div className="card pad">
               <div className="eyebrow">Fee split · on-chain</div>
               {d.splitter ? d.splitter.recipients.map((r, i) => (
@@ -158,11 +159,6 @@ function Project() {
               <div className="kv"><span>Creator</span><a className="mono" href={explorerAddr(d.creator)} target="_blank" rel="noreferrer">{short(d.creator)} ↗</a></div>
               {d.launchTx && <div className="kv"><span>Launch tx</span><a className="mono" href={explorerTx(d.launchTx)} target="_blank" rel="noreferrer">{short(d.launchTx)} ↗</a></div>}
               <div className="kv"><span>Montra page</span><a href={montraUrl} target="_blank" rel="noreferrer">Open ↗</a></div>
-            </div>
-            <div className="card pad">
-              <div className="eyebrow">{PARENT}</div>
-              <p style={{ marginTop: 6, fontSize: ".93rem" }}>Want a spotlight, art, memes or a joint campaign? Incubated projects can apply — we pick a few each week based on traction and community.</p>
-              <a className="btn sm" style={{ marginTop: 12 }} href={LINKS.discord || LINKS.apply} target="_blank" rel="noreferrer">Apply for support ↗</a>
             </div>
           </div>
         </div>

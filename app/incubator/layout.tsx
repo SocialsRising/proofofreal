@@ -12,7 +12,7 @@ const syne = Syne({ subsets: ["latin"], weight: ["600", "700", "800"], variable:
 const manrope = Manrope({ subsets: ["latin"], weight: ["500", "600", "700", "800"], variable: "--font-manrope" });
 const jb = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "700"], variable: "--font-jbmono" });
 
-const DESC = "Launch on Montra through EARLY and get an AI growth agent, an incubator listing and a fee split that pays your holders. Live on Elysium.";
+const DESC = "Launch on Montra through EARLY and get a launch kit, an incubator listing, hands-on support and a fee split that funds your community. Live on Elysium.";
 export const metadata: Metadata = {
   title: `${BRAND} · Elysium`,
   description: DESC,
@@ -32,7 +32,7 @@ export default function IncubatorLayout({ children }: { children: React.ReactNod
             <div className="wrap foot">
               <div className="foot-brand">
                 <Link className="logo" href="/incubator/elysium"><span className="cat">E</span>{BRAND}</Link>
-                <p className="muted" style={{ maxWidth: "36ch", fontSize: ".92rem" }}>Launch on the launchpads you already use. Get an AI growth agent, a home in the directory, and a fee split that pays your holders.</p>
+                <p className="muted" style={{ maxWidth: "36ch", fontSize: ".92rem" }}>Launch on the launchpads you already use. Get a launch kit, a home in the directory, hands-on support and a fee split that funds your community.</p>
                 <span className="proto">Elysium · by {PARENT}</span>
               </div>
               <div className="foot-col"><div className="eyebrow">Incubator</div>

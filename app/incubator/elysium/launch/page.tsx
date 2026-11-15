@@ -119,7 +119,7 @@ export default function LaunchPage() {
               <div className="field"><label>Ticker <span className="req">*</span></label><input className="inp mono" maxLength={10} value={f.symbol} onChange={(e) => setF((s) => ({ ...s, symbol: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") }))} placeholder="SMITH" /></div>
             </div>
           </div>
-          <div className="field"><label>What is it?</label><textarea className="inp" rows={4} maxLength={1000} value={f.description} onChange={set("description")} placeholder="What your project or agent does, in a few sentences. Your AI growth agent writes from this." /><span className="hint">Fixed forever at launch. Your growth agent only says what you write here.</span></div>
+          <div className="field"><label>What is it?</label><textarea className="inp" rows={4} maxLength={1000} value={f.description} onChange={set("description")} placeholder="What your project or agent does, in a few sentences. Your launch kit is written from this." /><span className="hint">Fixed forever at launch. Shown on Montra and your project page.</span></div>
           <div className="g2 grid" style={{ gap: 12 }}>
             {(["website", "twitter", "telegram", "discord"] as const).map((k) => (
               <div key={k} className="field"><label>{k === "twitter" ? "X" : k[0].toUpperCase() + k.slice(1)}</label><input className="inp" value={f[k]} onChange={set(k)} placeholder="https://" /></div>
@@ -151,8 +151,8 @@ export default function LaunchPage() {
           <div className="card pad">
             <div className="eyebrow">You get</div>
             <ul style={{ margin: "10px 0 0", paddingLeft: 18, display: "grid", gap: 6, fontSize: ".93rem" }}>
-              <li>An AI growth agent: launch post, thread, pinned welcome, FAQ and a 7-day plan</li>
-              <li>A community Q&amp;A agent on your project page, grounded in your live data</li>
+              <li>A launch kit: launch post, thread, pinned welcome, FAQ and a 7-day plan</li>
+              <li>Hands-on help from the team, plus a shot at Socials Rising spotlights</li>
               <li>A listing in the EARLY directory from your first trade</li>
               <li>The right to apply for Socials Rising marketing support (approved case by case)</li>
             </ul>
