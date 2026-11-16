@@ -100,7 +100,7 @@ export default function IncubatorHome() {
       <section className="blk" id="how">
         <div className="sechead"><div><div className="eyebrow">How it works</div><h2>Three steps. No new contracts.</h2></div></div>
         <div className="steps3">
-          <div className="step-card"><div className="n">1</div><h3>Launch on Montra, through EARLY</h3><p className="muted">Same Montra factory, same locked liquidity, same one transaction from your own wallet. Your trading fees are routed to buybacks for your community, our supporters and a KNTQ builder fund.</p></div>
+          <div className="step-card"><div className="n">1</div><h3>Launch on Montra, through EARLY</h3><p className="muted">Same Montra factory, same locked liquidity, same one transaction from your own wallet. Your trading fees are routed to buybacks for your community, our supporters and a Builder Fund (KNTQ + MONTRA).</p></div>
           <div className="step-card"><div className="n">2</div><h3>Get your launch kit and the team</h3><p className="muted">Your project page comes with a launch post, thread, pinned welcome, FAQ and a 7-day plan filled in from your live data — and we review every incubated launch by hand to help you grow.</p></div>
           <div className="step-card"><div className="n">3</div><h3>Grow with the network</h3><p className="muted">You&apos;re listed in the directory and can apply for {PARENT} spotlights, art, memes and campaigns. Support is approved case by case, never automatic.</p></div>
         </div>

@@ -147,7 +147,7 @@ export default function LaunchPage() {
             <ul style={{ margin: "10px 0 0", paddingLeft: 18, display: "grid", gap: 6, fontSize: ".93rem" }}>
               <li>A launch kit: launch post, thread, pinned welcome, FAQ and a 7-day plan</li>
               <li>Hands-on help from the team, plus a shot at Socials Rising spotlights</li>
-              <li>Buybacks of your token for your community, plus a KNTQ builder fund that unlocks to your team at milestones</li>
+              <li>Buybacks of your token for your community, plus a Builder Fund (KNTQ + MONTRA) that unlocks to your team at milestones</li>
               <li>A listing in the EARLY directory from your first trade</li>
               <li>The right to apply for Socials Rising marketing support (approved case by case)</li>
             </ul>

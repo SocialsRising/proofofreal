@@ -25,8 +25,8 @@ export const SLOTS: Slot[] = [
   },
   {
     key: "builder", bps: 2000, wallet: "0xcde4df4245c295d505f2d25034da3a3395e7ae9b",
-    name: "KNTQ builder fund", short: "KNTQ builder fund",
-    desc: "Buys KNTQ, held for the project's team and unlocked as it hits market-cap and builder milestones.",
+    name: "Builder Fund (KNTQ + MONTRA)", short: "Builder Fund (KNTQ + MONTRA)",
+    desc: "Buys KNTQ and MONTRA (10% each), held for the project's team and unlocked as it hits market-cap and builder milestones.",
   },
 ];
 
@@ -68,7 +68,7 @@ export const LAUNCHPADS: Launchpad[] = [
   {
     key: "montra", name: "Montra", live: true, url: "https://montramarkets.xyz", docs: "https://montramarkets.xyz/docs",
     pitch: "Uniswap v4 pool from the first block, liquidity locked forever, no bonding curve.",
-    split: "Native 3-way split: 60% community buyback · 20% $EARLY & Early Birds · 20% KNTQ builder fund.",
+    split: "Native 3-way split: 60% community buyback · 20% $EARLY & Early Birds · 20% Builder Fund (KNTQ + MONTRA).",
     tokenUrl: (t) => `https://montramarkets.xyz/token/${t.toLowerCase()}`,
   },
   {
