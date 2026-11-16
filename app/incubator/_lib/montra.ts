@@ -56,11 +56,15 @@ export const isIncubated = (d: Pick<TokenDetail, "address" | "splitter">) => {
   const a = d.address.toLowerCase() as `0x${string}`;
   if (HIDDEN_TOKENS.includes(a)) return false;
   if (LEGACY_TOKENS.includes(a)) return true;
+  return hasIncubatorSplit(d);
+};
+/** The token's on-chain split is exactly the incubator split: same wallets, same shares, no extras. */
+export function hasIncubatorSplit(d: Pick<TokenDetail, "splitter">) {
   const s = d.splitter;
   if (!s || s.recipients.length !== SLOTS.length) return false;
   return s.recipients.every((r, i) => SLOTS.some((x) => x.wallet === r.toLowerCase() && x.bps === s.shares[i]))
     && new Set(s.recipients.map((r) => r.toLowerCase())).size === SLOTS.length;
-};
+}
 /** Only https links from token metadata are ever rendered. */
 export const safeUrl = (u?: string | null) => (u && /^https:\/\/[^\s"'<>]{3,300}$/i.test(u.trim()) ? u.trim() : null);
 
@@ -71,13 +75,6 @@ export const recipientLabel = (r: string, token: string, creator: string) => {
   return a === token.toLowerCase() ? "Token holders" : named ?? (a === creator.toLowerCase() ? "Creator" : `${a.slice(0, 6)}…${a.slice(-4)}`);
 };
 
-export const FEE_TIERS = [
-  { pips: 10000, label: "1%", note: "Default. Easiest to trade." },
-  { pips: 20000, label: "2%" },
-  { pips: 30000, label: "3%" },
-  { pips: 50000, label: "5%" },
-  { pips: 100000, label: "10%", note: "Max. Most fees, least volume." },
-] as const;
 export const SNIPE_WINDOWS = [
   { s: 0, label: "Off" }, { s: 30, label: "30 seconds" }, { s: 60, label: "1 minute" }, { s: 300, label: "5 minutes" }, { s: 900, label: "15 minutes" }, { s: 1800, label: "30 minutes" },
 ] as const;

@@ -12,7 +12,7 @@ const syne = Syne({ subsets: ["latin"], weight: ["600", "700", "800"], variable:
 const manrope = Manrope({ subsets: ["latin"], weight: ["500", "600", "700", "800"], variable: "--font-manrope" });
 const jb = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "700"], variable: "--font-jbmono" });
 
-const DESC = "Launch on Montra through EARLY and get a launch kit, an incubator listing, hands-on support and a fee split that funds your community. Live on Elysium.";
+const DESC = "Launch your token through EARLY. Every trading fee funds daily buybacks for your community, run by our AI agent swarm. Live on Montra · Elysium.";
 export const metadata: Metadata = {
   title: `${BRAND} · Elysium`,
   description: DESC,
@@ -21,7 +21,8 @@ export const metadata: Metadata = {
 };
 
 export default function IncubatorLayout({ children }: { children: React.ReactNode }) {
-  const community = [["X", LINKS.x], ["Discord", LINKS.discord], ["Telegram", LINKS.telegram]].filter(([, h]) => h);
+  const community = [["Telegram", LINKS.telegram], ["X", LINKS.x], ["Discord", LINKS.discord]].filter(([, h]) => h);
+  const ecosystem = [["$EARLY", LINKS.earlyToken], ["Early Birds NFTs", LINKS.earlyBirds]];
   return (
     <div className={`mm inc ${syne.variable} ${manrope.variable} ${jb.variable}`}>
       <Providers>
@@ -32,19 +33,19 @@ export default function IncubatorLayout({ children }: { children: React.ReactNod
             <div className="wrap foot">
               <div className="foot-brand">
                 <Link className="logo" href="/incubator/elysium"><span className="cat">E</span>{BRAND}</Link>
-                <p className="muted" style={{ maxWidth: "36ch", fontSize: ".92rem" }}>Launch on the launchpads you already use. Get a launch kit, a home in the directory, hands-on support and a fee split that funds your community.</p>
+                <p className="muted" style={{ maxWidth: "36ch", fontSize: ".92rem" }}>Launch your token through EARLY. Trading fees fund daily buybacks for your community, run by our AI agent swarm.</p>
                 <span className="proto">Elysium · by {PARENT}</span>
               </div>
               <div className="foot-col"><div className="eyebrow">Incubator</div>
                 <Link href="/incubator/elysium">Directory</Link><Link href="/incubator/elysium/launch">Launch a token</Link><Link href="/incubator/elysium#how">How it works</Link>
               </div>
-              <div className="foot-col"><div className="eyebrow">Verify</div>
+              <div className="foot-col"><div className="eyebrow">EARLY</div>
+                {ecosystem.map(([l, h]) => <a key={l} href={h} target="_blank" rel="noopener noreferrer">{l} ↗</a>)}
                 <Link href="/incubator/elysium#fees">Fee wallets</Link>
-                <a href="https://montramarkets.xyz/docs/fees" target="_blank" rel="noreferrer">Montra fee docs ↗</a>
-                <a href="https://www.volta.family/docs" target="_blank" rel="noreferrer">Volta docs ↗</a>
               </div>
               <div className="foot-col"><div className="eyebrow">Community</div>
-                {community.map(([l, h]) => <a key={l} href={h} target="_blank" rel="noreferrer">{l} ↗</a>)}
+                {community.map(([l, h]) => <a key={l} href={h} target="_blank" rel="noopener noreferrer">{l} ↗</a>)}
+                <a href={LINKS.helpTelegram} target="_blank" rel="noopener noreferrer">Help: @Tradesgiving ↗</a>
               </div>
             </div>
             <div className="wrap foot-bottom">
