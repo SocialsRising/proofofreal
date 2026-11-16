@@ -5,7 +5,7 @@ import { formatEther, parseEther, parseEventLogs, zeroHash } from "viem";
 import { useAccount, useBalance, usePublicClient, useSwitchChain, useWriteContract } from "wagmi";
 import { WalletButton } from "../../../launchpad/_components/Wallet";
 import { useToast } from "../../../launchpad/_components/Toast";
-import { BUYBACKS, DEFAULT_FEE, ELYSIUM, FEE_TIERS, LAUNCHPADS, MONTRA_BUILDER_CODE, SLOTS, explorerAddr } from "../../_lib/config";
+import { BUYBACKS, DEFAULT_FEE, ELYSIUM, FEE_TIERS, LAUNCHPADS, MONTRA_BUILDER_CODE, PARENT, PERKS, SLOTS, explorerAddr } from "../../_lib/config";
 import { Bonus, HelpLine } from "../../_components/Bits";
 import { LAUNCH_ABI, MONTRA_FACTORY, SNIPE_WINDOWS, builderSuffix, incubatorSplit, montra, pickRow, randomSalt, short } from "../../_lib/montra";
 
@@ -102,8 +102,8 @@ export default function LaunchPage() {
   return (
     <section className="blk" style={{ paddingTop: 36 }}>
       <div className="eyebrow">Launch through EARLY</div>
-      <h1 style={{ marginTop: 10, fontSize: "clamp(2rem,5vw,3.2rem)" }}>Launch your token</h1>
-      <p className="muted" style={{ maxWidth: "58ch", marginTop: 10 }}>One transaction from your wallet. Your whole supply goes into a pool with liquidity locked forever, and trading fees go to daily buybacks.</p>
+      <h1 style={{ marginTop: 12, fontSize: "clamp(2.2rem,5vw,3.4rem)" }}>Launch your token</h1>
+      <p className="muted" style={{ maxWidth: "60ch", marginTop: 12, fontSize: "1.05rem" }}>One transaction from your wallet. Liquidity is locked forever, the {PARENT} team gets behind you, and every trade funds daily buybacks for your community.</p>
 
       <div className="grid2" style={{ marginTop: 26 }}>
         <div className="card pad" style={{ display: "grid", gap: 16 }}>
@@ -152,19 +152,9 @@ export default function LaunchPage() {
         <div style={{ display: "grid", gap: 14 }}>
           <div className="card pad">
             <div className="eyebrow">Where your fees go</div>
-            <div className="bar3">{SLOTS.map((s, i) => <i key={s.key} className={["c", "t", "h", "t"][i]} style={{ width: `${s.bps / 100}%` }} />)}</div>
+            <div className="bar3" style={{ marginTop: 14 }}>{SLOTS.map((s, i) => <i key={s.key} className={["a", "b", "c", "b"][i]} style={{ width: `${s.bps / 100}%` }} />)}</div>
             {SLOTS.map((s) => <div key={s.key} className="kv"><span>{s.name} <a className="mono muted" href={explorerAddr(s.wallet)} target="_blank" rel="noreferrer">{short(s.wallet)} ↗</a></span><b>{s.bps / 100}%</b></div>)}
             <p className="muted" style={{ fontSize: ".82rem", marginTop: 10 }}><b style={{ color: "var(--fg)" }}>You don&apos;t take a cut of trading fees.</b> They all go to these wallets, fixed on-chain at launch. {BUYBACKS}</p>
-          </div>
-
-          <div className="card pad">
-            <div className="eyebrow">You get</div>
-            <ul style={{ margin: "10px 0 0", paddingLeft: 18, display: "grid", gap: 6, fontSize: ".93rem" }}>
-              <li>Daily buybacks of your token for your community</li>
-              <li>A Builder Fund (KNTQ + MONTRA) that unlocks to your team at milestones</li>
-              <li>A ready-to-post launch kit and a spot in the EARLY directory</li>
-              <li>Help from the team, plus a shot at Socials Rising spotlights</li>
-            </ul>
           </div>
 
           <div className="card pad" style={{ display: "grid", gap: 12 }}>
@@ -174,7 +164,7 @@ export default function LaunchPage() {
                 {bal.data && bal.data.value === BigInt(0) && <div className="warn">You need a little HYPE on Elysium for gas{firstBuy > BigInt(0) ? " and your first buy" : ""}. <a href={ELYSIUM.bridgeHelp} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>How to bridge ↗</a></div>}
                 <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: ".86rem" }}>
                   <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} style={{ marginTop: 3 }} />
-                  <span className="muted">I&apos;m launching this token myself on Montra. I understand I receive none of the trading fees, the split is fixed at launch, buyback amounts depend on trading and fund unlocks are at EARLY&apos;s discretion, nothing here promises returns, airdrops or marketing, and Elysium is a new network.</span>
+                  <span className="muted">I&apos;m launching this token myself on Montra. I understand I receive none of the trading fees, the split is fixed at launch, reward amounts depend on trading, Builder Fund unlocks are at EARLY&apos;s discretion, nothing here promises returns or price, and Elysium is a new network.</span>
                 </label>
                 <button className="btn primary lg full" onClick={launch} disabled={busy}>{busy ? "Launching…" : `Launch $${f.symbol || "TICKER"}`}</button>
                 {busy && <div className="stepper">{STEPS.map(([s, l], i) => <div key={s} className={i < stepIdx ? "done" : i === stepIdx ? "on" : ""}><i>{i < stepIdx ? "✓" : i + 1}</i>{l}</div>)}</div>}
@@ -185,6 +175,15 @@ export default function LaunchPage() {
             <p className="muted" style={{ fontSize: ".78rem" }}>Sent to Montra&apos;s factory <a className="mono" href={explorerAddr(MONTRA_FACTORY)} target="_blank" rel="noreferrer">{short(MONTRA_FACTORY)} ↗</a>{MONTRA_BUILDER_CODE ? <> · credited to builder code <span className="mono">{MONTRA_BUILDER_CODE}</span></> : null}.</p>
             <HelpLine />
           </div>
+          <div className="card pad">
+            <div className="eyebrow">You get</div>
+            <ul className="perklist">
+              {[...PERKS, { title: "A launch kit and a directory spot", text: "Ready-to-post launch post, thread, welcome, FAQ and first-week plan, plus a listing in the EARLY directory." }].map((p) => (
+                <li key={p.title}><svg width="16" height="16" viewBox="0 0 16 16" aria-hidden><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg><span><b>{p.title}</b>{p.text}</span></li>
+              ))}
+            </ul>
+          </div>
+
         </div>
       </div>
     </section>

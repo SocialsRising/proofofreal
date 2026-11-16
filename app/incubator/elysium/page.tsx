@@ -3,16 +3,20 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Bonus, RichDesc } from "../_components/Bits";
-import { BUYBACKS, LAUNCHPADS, SLOTS, explorerAddr } from "../_lib/config";
+import { BUYBACKS, LAUNCHPADS, LINKS, PARENT, PERKS, RESULTS, SLOTS, explorerAddr, type Result } from "../_lib/config";
 import { montra, pct, usd, ago, type TokenCard } from "../_lib/montra";
 
 type Tab = "trending" | "latest" | "top";
+
+const Check = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+);
 
 function TokenTable({ tokens, empty }: { tokens: TokenCard[]; empty: React.ReactNode }) {
   const router = useRouter();
   if (!tokens.length) return <div className="empty">{empty}</div>;
   return (
-    <div className="scroll-x card">
+    <div className="scroll-x tablecard">
       <table className="ptable">
         <thead><tr><th>Project</th><th className="num">Market cap</th><th className="num">24h vol</th><th className="num">24h</th><th className="num">Holders</th><th className="num">Launched</th></tr></thead>
         <tbody>
@@ -32,15 +36,41 @@ function TokenTable({ tokens, empty }: { tokens: TokenCard[]; empty: React.React
   );
 }
 
+function ResultCard({ r, live }: { r: Result; live?: TokenCard }) {
+  return (
+    <article className="result">
+      <header>
+        {live?.imageUrl ? <img src={live.imageUrl} alt="" /> : <span className="ph" />}
+        <div><b>{r.name}</b>{r.ticker && <small>${r.ticker}</small>}</div>
+        <span className="date">{r.date}</span>
+      </header>
+      <h3>{r.headline}</h3>
+      {r.points && <ul>{r.points.map((p) => <li key={p}>{p}</li>)}</ul>}
+      {r.quote && <blockquote>“{r.quote.text}”<cite>— {r.quote.href ? <a href={r.quote.href} target="_blank" rel="noopener noreferrer">{r.quote.by}</a> : r.quote.by}</cite></blockquote>}
+      {live && (
+        <dl className="live">
+          <div><dt>Market cap</dt><dd>{usd(live.marketCapUsd)}</dd></div>
+          <div><dt>24h</dt><dd className={(live.change24hPct ?? 0) >= 0 ? "up" : "down"}>{pct(live.change24hPct)}</dd></div>
+          <div><dt>Holders</dt><dd>{live.holders > 0 ? live.holders.toLocaleString() : "—"}</dd></div>
+        </dl>
+      )}
+      {r.links && <div className="rlinks">{r.links.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">{l.label} ↗</a>)}</div>}
+    </article>
+  );
+}
+
 export default function IncubatorHome() {
   const [mine, setMine] = useState<TokenCard[] | null>(null);
+  const [live, setLive] = useState<Record<string, TokenCard>>({});
   const [tab, setTab] = useState<Tab>("trending");
   const [err, setErr] = useState("");
-  const montraLp = LAUNCHPADS[0];
+  const lp = LAUNCHPADS[0];
 
   useEffect(() => {
     montra.incubated().then(setMine).catch(() => { setMine([]); setErr("Montra's API is busy — the list will refresh shortly."); });
     const id = setInterval(() => montra.incubated().then(setMine).catch(() => {}), 60_000);
+    Promise.all(RESULTS.filter((r) => r.token).map((r) => montra.token(r.token!).then((d) => [r.token!, d] as const).catch(() => null)))
+      .then((xs) => setLive(Object.fromEntries(xs.filter(Boolean) as [string, TokenCard][])));
     return () => clearInterval(id);
   }, []);
 
@@ -59,63 +89,91 @@ export default function IncubatorHome() {
 
   return (
     <>
-      <section className="hero-inc">
-        <div className="eyebrow live"><i />Live on {montraLp.name} · {montraLp.chain}</div>
-        <h1 style={{ marginTop: 14, maxWidth: "15ch" }}>Launch like you <span className="chrome-text">already have a team.</span></h1>
-        <p className="sub muted" style={{ maxWidth: "54ch", marginTop: 16, fontSize: "1.08rem" }}>
-          Launch your token through EARLY. Every trading fee goes back into buybacks for your community, run daily by our AI agent swarm, and you get a launch kit and a team behind you.
-        </p>
-        <div className="ctarow" style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 22 }}>
-          <Link className="btn primary lg" href="/incubator/elysium/launch">Launch a token →</Link>
-          <a className="btn lg" href="#how">How it works</a>
+      <section className="hero">
+        <div className="hero-copy">
+          <div className="eyebrow live"><i />Live on {lp.name} · {lp.chain}</div>
+          <h1>Launch with a team<br /><span className="dim">behind you.</span></h1>
+          <p className="lead">Launch your token through EARLY and the {PARENT} team and creators get behind it from day one. Your most active holders earn airdrop rewards, and every trade funds daily buybacks for your community.</p>
+          <ul className="checks">
+            <li><Check />{PARENT} team + creator marketing</li>
+            <li><Check />Airdrop rewards for active holders</li>
+            <li><Check />Daily buybacks from every trade</li>
+            <li><Check />Liquidity locked forever</li>
+          </ul>
+          <div className="ctas">
+            <Link className="btn primary lg" href="/incubator/elysium/launch">Launch a token</Link>
+            <a className="btn lg" href="#perks">See what you get</a>
+          </div>
+          <div className="hero-bonus"><Bonus lp={lp} /></div>
         </div>
-        <div style={{ marginTop: 22, maxWidth: 640 }}><Bonus lp={montraLp} /></div>
+        <div className="hero-art" aria-hidden><img src="/incubator/early-bird.webp" alt="" width={720} height={720} /></div>
       </section>
 
-      <section className="blk" style={{ paddingTop: 18 }}>
-        <div className="stats">
-          <div className="stat"><div className="v">{mine == null ? "…" : totals.n}</div><div className="k muted">Projects incubated</div></div>
-          <div className="stat"><div className="v">{mine == null ? "…" : usd(totals.mcap)}</div><div className="k muted">Combined market cap</div></div>
-          <div className="stat"><div className="v">{mine == null ? "…" : totals.holders.toLocaleString()}</div><div className="k muted">Combined holders</div></div>
-        </div>
+      <section className="statline" aria-label="Incubator numbers">
+        <div><b>{mine == null ? "…" : totals.n}</b><span>Projects incubated</span></div>
+        <div><b>{mine == null ? "…" : usd(totals.mcap)}</b><span>Combined market cap</span></div>
+        <div><b>{mine == null ? "…" : totals.holders.toLocaleString()}</b><span>Combined holders</span></div>
       </section>
 
-      <section className="blk">
-        <div className="sechead"><div><div className="eyebrow">Directory</div><h2>Incubated projects</h2></div></div>
-        <div className="tabs">{(["trending", "latest", "top"] as Tab[]).map((t) => <button key={t} className={tab === t ? "on" : ""} onClick={() => setTab(t)}>{t === "top" ? "Top market cap" : t[0].toUpperCase() + t.slice(1)}</button>)}</div>
-        {mine == null ? <div className="empty">Loading projects…</div> :
-          <TokenTable tokens={sorted} empty={<><b style={{ color: "var(--fg)" }}>Be the first project in the incubator.</b><br />You&apos;ll show up here after your first trade. <Link href="/incubator/elysium/launch" style={{ textDecoration: "underline" }}>Launch now →</Link></>} />}
-        {err && <p className="muted" style={{ marginTop: 10, fontSize: ".85rem" }}>{err}</p>}
+      <section className="blk" id="perks">
+        <div className="sh"><div className="eyebrow">What you get</div><h2>More than a launch button</h2><p>Every project launched through EARLY gets the people and the incentives to grow.</p></div>
+        <div className="perks">
+          {PERKS.map((p, i) => <div key={p.title} className="perk"><span className="n">{String(i + 1).padStart(2, "0")}</span><h3>{p.title}</h3><p>{p.text}</p></div>)}
+        </div>
       </section>
 
       <section className="blk" id="how">
-        <div className="sechead"><div><div className="eyebrow">How it works</div><h2>Three steps</h2></div></div>
-        <div className="steps3">
-          <div className="step-card"><div className="n">1</div><h3>Launch</h3><p className="muted">Pick a name, image and fee, then confirm one transaction from your wallet. Liquidity is locked forever.</p></div>
-          <div className="step-card"><div className="n">2</div><h3>Buybacks start</h3><p className="muted">Trading fees flow to three public wallets. Our AI agent swarm uses them to buy back your token every day.</p></div>
-          <div className="step-card"><div className="n">3</div><h3>Grow with us</h3><p className="muted">Your project page has a ready-to-post launch kit, and the team helps you grow from day one.</p></div>
-        </div>
+        <div className="sh"><div className="eyebrow">How it works</div><h2>Three steps</h2></div>
+        <ol className="steps">
+          <li><span className="n">01</span><h3>Launch</h3><p>Pick a name, image and fee, then confirm one transaction. Liquidity is locked forever.</p></li>
+          <li><span className="n">02</span><h3>We get to work</h3><p>The team and {PARENT} creators help you build your community and push your launch.</p></li>
+          <li><span className="n">03</span><h3>Fees flow back</h3><p>Every trade funds daily buybacks that reward your community and grow your Builder Fund.</p></li>
+        </ol>
       </section>
 
       <section className="blk" id="fees">
-        <div className="sechead"><div><div className="eyebrow">Where every fee goes</div><h2>Fees become buybacks</h2></div></div>
-        <div className="card pad">
-          <p className="muted" style={{ maxWidth: "68ch" }}>Each trade pays a fee you choose at launch (3%, 5% or 10%). After Montra&apos;s small cut, all of it is split between three public wallets, fixed on-chain forever:</p>
-          <div className="bar3">{SLOTS.map((s, i) => <i key={s.key} className={["c", "t", "h", "t"][i]} style={{ width: `${s.bps / 100}%` }} />)}</div>
-          <div className="split3" style={{ marginTop: 14 }}>
-            {SLOTS.map((s) => (
-              <div key={s.key} className="slot"><div className="p">{s.bps / 100}%</div><div className="who">{s.name}</div>
-                <small><RichDesc text={s.desc} /> <a href={explorerAddr(s.wallet)} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>Wallet ↗</a></small></div>
+        <div className="sh"><div className="eyebrow">Where every fee goes</div><h2>Every trade works for your community</h2><p>Pick a 3%, 5% or 10% fee at launch. After Montra&apos;s small cut, all of it goes to three public wallets, fixed on-chain forever.</p></div>
+        <div className="feesplit">
+          <div className="bar3" role="img" aria-label={SLOTS.map((s) => `${s.bps / 100}% ${s.name}`).join(", ")}>{SLOTS.map((s, i) => <i key={s.key} className={["a", "b", "c", "b"][i]} style={{ width: `${s.bps / 100}%` }} />)}</div>
+          <div className="split3">
+            {SLOTS.map((s, i) => (
+              <div key={s.key} className="slot"><div className="p"><i className={["a", "b", "c", "b"][i]} />{s.bps / 100}%</div><div className="who">{s.name}</div>
+                <p><RichDesc text={s.desc} /></p>
+                <a className="wl" href={explorerAddr(s.wallet)} target="_blank" rel="noopener noreferrer">View wallet ↗</a></div>
             ))}
           </div>
-          <p style={{ fontSize: ".9rem", marginTop: 14 }}><b>{BUYBACKS}</b> <span className="muted">Amounts depend on trading volume, and every wallet is public so you can check it any time.</span></p>
+          <p className="feefoot"><b>{BUYBACKS}</b> Amounts depend on trading volume. Every wallet is public, so anyone can check it.</p>
+        </div>
+      </section>
+
+      <section className="blk" id="results">
+        <div className="sh"><div className="eyebrow">Incubator results</div><h2>Projects growing with EARLY</h2><p>Launches, partners and price action from projects in the incubator, updated every week.</p></div>
+        <div className="results">
+          {RESULTS.map((r) => <ResultCard key={r.name} r={r} live={r.token ? live[r.token] : undefined} />)}
+          <Link className="result next" href="/incubator/elysium/launch"><span className="eyebrow">Your project here</span><h3>Your launch could be next week&apos;s story.</h3><span className="go">Launch through EARLY →</span></Link>
+        </div>
+      </section>
+
+      <section className="blk" id="projects">
+        <div className="sh row"><div><div className="eyebrow">Directory</div><h2>Incubated projects</h2></div>
+          <div className="tabs">{(["trending", "latest", "top"] as Tab[]).map((t) => <button key={t} className={tab === t ? "on" : ""} onClick={() => setTab(t)}>{t === "top" ? "Top market cap" : t[0].toUpperCase() + t.slice(1)}</button>)}</div></div>
+        {mine == null ? <div className="empty">Loading projects…</div> :
+          <TokenTable tokens={sorted} empty={<><b style={{ color: "var(--fg)" }}>Be the first project in the incubator.</b><br />You&apos;ll show up here after your first trade. <Link href="/incubator/elysium/launch" style={{ textDecoration: "underline" }}>Launch now</Link></>} />}
+        {err && <p className="muted" style={{ marginTop: 10, fontSize: ".85rem" }}>{err}</p>}
+      </section>
+
+      <section className="blk">
+        <div className="about">
+          <div><div className="eyebrow">About EARLY</div><h2>Want to know the team, and why we launched EARLY?</h2><p>Read the story behind the incubator and the people building it.</p></div>
+          <a className="btn lg" href={LINKS.article} target="_blank" rel="noopener noreferrer">Read the article on X ↗</a>
         </div>
       </section>
 
       <section className="blk">
-        <div className="cta-band">
-          <div><div className="big" style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: "1.6rem" }}>Ready when you are.</div><div>One transaction. Your launch kit is ready the moment it confirms.</div></div>
-          <Link className="btn dark lg" href="/incubator/elysium/launch">Launch a token →</Link>
+        <div className="cta">
+          <img src="/incubator/early-bird.webp" alt="" aria-hidden />
+          <div><h2>Ready when you are.</h2><p>One transaction. Your launch kit and the team are ready the moment it confirms.</p></div>
+          <Link className="btn primary lg" href="/incubator/elysium/launch">Launch a token</Link>
         </div>
       </section>
     </>

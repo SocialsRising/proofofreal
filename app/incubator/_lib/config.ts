@@ -16,18 +16,55 @@ export type Slot = { key: string; bps: number; wallet: `0x${string}`; name: stri
 export const SLOTS: Slot[] = [
   {
     key: "community", bps: 6000, wallet: "0x65d9d73d1ebcf503a7341a161f2dce660cb5952a",
-    name: "Community buyback", short: "community buyback",
-    desc: "Buys back the token to fund the project's future community initiatives.",
+    name: "Your Community Initiatives", short: "your community initiatives",
+    desc: "Buys back your token to reward your community for product launches, feedback, content, referrals and more.",
   },
   {
     key: "supporters", bps: 2000, wallet: "0x795f869363271f516465a5986e593a5da5aa630b",
-    name: "$EARLY & Early Birds buyback", short: "$EARLY & Early Birds",
-    desc: "Buys back the token for active {EARLY} holders and {BIRDS} NFT holders who support it by buying, sharing and bringing people in.",
+    name: "$EARLY & Early Birds Marketing Incentives", short: "$EARLY & Early Birds marketing incentives",
+    desc: "Buys back your token for active {EARLY} and {BIRDS} holders only: the ones who buy your token, create content and refer others. Passive holders get nothing.",
   },
   {
     key: "builder", bps: 2000, wallet: "0xcde4df4245c295d505f2d25034da3a3395e7ae9b",
-    name: "Builder Fund (KNTQ + MONTRA)", short: "Builder Fund (KNTQ + MONTRA)",
-    desc: "Buys KNTQ and MONTRA (10% each), held for the project's team and unlocked as it hits market-cap and builder milestones.",
+    name: "Your Builder Fund (KNTQ + MONTRA)", short: "your Builder Fund (KNTQ + MONTRA)",
+    desc: "Buys KNTQ and MONTRA (10% each), held for your team and unlocked as you hit market-cap and builder milestones.",
+  },
+];
+
+/** What a project gets for launching through EARLY: the landing page grid and the launch page's "You get" list. */
+export const PERKS: { title: string; text: string }[] = [
+  { title: "Community cultivation from day one", text: "We help you gather and organize your first holders: channels set up, welcome pinned, questions answered." },
+  { title: "Marketing from Socials Rising creators", text: "Creators in the Socials Rising network make content, memes, art and threads about your project." },
+  { title: "Social media amplification", text: "Your launch and milestones get pushed across the EARLY and Socials Rising accounts and communities." },
+  { title: "Partnerships across the ecosystem", text: "Intros to projects, communities and partners across Elysium and Montra." },
+  { title: "Airdrop rewards for active holders", text: "Daily buybacks reward the people who buy, create and refer, not passive wallets." },
+  { title: "Your Builder Fund", text: "KNTQ and MONTRA accumulate for your team and unlock as you hit milestones." },
+];
+
+/** Incubator results: success stories shown on the landing page. EDIT WEEKLY — newest first.
+    `token` pulls live market cap / 24h / holders from Montra. Only put real numbers, partners and quotes here. */
+export type Result = {
+  token?: `0x${string}`;
+  name: string;
+  ticker?: string;
+  headline: string;
+  points?: string[];
+  quote?: { text: string; by: string; href?: string };
+  links?: { label: string; href: string }[];
+  date: string;
+};
+export const RESULTS: Result[] = [
+  {
+    token: "0x2a67aee95a8e28307d720685cf3e8b0ab10284a5",
+    name: "EARLY AI", ticker: "EARLY",
+    headline: "The first project through the incubator",
+    points: [
+      "Launched on Montra · Elysium on 9 Nov 2026",
+      "Its 3% trading fee is committed to $EARLY buybacks",
+      "Early Birds NFT collection live alongside the token",
+    ],
+    links: [{ label: "Trade $EARLY", href: "https://montramarkets.xyz/token/0x2a67aee95a8e28307d720685cf3e8b0ab10284a5" }, { label: "Early Birds", href: "https://opensea.io/collection/early-birdss" }],
+    date: "Nov 2026",
   },
 ];
 
@@ -44,21 +81,25 @@ export const LEGACY_TOKENS: `0x${string}`[] = [
   "0x2a67aee95a8e28307d720685cf3e8b0ab10284a5", // $EARLY
 ];
 /** Tokens never shown as incubated, even with a matching split: test launches, spam, scams. Lowercase. */
-export const HIDDEN_TOKENS: `0x${string}`[] = [];
+export const HIDDEN_TOKENS: `0x${string}`[] = [
+  "0xe56419c4b1558609297b7d9c7006ecbfeb7118d7", // $HERMES — test launch, 16 Nov
+  "0x6e1a6f8c355d094847e75d50bfd27d949b96de4c", // $ZOO — test launch, 16 Nov
+];
 export const splitText = () => SLOTS.map((s) => `${s.bps / 100}% ${s.short}`).join(" · ");
 
 /** How buybacks happen — shown everywhere fees are explained. */
 export const BUYBACKS = "Buybacks run automatically every day, executed by the EARLY AI agent swarm.";
 
 export const LINKS = {
-  x: "https://x.com/mememaxxers",
+  x: "https://x.com/socialsrising",
   discord: "https://discord.gg/krVPuyksQy",
+  article: "https://x.com/tradesgiving/status/2119840504795812285", // the team / why we launched EARLY
   telegram: "https://t.me/+Wzr9-0gNQtM2YTEx",
   earlyToken: "https://montramarkets.xyz/token/0x2a67aee95a8e28307d720685cf3e8b0ab10284a5",
   earlyBirds: "https://opensea.io/collection/early-birdss",
   helpTelegram: "https://t.me/Tradesgiving",
   helpX: "https://x.com/Tradesgiving",
-  apply: "https://x.com/mememaxxers", // where creators ask for Socials Rising marketing support
+  apply: "https://x.com/socialsrising", // where creators ask for Socials Rising marketing support
 };
 
 /** Trading fee options on the launch page (total fee per trade, in pips of 1,000,000). */

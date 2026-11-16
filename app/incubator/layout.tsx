@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Syne, Manrope, JetBrains_Mono } from "next/font/google";
+import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import "../launchpad/launchpad.css";
 import "./incubator.css";
@@ -8,23 +8,29 @@ import { ToastProvider } from "../launchpad/_components/Toast";
 import { IncNav } from "./_components/IncNav";
 import { BRAND, LINKS, PARENT, SITE } from "./_lib/config";
 
-const syne = Syne({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-syne" });
-const manrope = Manrope({ subsets: ["latin"], weight: ["500", "600", "700", "800"], variable: "--font-manrope" });
-const jb = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "700"], variable: "--font-jbmono" });
+const display = Inter_Tight({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-inc-display" });
+const body = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-inc-body" });
+const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "700"], variable: "--font-jbmono" });
 
-const DESC = "Launch your token through EARLY. Every trading fee funds daily buybacks for your community, run by our AI agent swarm. Live on Montra · Elysium.";
+const TITLE = `${BRAND} · Launch with a team behind you`;
+const DESC = "Launch your token through EARLY: the Socials Rising team and creators behind you, airdrop rewards for active holders, and daily buybacks from every trade. Live on Montra · Elysium.";
 export const metadata: Metadata = {
-  title: `${BRAND} · Elysium`,
+  metadataBase: new URL(SITE),
+  title: TITLE,
   description: DESC,
-  openGraph: { title: `${BRAND} · Elysium`, description: DESC, url: `${SITE}/incubator/elysium`, siteName: BRAND, type: "website" },
-  twitter: { card: "summary_large_image", title: `${BRAND} · Elysium`, description: DESC },
+  icons: { icon: [{ url: "/incubator/icon-64.png", sizes: "64x64", type: "image/png" }], apple: "/incubator/icon-180.png" },
+  openGraph: { title: TITLE, description: DESC, url: `${SITE}/incubator/elysium`, siteName: BRAND, type: "website", images: [{ url: "/incubator/og.png", width: 1200, height: 630, alt: "EARLY Incubator" }] },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESC, images: ["/incubator/og.png"], site: "@socialsrising" },
 };
 
 export default function IncubatorLayout({ children }: { children: React.ReactNode }) {
-  const community = [["Telegram", LINKS.telegram], ["X", LINKS.x], ["Discord", LINKS.discord]].filter(([, h]) => h);
-  const ecosystem = [["$EARLY", LINKS.earlyToken], ["Early Birds NFTs", LINKS.earlyBirds]];
+  const cols: [string, [string, string, boolean?][]][] = [
+    ["Incubator", [["Launch a token", "/incubator/elysium/launch", true], ["What you get", "/incubator/elysium#perks", true], ["Where fees go", "/incubator/elysium#fees", true], ["Projects", "/incubator/elysium#projects", true]]],
+    ["EARLY", [["$EARLY", LINKS.earlyToken], ["Early Birds NFTs", LINKS.earlyBirds], ["Why we built EARLY", LINKS.article]]],
+    ["Community", [["Telegram", LINKS.telegram], ["X · @socialsrising", LINKS.x], ["Discord", LINKS.discord], ["Help · @Tradesgiving", LINKS.helpTelegram]]],
+  ];
   return (
-    <div className={`mm inc ${syne.variable} ${manrope.variable} ${jb.variable}`}>
+    <div className={`mm inc ${display.variable} ${body.variable} ${mono.variable}`}>
       <Providers>
         <ToastProvider>
           <IncNav />
@@ -32,25 +38,20 @@ export default function IncubatorLayout({ children }: { children: React.ReactNod
           <footer>
             <div className="wrap foot">
               <div className="foot-brand">
-                <Link className="logo" href="/incubator/elysium"><span className="cat">E</span>{BRAND}</Link>
-                <p className="muted" style={{ maxWidth: "36ch", fontSize: ".92rem" }}>Launch your token through EARLY. Trading fees fund daily buybacks for your community, run by our AI agent swarm.</p>
-                <span className="proto">Elysium · by {PARENT}</span>
+                <Link className="logo" href="/incubator/elysium"><img className="mark" src="/incubator/early-mark.png" alt="" width={30} height={30} /><span className="word">EARLY</span><span className="sub">Incubator</span></Link>
+                <p className="muted" style={{ maxWidth: "34ch", fontSize: ".92rem" }}>Launch with the {PARENT} team behind you. Every trade funds daily buybacks for your community.</p>
               </div>
-              <div className="foot-col"><div className="eyebrow">Incubator</div>
-                <Link href="/incubator/elysium">Directory</Link><Link href="/incubator/elysium/launch">Launch a token</Link><Link href="/incubator/elysium#how">How it works</Link>
-              </div>
-              <div className="foot-col"><div className="eyebrow">EARLY</div>
-                {ecosystem.map(([l, h]) => <a key={l} href={h} target="_blank" rel="noopener noreferrer">{l} ↗</a>)}
-                <Link href="/incubator/elysium#fees">Fee wallets</Link>
-              </div>
-              <div className="foot-col"><div className="eyebrow">Community</div>
-                {community.map(([l, h]) => <a key={l} href={h} target="_blank" rel="noopener noreferrer">{l} ↗</a>)}
-                <a href={LINKS.helpTelegram} target="_blank" rel="noopener noreferrer">Help: @Tradesgiving ↗</a>
-              </div>
+              {cols.map(([head, links]) => (
+                <div key={head} className="foot-col"><div className="eyebrow">{head}</div>
+                  {links.map(([l, h, internal]) => internal
+                    ? <Link key={l} href={h}>{l}</Link>
+                    : <a key={l} href={h} target="_blank" rel="noopener noreferrer">{l} ↗</a>)}
+                </div>
+              ))}
             </div>
             <div className="wrap foot-bottom">
-              <span>© {new Date().getFullYear()} {BRAND}</span>
-              <span className="muted">Tokens are launched by their creators on third-party launchpads. Speculative and risky; not financial advice. Elysium is a new network that its operators may pause or change. No airdrop, listing or return is promised.</span>
+              <span>© {new Date().getFullYear()} {BRAND} · by {PARENT}</span>
+              <span className="muted">Tokens are launched by their creators on third-party launchpads. Crypto is speculative and risky; nothing here is financial advice. Rewards depend on trading volume and no return or listing is promised. Elysium is a new network that its operators may pause or change.</span>
             </div>
           </footer>
         </ToastProvider>

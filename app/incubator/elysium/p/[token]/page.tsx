@@ -37,7 +37,7 @@ function buildKit(d: TokenDetail, label: (r: string) => string) {
       std
         ? `Where the ${fee} trading fee goes: ${split}. Buybacks run daily, executed by the EARLY AI agent swarm, from public wallets anyone can check.`
         : `Where the ${fee} trading fee goes: ${split}.`,
-      `Want to help it grow? Buy, share and bring people in. Active $EARLY and Early Birds holders who support ${t} are who the 20% buyback is for.`,
+      `Want to earn ${t}? Help it grow. 60% of fees reward the community for product launches, feedback, content and referrals, and 20% goes only to active $EARLY and Early Birds holders who buy ${t}, create content and refer others.`,
       `Trade ${t}: ${url}\nVerify everything: ${page}`,
     ].filter((_, i) => std || i !== 4),
     welcome: `Welcome to ${d.name} (${t}) 👋\n\n${about}\n\n📈 Trade: ${url}\n🔎 Verify: ${page}\n📄 Contract: ${d.address}${std ? "\n🔁 Every trade funds daily buybacks for this community." : ""}${socials ? `\n\n${socials}` : ""}\n\nNever share your seed phrase. Admins will never DM you first.`,
@@ -47,7 +47,8 @@ function buildKit(d: TokenDetail, label: (r: string) => string) {
       { q: "What are the fees, and where do they go?", a: `${fee} per trade, fixed forever. After Montra's cut, it's split on-chain: ${split}.` },
       ...(std ? [
         { q: "How do the buybacks work?", a: `${BUYBACKS} The wallets are public, so anyone can check every buy. Amounts depend on trading volume.` },
-        { q: "How do supporters get rewarded?", a: "20% of fees buy back the token for active $EARLY and Early Birds NFT holders who support it by buying, sharing and bringing people in. Rewards depend on trading and aren't guaranteed." },
+        { q: "How does the community get rewarded?", a: `60% of fees buy back ${t} to reward the community for product launches, feedback, content, referrals and more. Rewards depend on trading volume.` },
+        { q: "What are the $EARLY & Early Birds marketing incentives?", a: `20% of fees buy back ${t} for active $EARLY and Early Birds NFT holders only: the ones who buy ${t}, create content and refer others. Passive holders get nothing.` },
         { q: "What's the Builder Fund?", a: "20% of fees buy KNTQ and MONTRA (10% each). It's held for the team and unlocked as the project hits market-cap and builder milestones." },
       ] : []),
       { q: "How can I verify all this?", a: `Every wallet, the fee split and the launch transaction are linked on the project page: ${page}` },
@@ -104,7 +105,7 @@ function Support() {
         <a className="btn sm" href={LINKS.helpX} target="_blank" rel="noopener noreferrer">X ↗</a>
         <a className="btn sm ghost" href={LINKS.telegram} target="_blank" rel="noopener noreferrer">EARLY community ↗</a>
       </div>
-      <p className="muted" style={{ fontSize: ".8rem", marginTop: 10 }}>Support is case by case, never automatic or guaranteed.</p>
+      <p className="muted" style={{ fontSize: ".8rem", marginTop: 10 }}>Support is planned with each project, so reach out early.</p>
     </div>
   );
 }
@@ -167,7 +168,7 @@ function Project() {
           <div className="stat"><div className="v">{usd(d.volume24hUsd)}</div><div className="k muted">24h volume <span className={(d.change24hPct ?? 0) >= 0 ? "up" : "down"}>{pct(d.change24hPct)}</span></div></div>
           <div className="stat"><div className="v">{d.holders > 0 ? d.holders.toLocaleString() : "—"}</div><div className="k muted">{d.holders > 0 ? `Holders${h && h.top10Pct > 0 ? ` · top 10 hold ${h.top10Pct.toFixed(1)}%` : ""}` : "Holders (counting…)"}</div></div>
           {inc
-            ? <div className="stat"><div className="v">{units(d.stats?.creatorFees, dec).toFixed(3)} {q}</div><div className="k muted">Fees to buybacks</div></div>
+            ? <div className="stat"><div className="v">{units(d.stats?.creatorFees, dec).toFixed(3)} {q}</div><div className="k muted">{hasIncubatorSplit(d) ? "Fees to buybacks" : "Creator fees earned"}</div></div>
             : <div className="stat"><div className="v">{units(d.rewards?.received ?? d.rewardsReceived, dec).toFixed(3)} {q}</div><div className="k muted">Paid to holders</div></div>}
         </div>
       </section>
@@ -181,7 +182,7 @@ function Project() {
               <div className="eyebrow">Fee split · on-chain</div>
               {d.splitter ? d.splitter.recipients.map((r, i) => (
                 <div key={r} className="kv"><span><a href={explorerAddr(r)} target="_blank" rel="noreferrer">{label(r)}</a></span><b>{d.splitter!.shares[i] / 100}%</b></div>
-              )) : <div className="kv"><span>{d.recipientKind}</span><b className="mono">{d.recipient ? short(d.recipient) : "—"}</b></div>}
+              )) : <div className="kv"><span>{d.recipient ? <a href={explorerAddr(d.recipient)} target="_blank" rel="noopener noreferrer">{label(d.recipient)}</a> : d.recipientKind}</span><b>100%</b></div>}
               <p className="muted" style={{ fontSize: ".8rem", marginTop: 8 }}>Of the creator side of a {d.totalFeePips / 10000}% trade fee. {units(d.stats?.creatorFees, dec).toFixed(3)} {q} earned so far.</p>
             </div>
             <div className="card pad verify">
