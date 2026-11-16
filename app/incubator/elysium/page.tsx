@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Bonus, RichDesc } from "../_components/Bits";
 import { BUYBACKS, LAUNCHPADS, LINKS, PARENT, PERKS, RESULTS, SLOTS, explorerAddr, type Result } from "../_lib/config";
-import { montra, pct, usd, ago, type TokenCard } from "../_lib/montra";
+import { montra, pct, safeUrl, usd, ago, type DirToken, type TokenCard } from "../_lib/montra";
 
 type Tab = "trending" | "latest" | "top";
 
@@ -12,7 +12,7 @@ const Check = () => (
   <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden><path d="M3.5 8.5l3 3 6-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
 );
 
-function TokenTable({ tokens, empty }: { tokens: TokenCard[]; empty: React.ReactNode }) {
+function TokenTable({ tokens, empty }: { tokens: DirToken[]; empty: React.ReactNode }) {
   const router = useRouter();
   if (!tokens.length) return <div className="empty">{empty}</div>;
   return (
@@ -22,7 +22,7 @@ function TokenTable({ tokens, empty }: { tokens: TokenCard[]; empty: React.React
         <tbody>
           {tokens.map((t) => (
             <tr key={t.address} className="row" onClick={() => router.push(`/incubator/elysium/p/${t.address}`)}>
-              <td><div className="tok">{t.imageUrl ? <img src={t.imageUrl} alt="" loading="lazy" /> : <span className="ph" />}<div><b>{t.name}</b><small>${t.symbol}</small></div></div></td>
+              <td><Link className="tok" href={`/incubator/elysium/p/${t.address}`} onClick={(e) => e.stopPropagation()}>{t.imageUrl ? <img src={t.imageUrl} alt="" loading="lazy" /> : <span className="ph" />}<span><b>{t.name}</b><small>${t.symbol}</small></span></Link></td>
               <td className="num">{usd(t.marketCapUsd)}</td>
               <td className="num">{usd(t.volume24hUsd)}</td>
               <td className={`num ${(t.change24hPct ?? 0) >= 0 ? "up" : "down"}`}>{pct(t.change24hPct)}</td>
@@ -40,7 +40,7 @@ function ResultCard({ r, live }: { r: Result; live?: TokenCard }) {
   return (
     <article className="result">
       <header>
-        {live?.imageUrl ? <img src={live.imageUrl} alt="" /> : <span className="ph" />}
+        {safeUrl(live?.imageUrl) ? <img src={safeUrl(live?.imageUrl)!} alt="" /> : <span className="ph" />}
         <div><b>{r.name}</b>{r.ticker && <small>${r.ticker}</small>}</div>
         <span className="date">{r.date}</span>
       </header>
@@ -60,7 +60,7 @@ function ResultCard({ r, live }: { r: Result; live?: TokenCard }) {
 }
 
 export default function IncubatorHome() {
-  const [mine, setMine] = useState<TokenCard[] | null>(null);
+  const [mine, setMine] = useState<DirToken[] | null>(null);
   const [live, setLive] = useState<Record<string, TokenCard>>({});
   const [tab, setTab] = useState<Tab>("trending");
   const [err, setErr] = useState("");
@@ -132,7 +132,7 @@ export default function IncubatorHome() {
       </section>
 
       <section className="blk" id="fees">
-        <div className="sh"><div className="eyebrow">Where every fee goes</div><h2>Every trade works for your community</h2><p>Pick a 3%, 5% or 10% fee at launch. After Montra&apos;s small cut, all of it goes to three public wallets, fixed on-chain forever.</p></div>
+        <div className="sh"><div className="eyebrow">Where every fee goes</div><h2>Every trade works for your community</h2><p>Pick a 3%, 5% or 10% fee at launch. Montra keeps 0.4% (plus a 0.5–1% liquidity share once a token passes its LP line), and the rest goes to three public wallets, fixed on-chain forever.</p></div>
         <div className="feesplit">
           <div className="bar3" role="img" aria-label={SLOTS.map((s) => `${s.bps / 100}% ${s.name}`).join(", ")}>{SLOTS.map((s, i) => <i key={s.key} className={["a", "b", "c", "b"][i]} style={{ width: `${s.bps / 100}%` }} />)}</div>
           <div className="split3">
@@ -142,7 +142,7 @@ export default function IncubatorHome() {
                 <a className="wl" href={explorerAddr(s.wallet)} target="_blank" rel="noopener noreferrer">View wallet ↗</a></div>
             ))}
           </div>
-          <p className="feefoot"><b>{BUYBACKS}</b> Amounts depend on trading volume. Every wallet is public, so anyone can check it.</p>
+          <p className="feefoot"><b>{BUYBACKS}</b> The wallets are run by EARLY and shared by every incubated project; each project&apos;s own fee splitter shows exactly what it paid in. Amounts depend on trading volume. Separately, EARLY earns a share of Montra&apos;s own 0.4% through Montra Builders, never from your fees.</p>
         </div>
       </section>
 

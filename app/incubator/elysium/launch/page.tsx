@@ -2,16 +2,23 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { formatEther, parseEther, parseEventLogs, zeroHash } from "viem";
-import { useAccount, useBalance, usePublicClient, useSwitchChain, useWriteContract } from "wagmi";
+import { useAccount, useBalance, usePublicClient, useReadContract, useSwitchChain, useWriteContract } from "wagmi";
 import { WalletButton } from "../../../launchpad/_components/Wallet";
 import { useToast } from "../../../launchpad/_components/Toast";
 import { BUYBACKS, DEFAULT_FEE, ELYSIUM, FEE_TIERS, LAUNCHPADS, MONTRA_BUILDER_CODE, PARENT, PERKS, SLOTS, explorerAddr } from "../../_lib/config";
 import { Bonus, HelpLine } from "../../_components/Bits";
-import { LAUNCH_ABI, MONTRA_FACTORY, SNIPE_WINDOWS, builderSuffix, incubatorSplit, montra, pickRow, randomSalt, short } from "../../_lib/montra";
+import { LAUNCH_ABI, MONTRA_FACTORY, SNIPE_WINDOWS, ZERO, builderSuffix, incubatorSplit, montra, pickRow, randomSalt, safeLink, short } from "../../_lib/montra";
 
-type Step = "idle" | "switch" | "upload" | "check" | "sign" | "confirm" | "done";
-const STEPS: [Step, string][] = [["switch", "Switch to Elysium"], ["upload", "Upload image + metadata"], ["check", "Check the launch with Montra"], ["sign", "Confirm in your wallet"], ["confirm", "Wait for Elysium to confirm"]];
-const URL_RE = /^https:\/\/\S+$/i;
+type Step = "idle" | "switch" | "check" | "upload" | "sign" | "confirm" | "done";
+const STEPS: [Step, string][] = [["switch", "Switch to Elysium"], ["check", "Check the launch terms on-chain"], ["upload", "Upload image + details"], ["sign", "Confirm in your wallet"], ["confirm", "Wait for Elysium to confirm"]];
+/** Montra's launch fee is 0 today. If it ever jumps above this, the page stops and asks the creator to check first. */
+const MAX_LAUNCH_FEE = parseEther("1");
+const LINK_FIELDS = [
+  ["website", "Website", "Website must be an https:// link."],
+  ["twitter", "X", "X link must be an https://x.com/… link."],
+  ["telegram", "Telegram", "Telegram link must be an https://t.me/… link."],
+  ["discord", "Discord", "Discord link must be an https://discord.gg/… link."],
+] as const;
 
 export default function LaunchPage() {
   const router = useRouter();
@@ -21,6 +28,8 @@ export default function LaunchPage() {
   const { writeContractAsync } = useWriteContract();
   const client = usePublicClient({ chainId: ELYSIUM.chainId });
   const bal = useBalance({ address, chainId: ELYSIUM.chainId, query: { enabled: !!address } });
+  const feeRead = useReadContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launchFee", chainId: ELYSIUM.chainId });
+  const launchFeeNow = feeRead.data ?? BigInt(0);
 
   const [f, setF] = useState({ name: "", symbol: "", description: "", website: "", twitter: "", telegram: "", discord: "", firstBuy: "0.01" });
   const [fee, setFee] = useState<number>(DEFAULT_FEE);
@@ -40,10 +49,11 @@ export default function LaunchPage() {
     !img && "Add an image (PNG, JPEG, WebP or GIF, 2 MB max).",
     img && img.size > 2 * 1024 * 1024 && "Image must be 2 MB or smaller.",
     firstBuy < BigInt(0) && "First buy must be a number (in HYPE).",
-    ...(["website", "twitter", "telegram", "discord"] as const).map((k) => f[k].trim() && !URL_RE.test(f[k].trim()) && `${k[0].toUpperCase() + k.slice(1)} link must start with https://`),
+    ...LINK_FIELDS.map(([k, , msg]) => f[k].trim() && !safeLink(f[k].trim(), k) && msg),
     !ack && "Tick the box to confirm you've read how it works.",
   ].filter(Boolean) as string[];
   const busy = step !== "idle" && step !== "done";
+  const total = firstBuy >= BigInt(0) ? firstBuy + launchFeeNow : null;
 
   async function launch() {
     setErr("");
@@ -52,23 +62,32 @@ export default function LaunchPage() {
     try {
       if (chainId !== ELYSIUM.chainId) { setStep("switch"); await switchChainAsync({ chainId: ELYSIUM.chainId }); }
 
-      setStep("upload");
-      const fd = new FormData();
-      fd.set("image", img!); fd.set("name", f.name.trim()); fd.set("symbol", f.symbol); fd.set("description", f.description.trim());
-      for (const k of ["website", "twitter", "telegram", "discord"] as const) fd.set(k, f[k].trim());
-      const up = await fetch("/api/incubator/metadata", { method: "POST", body: fd });
-      const meta = await up.json();
-      if (!up.ok) throw new Error(meta.error ?? "Upload failed.");
-
+      // Check the terms before uploading anything: Montra's menu row, then that same row on the contract itself,
+      // so a wrong or tampered API answer can never put a different fee into what the creator signs.
       setStep("check");
       const cfg = await montra.config();
+      if (cfg.contracts?.factory && cfg.contracts.factory.toLowerCase() !== MONTRA_FACTORY) throw new Error("Montra reports a different factory than this page expects, so we stopped. Message @Tradesgiving.");
       const row = pickRow(cfg.configs, fee, snipe);
       if (!row) throw new Error("Montra doesn't offer that fee + anti-snipe combination right now. Pick another.");
-      const [launchFee, enabled] = await Promise.all([
+      const [onchain, launchFee, enabled] = await Promise.all([
+        client.readContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "getConfig", args: [BigInt(row.id)] }),
         client.readContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launchFee" }),
         client.readContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launchEnabled" }),
       ]);
       if (!enabled) throw new Error("Montra has launches paused at the moment. Try again later.");
+      const termsMatch = onchain.exists && onchain.enabled && onchain.quote.toLowerCase() === ZERO && onchain.totalFeePips === fee
+        && onchain.earlyBuyFeeWindow === snipe && (snipe === 0 || onchain.earlyBuyFeeStartPips > 0);
+      if (!termsMatch) throw new Error("Montra's fee menu doesn't match its contract right now, so we stopped before anything was signed. Try again in a few minutes.");
+      if (launchFee > MAX_LAUNCH_FEE) throw new Error(`Montra's launch fee is now ${formatEther(launchFee)} HYPE, above this page's safety limit. Message @Tradesgiving before launching.`);
+
+      setStep("upload");
+      const fd = new FormData();
+      fd.set("image", img!); fd.set("name", f.name.trim()); fd.set("symbol", f.symbol); fd.set("description", f.description.trim());
+      for (const [k] of LINK_FIELDS) fd.set(k, f[k].trim());
+      const up = await fetch("/api/incubator/metadata", { method: "POST", body: fd });
+      const meta = await up.json();
+      if (!up.ok) throw new Error(meta.error ?? "Upload failed.");
+
       const { feeRecipients, feeShares } = incubatorSplit();
       const params = {
         name: f.name.trim(), symbol: f.symbol, metadataURI: meta.metadataUri,
@@ -86,7 +105,8 @@ export default function LaunchPage() {
 
       setStep("confirm");
       const receipt = await client.waitForTransactionReceipt({ hash, timeout: 180_000 });
-      const [ev] = parseEventLogs({ abi: LAUNCH_ABI, eventName: "TokenLaunched", logs: receipt.logs });
+      const factoryLogs = receipt.logs.filter((l) => l.address.toLowerCase() === MONTRA_FACTORY);
+      const [ev] = parseEventLogs({ abi: LAUNCH_ABI, eventName: "TokenLaunched", logs: factoryLogs });
       if (!ev) throw new Error("Launched, but the receipt had no TokenLaunched event. Check your wallet's activity.");
       setStep("done");
       toast(`$${f.symbol} is live 🚀`);
@@ -107,9 +127,9 @@ export default function LaunchPage() {
 
       <div className="grid2" style={{ marginTop: 26 }}>
         <div className="card pad" style={{ display: "grid", gap: 16 }}>
-          <div className="field"><label>Launchpad &amp; chain</label>
+          <div className="field"><span className="flabel">Launchpad &amp; chain</span>
             <div className="lppick">
-              {LAUNCHPADS.map((x) => <div key={x.key} className="lpopt" aria-selected={x.key === lp.key}><b>{x.name}</b><small>{x.chain} · gas in {ELYSIUM.gas}</small></div>)}
+              {LAUNCHPADS.map((x) => <div key={x.key} className="lpopt"><b>{x.name}</b><small>{x.chain} · gas in {ELYSIUM.gas}</small></div>)}
               <div className="lpopt soon"><small>More launchpads soon</small></div>
             </div>
             <div style={{ marginTop: 8 }}><Bonus lp={lp} /></div>
@@ -120,33 +140,33 @@ export default function LaunchPage() {
               <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(e) => setImg(e.target.files?.[0] ?? null)} />
             </label>
             <div style={{ display: "grid", gap: 12 }}>
-              <div className="field"><label>Name <span className="req">*</span></label><input className="inp" maxLength={32} value={f.name} onChange={set("name")} placeholder="Agent Smith" /></div>
-              <div className="field"><label>Ticker <span className="req">*</span></label><input className="inp mono" maxLength={10} value={f.symbol} onChange={(e) => setF((s) => ({ ...s, symbol: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") }))} placeholder="SMITH" /></div>
+              <div className="field"><label htmlFor="f-name">Name <span className="req">*</span></label><input id="f-name" className="inp" maxLength={32} value={f.name} onChange={set("name")} placeholder="Agent Smith" /></div>
+              <div className="field"><label htmlFor="f-symbol">Ticker <span className="req">*</span></label><input id="f-symbol" className="inp mono" maxLength={10} value={f.symbol} onChange={(e) => setF((s) => ({ ...s, symbol: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") }))} placeholder="SMITH" /></div>
             </div>
           </div>
-          <div className="field"><label>What is it?</label><textarea className="inp" rows={4} maxLength={1000} value={f.description} onChange={set("description")} placeholder="What your project or agent does, in a few sentences. Your launch kit is written from this." /><span className="hint">Fixed forever at launch. Shown on Montra and your project page.</span></div>
+          <div className="field"><label htmlFor="f-desc">What is it?</label><textarea id="f-desc" className="inp" rows={4} maxLength={1000} value={f.description} onChange={set("description")} placeholder="What your project or agent does, in a few sentences. Your launch kit is written from this." /><span className="hint">Fixed forever at launch. Shown on Montra and your project page.</span></div>
           <div className="g2 grid" style={{ gap: 12 }}>
-            {(["website", "twitter", "telegram", "discord"] as const).map((k) => (
-              <div key={k} className="field"><label>{k === "twitter" ? "X" : k[0].toUpperCase() + k.slice(1)}</label><input className="inp" value={f[k]} onChange={set(k)} placeholder="https://" /></div>
+            {LINK_FIELDS.map(([k, label]) => (
+              <div key={k} className="field"><label htmlFor={`f-${k}`}>{label}</label><input id={`f-${k}`} type="url" className="inp" value={f[k]} onChange={set(k)} placeholder={{ website: "https://", twitter: "https://x.com/…", telegram: "https://t.me/…", discord: "https://discord.gg/…" }[k]} /></div>
             ))}
           </div>
 
-          <div className="field"><label>Trading fee</label>
-            <div className="feeopts" role="radiogroup">
+          <div className="field"><span className="flabel">Trading fee</span>
+            <div className="feeopts" role="group" aria-label="Trading fee">
               {FEE_TIERS.map((t) => (
-                <button key={t.pips} type="button" role="radio" aria-checked={fee === t.pips} className={`feeopt ${fee === t.pips ? "on" : ""}`} onClick={() => setFee(t.pips)}>
+                <button key={t.pips} type="button" aria-pressed={fee === t.pips} className={`feeopt ${fee === t.pips ? "on" : ""}`} onClick={() => setFee(t.pips)}>
                   {"recommended" in t && t.recommended && <span className="rec">Recommended</span>}
                   <span className="pc">{t.label}</span><span className="nm">{t.name}</span><span className="ds">{t.desc}</span>
                 </button>
               ))}
             </div>
-            <span className="hint">Paid in HYPE on every buy and sell. Fixed forever at launch.</span>
+            <span className="hint">Paid in HYPE on every buy and sell, fixed forever. Montra keeps 0.4% (plus a 0.5–1% liquidity share once a token passes its LP line); the rest funds the buybacks.</span>
           </div>
-          <div className="field"><label>Anti-snipe</label>
-            <div className="chips">{SNIPE_WINDOWS.map((w) => <button key={w.s} type="button" className={`chip ${snipe === w.s ? "on" : ""}`} onClick={() => setSnipe(w.s)}>{w.label}</button>)}</div>
-            <span className="hint">Bots buying in the first moments pay a much higher fee that drops to normal over this window. Your own first buy is exempt.</span>
+          <div className="field"><span className="flabel">Anti-snipe</span>
+            <div className="chips" role="group" aria-label="Anti-snipe window">{SNIPE_WINDOWS.map((w) => <button key={w.s} type="button" aria-pressed={snipe === w.s} className={`chip ${snipe === w.s ? "on" : ""}`} onClick={() => setSnipe(w.s)}>{w.label}</button>)}</div>
+            <span className="hint">Buys in this window start at a 99% fee that falls to your normal fee by the end, so sniping bots pay heavily. Your own first buy is exempt.</span>
           </div>
-          <div className="field"><label>Your first buy (HYPE)</label><input className="inp mono" value={f.firstBuy} onChange={set("firstBuy")} inputMode="decimal" placeholder="0" /><span className="hint">Optional. Happens in the same transaction, so nobody can buy before you.</span></div>
+          <div className="field"><label htmlFor="f-buy">Your first buy (HYPE)</label><input id="f-buy" className="inp mono" value={f.firstBuy} onChange={set("firstBuy")} inputMode="decimal" placeholder="0" /><span className="hint">Optional. Happens in the same transaction, so nobody can buy before you.</span></div>
         </div>
 
         <div style={{ display: "grid", gap: 14 }}>
@@ -158,6 +178,8 @@ export default function LaunchPage() {
           </div>
 
           <div className="card pad" style={{ display: "grid", gap: 12 }}>
+            <div className="kv" style={{ padding: 0, borderBottom: 0 }}><span>You pay now</span><b className="mono">{total == null ? "—" : `${formatEther(total)} HYPE + gas`}</b></div>
+            <p className="muted" style={{ fontSize: ".8rem", marginTop: -6 }}>First buy {firstBuy >= BigInt(0) ? formatEther(firstBuy) : "—"} HYPE · Montra launch fee {launchFeeNow > BigInt(0) ? `${formatEther(launchFeeNow)} HYPE` : "free"}</p>
             {!isConnected ? <WalletButton size="lg" /> : (
               <>
                 <div className="kv" style={{ borderBottom: 0, padding: 0 }}><span className="muted">HYPE on Elysium</span><b className="mono">{bal.data ? Number(formatEther(bal.data.value)).toFixed(4) : "—"}</b></div>
@@ -172,7 +194,7 @@ export default function LaunchPage() {
                 {!err && !busy && problems.length > 0 && <p className="muted" style={{ fontSize: ".82rem" }}>{problems[0]}</p>}
               </>
             )}
-            <p className="muted" style={{ fontSize: ".78rem" }}>Sent to Montra&apos;s factory <a className="mono" href={explorerAddr(MONTRA_FACTORY)} target="_blank" rel="noreferrer">{short(MONTRA_FACTORY)} ↗</a>{MONTRA_BUILDER_CODE ? <> · credited to builder code <span className="mono">{MONTRA_BUILDER_CODE}</span></> : null}.</p>
+            <p className="muted" style={{ fontSize: ".78rem" }}>Sent to Montra&apos;s factory <a className="mono" href={explorerAddr(MONTRA_FACTORY)} target="_blank" rel="noreferrer">{short(MONTRA_FACTORY)} ↗</a>{MONTRA_BUILDER_CODE ? <> · credited to builder code <span className="mono">{MONTRA_BUILDER_CODE}</span>, which earns EARLY a share of Montra&apos;s own 0.4% (never from your fees)</> : null}.</p>
             <HelpLine />
           </div>
           <div className="card pad">

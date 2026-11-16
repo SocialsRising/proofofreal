@@ -2,7 +2,7 @@
    Direction: true black, white type, one blue taken from the EARLY logo, flat surfaces, thin lines, few effects. */
 .mm.inc{
   --bg:#000; --bg-2:#07080B; --card:#0A0B0F; --card-2:#111319; --line:#1A1D25; --line-hi:rgba(255,255,255,.11);
-  --fg:#F4F5F8; --fg-2:#A7ABB8; --fg-3:#6A6F7E;
+  --fg:#F4F5F8; --fg-2:#A7ABB8; --fg-3:#7D8293; /* fg-3 kept above 4.5:1 on black for small text */
   --accent:#8CA5FF; --accent-2:#4A6CF7; --accent-soft:rgba(140,165,255,.12);
   --up:#6FDDA3; --down:#F08C8C;
   --r:16px; --r-s:12px;
@@ -139,7 +139,7 @@
   .feesplit{border:1px solid var(--line);border-radius:var(--r);background:var(--card);padding:24px}
   .bar3{display:flex;height:10px;border-radius:999px;overflow:hidden;gap:3px;border:0;margin:0 0 22px;background:transparent}
   .bar3 i{display:block;height:100%;border-radius:999px}
-  .bar3 .a,.slot .p i.a,.bar3 .c-old{background:#fff}
+  .bar3 .a,.slot .p i.a{background:#fff}
   .bar3 .b,.slot .p i.b{background:var(--accent)}
   .bar3 .c,.slot .p i.c{background:var(--accent-2)}
   .split3{display:grid;gap:22px}
@@ -284,3 +284,12 @@
 .mm.inc .cta img{right:-130px;opacity:.11}
 .mm.inc .kv a.mono{white-space:nowrap}
 @media(max-width:959px){.mm.inc .hero-art img{width:min(180px,48vw)}.mm.inc .hero{padding-top:36px}}
+.mm.inc .field .flabel{font-weight:600;font-size:.9rem}
+.mm.inc .ptoken{width:84px;height:84px;border-radius:20px;object-fit:cover;border:1px solid var(--line)}
+.mm.inc .statline em{font-style:normal;margin-left:4px}
+.mm.inc .statline.four{grid-template-columns:repeat(2,1fr)}
+.mm.inc .statline.four>div+div{border-left:0;padding-left:4px}
+.mm.inc .statline.four>div:nth-child(even){border-left:1px solid var(--line);padding-left:20px}
+.mm.inc .statline.four>div:nth-child(n+3){border-top:1px solid var(--line)}
+@media(min-width:720px){.mm.inc .statline.four{grid-template-columns:repeat(4,1fr)}.mm.inc .statline.four>div{border-top:0}.mm.inc .statline.four>div+div{border-left:1px solid var(--line);padding-left:20px}}
+.mm.inc .byline{margin-top:10px;font-size:.8rem;color:var(--fg-3);max-width:80ch}

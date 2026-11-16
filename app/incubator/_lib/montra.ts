@@ -1,7 +1,7 @@
 /* Montra adapter: read-only public API (no key, CORS-open for GETs) + the factory's one-transaction launch.
    Docs: https://montramarkets.xyz/docs/build · API: https://montramarkets.xyz/docs/api */
 import { stringToHex, toHex } from "viem";
-import { HIDDEN_TOKENS, LEGACY_TOKENS, LEGACY_WALLETS, MONTRA_BUILDER_CODE, SLOTS } from "./config";
+import { FEE_TIERS, HIDDEN_TOKENS, LEGACY_TOKENS, LEGACY_WALLETS, MONTRA_BUILDER_CODE, SLOTS } from "./config";
 
 export const MONTRA_API = "https://api.montramarkets.xyz";
 export const MONTRA_FACTORY = "0x38d3ef3a06d18fa3286fb5deafe611be725fcd15" as const;
@@ -35,28 +35,58 @@ async function get<T>(path: string, init?: RequestInit): Promise<T> {
   return r.json() as Promise<T>;
 }
 
+/** What the directory needs per project (kept small: it's served to every visitor). */
+export type DirToken = Pick<TokenCard, "address" | "name" | "symbol" | "imageUrl" | "marketCapUsd" | "volume24hUsd" | "change24hPct" | "holders" | "launchedAt" | "trend">;
+
+/** Runs fn over items with at most n requests in flight, to stay polite to Montra's API. */
+async function inBatches<T, R>(items: T[], n: number, fn: (x: T) => Promise<R>): Promise<R[]> {
+  const out: R[] = new Array(items.length);
+  let next = 0;
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => {
+    while (next < items.length) { const k = next++; out[k] = await fn(items[k]); }
+  }));
+  return out;
+}
+
+/** The directory: tokens paying the first EARLY slot whose on-chain split matches the incubator split EXACTLY
+    (anyone can add an EARLY wallet to their own split, so presence alone proves nothing), plus legacy tokens.
+    Runs on the server behind /api/incubator/directory, which caches the answer for every visitor. */
+export async function loadDirectory(): Promise<DirToken[]> {
+  const addrs = new Set<string>(LEGACY_TOKENS);
+  for (let page = 1, pages = 1; page <= pages && page <= 20; page++) {
+    const r = await get<{ tokens?: TokenCard[]; pages?: number }>(`/api/wallets/${SLOTS[0].wallet}/lanes?page=${page}&limit=100`);
+    for (const t of r.tokens ?? []) addrs.add(t.address.toLowerCase());
+    pages = Math.max(1, Number(r.pages) || 1);
+  }
+  const candidates = [...addrs].filter((a) => isAddr(a) && !HIDDEN_TOKENS.includes(a as `0x${string}`));
+  const details = await inBatches(candidates, 6, (a) => get<TokenDetail>(`/api/tokens/${a}`).catch(() => null));
+  return details.filter((d): d is TokenDetail => !!d && isIncubated(d)).map((d) => ({
+    address: d.address, name: d.name, symbol: d.symbol, imageUrl: safeUrl(d.imageUrl), marketCapUsd: d.marketCapUsd,
+    volume24hUsd: d.volume24hUsd, change24hPct: d.change24hPct, holders: d.holders, launchedAt: d.launchedAt, trend: d.trend,
+  }));
+}
+
 export const montra = {
-  /** The directory: tokens paying the first EARLY slot whose on-chain split matches the incubator split EXACTLY
-      (anyone can add an EARLY wallet to their own split, so presence alone proves nothing), plus legacy tokens. */
-  incubated: async () => {
-    const lanes = await get<{ tokens: TokenCard[] }>(`/api/wallets/${SLOTS[0].wallet}/lanes`).then((r) => r.tokens ?? []);
-    const candidates = [...new Set([...lanes.map((t) => t.address.toLowerCase()), ...LEGACY_TOKENS])].filter((a) => isAddr(a) && !HIDDEN_TOKENS.includes(a as `0x${string}`));
-    const details = await Promise.all(candidates.map((a) => get<TokenDetail>(`/api/tokens/${a}`).catch(() => null)));
-    return details.filter((d): d is TokenDetail => !!d && isIncubated(d));
+  /** Browser side of the directory: our cached route, not Montra directly. */
+  incubated: async (): Promise<DirToken[]> => {
+    const r = await fetch("/api/incubator/directory");
+    if (!r.ok) throw new Error(`Directory ${r.status}`);
+    return ((await r.json()) as { tokens?: DirToken[] }).tokens ?? [];
   },
-  trending: (limit = 8) => get<{ tokens: TokenCard[] }>(`/api/tokens?sort=trending&limit=${limit}`).then((r) => r.tokens ?? []),
   token: (t: string) => get<TokenDetail>(`/api/tokens/${t.toLowerCase()}`),
   holders: (t: string, limit = 10) => get<Holders>(`/api/tokens/${t.toLowerCase()}/holders?limit=${limit}`),
-  config: () => get<{ chainId: number; launchFee: string; launchEnabled: boolean; configs: LaunchRow[] }>(`/api/config`),
+  config: () => get<{ chainId: number; launchFee: string; launchEnabled: boolean; configs: LaunchRow[]; contracts?: { factory?: string } }>(`/api/config`),
 };
 
 export const isAddr = (a: string) => /^0x[0-9a-fA-F]{40}$/.test(a);
-/** True only when the token's split is exactly the incubator split (same wallets, same shares), or it's a listed legacy token. */
-export const isIncubated = (d: Pick<TokenDetail, "address" | "splitter">) => {
+/** Incubated = launched on the incubator's exact terms (or a listed legacy token), and not taken down.
+    Exact terms: the 60/20/20 split to our wallets, paid in HYPE, one of our fee tiers, fee locked. */
+export const isIncubated = (d: Pick<TokenDetail, "address" | "splitter" | "quote" | "totalFeePips" | "pool">) => {
   const a = d.address.toLowerCase() as `0x${string}`;
   if (HIDDEN_TOKENS.includes(a)) return false;
   if (LEGACY_TOKENS.includes(a)) return true;
-  return hasIncubatorSplit(d);
+  const nativeQuote = d.quote?.native === true || d.quote?.address?.toLowerCase() === ZERO;
+  return hasIncubatorSplit(d) && nativeQuote && FEE_TIERS.some((t) => t.pips === d.totalFeePips) && d.pool?.feeLocked !== false;
 };
 /** The token's on-chain split is exactly the incubator split: same wallets, same shares, no extras. */
 export function hasIncubatorSplit(d: Pick<TokenDetail, "splitter">) {
@@ -67,6 +97,20 @@ export function hasIncubatorSplit(d: Pick<TokenDetail, "splitter">) {
 }
 /** Only https links from token metadata are ever rendered. */
 export const safeUrl = (u?: string | null) => (u && /^https:\/\/[^\s"'<>]{3,300}$/i.test(u.trim()) ? u.trim() : null);
+
+const LINK_HOSTS = { twitter: ["x.com", "twitter.com"], telegram: ["t.me", "telegram.me"], discord: ["discord.gg", "discord.com"] } as const;
+export type LinkKind = "website" | keyof typeof LINK_HOSTS;
+/** A creator-written link we're willing to show: https, no "x.com@other-site" disguise, and an X / Telegram / Discord
+    link must actually point at that site. Anything else is dropped. Used when uploading and when rendering. */
+export function safeLink(u: string | null | undefined, kind: LinkKind = "website"): string | null {
+  const s = safeUrl(u);
+  if (!s) return null;
+  let url: URL;
+  try { url = new URL(s); } catch { return null; }
+  if (url.protocol !== "https:" || url.username || url.password) return null;
+  if (kind !== "website" && !LINK_HOSTS[kind].some((h) => url.hostname === h || url.hostname.endsWith(`.${h}`))) return null;
+  return url.href;
+}
 
 /** Human name for a fee recipient in a token's split. */
 export const recipientLabel = (r: string, token: string, creator: string) => {
@@ -122,6 +166,22 @@ export const LAUNCH_ABI = [
   },
   { type: "function", name: "launchFee", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "uint256" }] },
   { type: "function", name: "launchEnabled", stateMutability: "view", inputs: [], outputs: [{ name: "", type: "bool" }] },
+  // One row of the factory's fee menu, exactly as Montra publishes it (docs/abis/LaunchFactory.json). Used to check the
+  // API's menu against the contract before anything is signed.
+  {
+    type: "function", name: "getConfig", stateMutability: "view", inputs: [{ name: "id", type: "uint256" }],
+    outputs: [{
+      name: "cfg", type: "tuple", components: [
+        { name: "moduleSetId", type: "uint256" }, { name: "quote", type: "address" }, { name: "baseSupply", type: "uint256" },
+        { name: "tickSpacing", type: "int24" }, { name: "startTick", type: "int24" }, { name: "graduationTicks", type: "uint24" },
+        { name: "lpLineTicks", type: "uint24" }, { name: "totalFeePips", type: "uint24" }, { name: "totalFeeMinPips", type: "uint24" },
+        { name: "protocolFeePips", type: "uint24" }, { name: "lpFeePips", type: "uint24" }, { name: "earlyBuyFeeStartPips", type: "uint24" },
+        { name: "earlyBuyFeeWindow", type: "uint32" }, { name: "liquidityPolicy", type: "address" }, { name: "liquiditySealed", type: "bool" },
+        { name: "streamDuration", type: "uint32" }, { name: "pushBountyBps", type: "uint16" }, { name: "pushFloor", type: "uint128" },
+        { name: "enabled", type: "bool" }, { name: "exists", type: "bool" },
+      ],
+    }],
+  },
   {
     type: "event", name: "TokenLaunched", anonymous: false,
     inputs: [

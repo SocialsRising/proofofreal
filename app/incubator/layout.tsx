@@ -3,14 +3,15 @@ import { Inter, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
 import "../launchpad/launchpad.css";
 import "./incubator.css";
-import { Providers } from "../launchpad/_components/Providers";
 import { ToastProvider } from "../launchpad/_components/Toast";
 import { IncNav } from "./_components/IncNav";
+import { Providers } from "./_components/Providers";
 import { BRAND, LINKS, PARENT, SITE } from "./_lib/config";
 
-const display = Inter_Tight({ subsets: ["latin"], weight: ["500", "600", "700"], variable: "--font-inc-display" });
-const body = Inter({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-inc-body" });
-const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500", "700"], variable: "--font-jbmono" });
+// Only the weights the design uses: headings 600, body 400/500/600, numbers 500.
+const display = Inter_Tight({ subsets: ["latin"], weight: ["600"], variable: "--font-inc-display" });
+const body = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inc-body" });
+const mono = JetBrains_Mono({ subsets: ["latin"], weight: ["500"], variable: "--font-jbmono" });
 
 const TITLE = `${BRAND} · Launch with a team behind you`;
 const DESC = "Launch your token through EARLY: the Socials Rising team and creators behind you, airdrop rewards for active holders, and daily buybacks from every trade. Live on Montra · Elysium.";

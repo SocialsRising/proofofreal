@@ -74,8 +74,6 @@ export const LEGACY_WALLETS: { wallet: `0x${string}`; name: string }[] = [
   { wallet: "0x61fe6cb66e0c8fd081a037242a375e5f5782083f", name: "EARLY community rewards" },
 ];
 
-/** Every wallet that marks a token as incubated. */
-export const EARLY_WALLETS = [...SLOTS.map((s) => s.wallet), ...LEGACY_WALLETS.map((l) => l.wallet)];
 /** Tokens listed as incubated although they predate the split (they don't match SLOTS exactly). */
 export const LEGACY_TOKENS: `0x${string}`[] = [
   "0x2a67aee95a8e28307d720685cf3e8b0ab10284a5", // $EARLY
@@ -99,7 +97,6 @@ export const LINKS = {
   earlyBirds: "https://opensea.io/collection/early-birdss",
   helpTelegram: "https://t.me/Tradesgiving",
   helpX: "https://x.com/Tradesgiving",
-  apply: "https://x.com/socialsrising", // where creators ask for Socials Rising marketing support
 };
 
 /** Trading fee options on the launch page (total fee per trade, in pips of 1,000,000). */
@@ -118,24 +115,22 @@ export const ELYSIUM = {
   bridgeHelp: "https://montramarkets.xyz/docs/elysium",
 } as const;
 
+/** A launchpad you can launch on through EARLY (each one is a small adapter in _lib/<key>.ts).
+    `bonus` is the incentive note shown under it; `extra.until` hides a time-limited line automatically. */
 export type Launchpad = {
-  key: "montra"; name: string; chain: string; url: string; docs: string; pitch: string;
+  key: "montra"; name: string; chain: string;
   bonus?: { title: string; text: string; href: string; extra?: { text: string; until: string } };
-  tokenUrl: (t: string) => string;
 };
 
-/** Launchpads you can launch on through EARLY. Each one is a small adapter in _lib/<key>.ts. */
 export const LAUNCHPADS: Launchpad[] = [
   {
-    key: "montra", name: "Montra", chain: "Elysium", url: "https://montramarkets.xyz", docs: "https://montramarkets.xyz/docs",
-    pitch: "Uniswap v4 pool from the first block, liquidity locked forever, no bonding curve.",
+    key: "montra", name: "Montra", chain: "Elysium",
     bonus: {
       title: "Montra Season 2 airdrop is live",
       text: "Launching and trading earn points toward the 25% MONTRA airdrop, and tokens that hold market-cap levels earn their creator more.",
       href: "https://montramarkets.xyz/airdrop",
       extra: { text: "Trades count double until 17 Nov.", until: "2026-11-17T00:00:00Z" },
     },
-    tokenUrl: (t) => `https://montramarkets.xyz/token/${t.toLowerCase()}`,
   },
 ];
 

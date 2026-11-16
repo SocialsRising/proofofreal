@@ -5,7 +5,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useToast } from "../../../../launchpad/_components/Toast";
 import { BUYBACKS, LINKS, PARENT, SITE, explorerAddr, explorerTx, splitText } from "../../../_lib/config";
 import { HelpLine } from "../../../_components/Bits";
-import { hasIncubatorSplit, isAddr, isIncubated, montra, pct, recipientLabel, safeUrl, short, units, usd, type Holders, type TokenDetail } from "../../../_lib/montra";
+import { hasIncubatorSplit, isAddr, isIncubated, montra, pct, recipientLabel, safeLink, safeUrl, short, units, usd, type Holders, type TokenDetail } from "../../../_lib/montra";
 
 function Copy({ text }: { text: string }) {
   const toast = useToast();
@@ -25,7 +25,7 @@ function buildKit(d: TokenDetail, label: (r: string) => string) {
   const fee = `${d.totalFeePips / 10000}%`;
   const std = hasIncubatorSplit(d);
   const split = std ? splitText() : d.splitter ? d.splitter.recipients.map((r, i) => `${d.splitter!.shares[i] / 100}% ${label(r)}`).join(" · ") : d.recipientKind === "holders" ? "100% to holders" : `100% to ${d.recipient ? label(d.recipient) : "the creator"}`;
-  const x = d.metadata?.twitter, tg = d.metadata?.telegram, dc = d.metadata?.discord, web = d.metadata?.website;
+  const x = safeLink(d.metadata?.twitter, "twitter"), tg = safeLink(d.metadata?.telegram, "telegram"), dc = safeLink(d.metadata?.discord, "discord"), web = safeLink(d.metadata?.website);
   const socials = [x && `X: ${x}`, tg && `Telegram: ${tg}`, dc && `Discord: ${dc}`, web && `Website: ${web}`].filter(Boolean).join("\n");
   const buyLine = std ? "Every trade funds daily buybacks for the community 🔁" : `Fees: ${split}`;
   return {
@@ -37,7 +37,7 @@ function buildKit(d: TokenDetail, label: (r: string) => string) {
       std
         ? `Where the ${fee} trading fee goes: ${split}. Buybacks run daily, executed by the EARLY AI agent swarm, from public wallets anyone can check.`
         : `Where the ${fee} trading fee goes: ${split}.`,
-      `Want to earn ${t}? Help it grow. 60% of fees reward the community for product launches, feedback, content and referrals, and 20% goes only to active $EARLY and Early Birds holders who buy ${t}, create content and refer others.`,
+      `Want to earn ${t}? Help it grow. 60% of fees go to EARLY's community wallet to buy back ${t} for product launches, feedback, content and referrals, and 20% rewards only active $EARLY and Early Birds holders who buy ${t}, create content and refer others.`,
       `Trade ${t}: ${url}\nVerify everything: ${page}`,
     ].filter((_, i) => std || i !== 4),
     welcome: `Welcome to ${d.name} (${t}) 👋\n\n${about}\n\n📈 Trade: ${url}\n🔎 Verify: ${page}\n📄 Contract: ${d.address}${std ? "\n🔁 Every trade funds daily buybacks for this community." : ""}${socials ? `\n\n${socials}` : ""}\n\nNever share your seed phrase. Admins will never DM you first.`,
@@ -47,9 +47,9 @@ function buildKit(d: TokenDetail, label: (r: string) => string) {
       { q: "What are the fees, and where do they go?", a: `${fee} per trade, fixed forever. After Montra's cut, it's split on-chain: ${split}.` },
       ...(std ? [
         { q: "How do the buybacks work?", a: `${BUYBACKS} The wallets are public, so anyone can check every buy. Amounts depend on trading volume.` },
-        { q: "How does the community get rewarded?", a: `60% of fees buy back ${t} to reward the community for product launches, feedback, content, referrals and more. Rewards depend on trading volume.` },
-        { q: "What are the $EARLY & Early Birds marketing incentives?", a: `20% of fees buy back ${t} for active $EARLY and Early Birds NFT holders only: the ones who buy ${t}, create content and refer others. Passive holders get nothing.` },
-        { q: "What's the Builder Fund?", a: "20% of fees buy KNTQ and MONTRA (10% each). It's held for the team and unlocked as the project hits market-cap and builder milestones." },
+        { q: "How does the community get rewarded?", a: `60% of fees go to EARLY's public community wallet, which buys back ${t} to reward the community for product launches, feedback, content, referrals and more. Rewards depend on trading volume.` },
+        { q: "What are the $EARLY & Early Birds marketing incentives?", a: `20% of fees go to EARLY's public incentives wallet, which buys back ${t} for active $EARLY and Early Birds NFT holders only: the ones who buy ${t}, create content and refer others. Passive holders get nothing.` },
+        { q: "What's the Builder Fund?", a: "20% of fees go to EARLY's public Builder Fund wallet, which buys KNTQ and MONTRA (10% each). It's held for the team and unlocked as the project hits market-cap and builder milestones." },
       ] : []),
       { q: "How can I verify all this?", a: `Every wallet, the fee split and the launch transaction are linked on the project page: ${page}` },
       { q: "What's the contract?", a: d.address },
@@ -138,20 +138,19 @@ function Project() {
   const montraUrl = `https://montramarkets.xyz/token/${d.address.toLowerCase()}`;
   const label = (r: string) => recipientLabel(r, d.address, d.creator);
   // Links and descriptions are written by whoever launched the token. Only show them for tokens we incubate, and only https.
-  const links = (inc ? [["Website", d.metadata?.website], ["X", d.metadata?.twitter], ["Telegram", d.metadata?.telegram], ["Discord", d.metadata?.discord]] : [])
-    .map(([l, u]) => [l, safeUrl(u)]).filter(([, u]) => u) as [string, string][];
+  const links = (inc ? ([["Website", d.metadata?.website, "website"], ["X", d.metadata?.twitter, "twitter"], ["Telegram", d.metadata?.telegram, "telegram"], ["Discord", d.metadata?.discord, "discord"]] as const) : [])
+    .map(([l, u, k]) => [l, safeLink(u, k)]).filter(([, u]) => u) as [string, string][];
 
   return (
     <>
       {isNew && <div className="note" style={{ marginTop: 24 }}>🚀 <b>${d.symbol} is live.</b> Your launch kit is below — post it, then share your Montra link. Your project appears in the directory after its first trade.</div>}
       <section className="blk" style={{ paddingTop: 30 }}>
         <div style={{ display: "flex", gap: 18, alignItems: "center", flexWrap: "wrap" }}>
-          {d.imageUrl ? <img src={d.imageUrl} alt="" style={{ width: 84, height: 84, borderRadius: 20, objectFit: "cover", border: "1px solid var(--line)" }} /> : null}
+          {safeUrl(d.imageUrl) ? <img className="ptoken" src={safeUrl(d.imageUrl)!} alt="" /> : null}
           <div style={{ flex: 1, minWidth: 220 }}>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
               <span className={`tag ${inc ? "mint" : "soft"}`}>{inc ? "Incubated by EARLY" : "Not incubated"}</span>
               <span className="tag soft">Montra · Elysium</span>
-              <span className="tag soft">{d.graduation?.stage ?? "new"}</span>
             </div>
             <h1 style={{ fontSize: "clamp(2rem,5vw,3rem)", marginTop: 8 }}>{d.name} <span className="muted" style={{ fontSize: ".55em" }}>${d.symbol}</span></h1>
           </div>
@@ -160,16 +159,17 @@ function Project() {
             {links.map(([l, u]) => <a key={l} className="btn sm" href={u} target="_blank" rel="noopener noreferrer nofollow">{l} ↗</a>)}
           </div>
         </div>
-        {!inc && <div className="warn" style={{ marginTop: 16 }}><b>Not incubated by EARLY.</b> This page shows public Montra data for any token. We haven&apos;t reviewed this project, so its description and links are hidden. Do your own research.</div>}
+        {!inc && <div className="warn" style={{ marginTop: 16 }}><b>Not launched through EARLY.</b> This page shows public Montra data for any token, so its description and links are hidden. Do your own research.</div>}
         {inc && d.description && <p className="muted" style={{ marginTop: 16, maxWidth: "80ch", whiteSpace: "pre-wrap" }}>{d.description}</p>}
+        {inc && <p className="byline">Description and links are written by the project&apos;s creator. A listing isn&apos;t an endorsement, so check links before you connect a wallet.</p>}
 
-        <div className="stats" style={{ marginTop: 22 }}>
-          <div className="stat"><div className="v">{usd(d.marketCapUsd)}</div><div className="k muted">Market cap</div></div>
-          <div className="stat"><div className="v">{usd(d.volume24hUsd)}</div><div className="k muted">24h volume <span className={(d.change24hPct ?? 0) >= 0 ? "up" : "down"}>{pct(d.change24hPct)}</span></div></div>
-          <div className="stat"><div className="v">{d.holders > 0 ? d.holders.toLocaleString() : "—"}</div><div className="k muted">{d.holders > 0 ? `Holders${h && h.top10Pct > 0 ? ` · top 10 hold ${h.top10Pct.toFixed(1)}%` : ""}` : "Holders (counting…)"}</div></div>
+        <div className="statline four" style={{ marginTop: 26 }}>
+          <div><b>{usd(d.marketCapUsd)}</b><span>Market cap</span></div>
+          <div><b>{usd(d.volume24hUsd)}</b><span>24h volume <em className={(d.change24hPct ?? 0) >= 0 ? "up" : "down"}>{pct(d.change24hPct)}</em></span></div>
+          <div><b>{d.holders > 0 ? d.holders.toLocaleString() : "—"}</b><span>{d.holders > 0 ? `Holders${h && h.top10Pct > 0 ? ` · top 10 hold ${h.top10Pct.toFixed(1)}%` : ""}` : "Holders (counting…)"}</span></div>
           {inc
-            ? <div className="stat"><div className="v">{units(d.stats?.creatorFees, dec).toFixed(3)} {q}</div><div className="k muted">{hasIncubatorSplit(d) ? "Fees to buybacks" : "Creator fees earned"}</div></div>
-            : <div className="stat"><div className="v">{units(d.rewards?.received ?? d.rewardsReceived, dec).toFixed(3)} {q}</div><div className="k muted">Paid to holders</div></div>}
+            ? <div><b>{units(d.stats?.creatorFees, dec).toFixed(3)} {q}</b><span>{hasIncubatorSplit(d) ? "Fees to buybacks" : "Creator fees earned"}</span></div>
+            : <div><b>{units(d.rewards?.received ?? d.rewardsReceived, dec).toFixed(3)} {q}</b><span>Paid to holders</span></div>}
         </div>
       </section>
 
