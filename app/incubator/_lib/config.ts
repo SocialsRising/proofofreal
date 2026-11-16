@@ -6,18 +6,41 @@ export const SITE = "https://proofofreal.app";
 export const BRAND = "EARLY Incubator";
 export const PARENT = "Socials Rising";
 
-/** Wallet that receives EARLY's 10% slot of every incubated token's creator fees. Set NEXT_PUBLIC_EARLY_TREASURY in Vercel to change it. */
-export const TREASURY = ((process.env.NEXT_PUBLIC_EARLY_TREASURY ?? "0xa823786b8417AD2d8D7318ac6f8a199017Ff70F5").toLowerCase()) as `0x${string}`;
-
 /** Montra Builders code: credits every launch through EARLY to the "early" builder account (25% of Montra's protocol fee for 90 days). */
 export const MONTRA_BUILDER_CODE = (process.env.NEXT_PUBLIC_MONTRA_BUILDER_CODE || "early").trim().toLowerCase();
 
-/** The incubator split of the creator side of every trade fee, in basis points of that side (must total 10,000). */
-export const SPLIT = { creator: 8000, treasury: 1000, community: 1000 } as const;
+/** Where the creator side of every incubated token's trade fee goes. Basis points, must total 10,000, max 4 slots (Montra's limit).
+    Fixed forever per token at launch — editing this only changes NEW launches. Buybacks are done by hand at first. */
+export type Slot = { key: string; bps: number; wallet: `0x${string}`; name: string; short: string; desc: string };
+export const SLOTS: Slot[] = [
+  {
+    key: "community", bps: 6000, wallet: "0x65d9d73d1ebcf503a7341a161f2dce660cb5952a",
+    name: "Community buyback", short: "community buyback",
+    desc: "Buys back the token to fund that project's future community initiatives.",
+  },
+  {
+    key: "supporters", bps: 2000, wallet: "0x795f869363271f516465a5986e593a5da5aa630b",
+    name: "$EARLY & Early Birds buyback", short: "$EARLY & Early Birds",
+    desc: "Buys back the token for active $EARLY and Early Birds NFT holders who support it — buying, sharing and bringing people in.",
+  },
+  {
+    key: "builder", bps: 2000, wallet: "0xcde4df4245c295d505f2d25034da3a3395e7ae9b",
+    name: "KNTQ builder fund", short: "KNTQ builder fund",
+    desc: "Buys KNTQ, held for the project's team and unlocked as it hits market-cap and builder milestones.",
+  },
+];
 
-/** Wallet that receives the 10% community slot: funds bounties, contests and holder rewards for incubated projects
-    (later rotatable to a Genesis NFT rewards contract for NEW launches). Set NEXT_PUBLIC_EARLY_COMMUNITY in Vercel to change it. */
-export const COMMUNITY = ((process.env.NEXT_PUBLIC_EARLY_COMMUNITY ?? "0x61fE6cb66E0C8fd081A037242A375e5F5782083F").toLowerCase()) as `0x${string}`;
+/** Wallets used before the 60/20/20 split. Kept so earlier tokens (e.g. $EARLY itself) stay in the directory and get labelled. */
+export const LEGACY_WALLETS: { wallet: `0x${string}`; name: string }[] = [
+  { wallet: "0xa823786b8417ad2d8d7318ac6f8a199017ff70f5", name: "EARLY treasury" },
+  { wallet: "0x61fe6cb66e0c8fd081a037242a375e5f5782083f", name: "EARLY community rewards" },
+];
+
+/** Every wallet that marks a token as incubated. */
+export const EARLY_WALLETS = [...SLOTS.map((s) => s.wallet), ...LEGACY_WALLETS.map((l) => l.wallet)];
+/** Wallets the directory is built from: every new launch pays the first slot; $EARLY pays the old treasury. */
+export const DIRECTORY_WALLETS = [SLOTS[0].wallet, LEGACY_WALLETS[0].wallet];
+export const splitText = () => SLOTS.map((s) => `${s.bps / 100}% ${s.short}`).join(" · ");
 
 export const LINKS = {
   x: "https://x.com/mememaxxers",
@@ -45,7 +68,7 @@ export const LAUNCHPADS: Launchpad[] = [
   {
     key: "montra", name: "Montra", live: true, url: "https://montramarkets.xyz", docs: "https://montramarkets.xyz/docs",
     pitch: "Uniswap v4 pool from the first block, liquidity locked forever, no bonding curve.",
-    split: "Native 3-way split: you 80% · EARLY 10% · community rewards 10%.",
+    split: "Native 3-way split: 60% community buyback · 20% $EARLY & Early Birds · 20% KNTQ builder fund.",
     tokenUrl: (t) => `https://montramarkets.xyz/token/${t.toLowerCase()}`,
   },
   {

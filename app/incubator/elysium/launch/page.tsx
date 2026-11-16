@@ -2,11 +2,11 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { formatEther, isAddress, parseEther, parseEventLogs, zeroHash } from "viem";
+import { formatEther, parseEther, parseEventLogs, zeroHash } from "viem";
 import { useAccount, useBalance, usePublicClient, useSwitchChain, useWriteContract } from "wagmi";
 import { WalletButton } from "../../../launchpad/_components/Wallet";
 import { useToast } from "../../../launchpad/_components/Toast";
-import { COMMUNITY, ELYSIUM, MONTRA_BUILDER_CODE, SPLIT, TREASURY, explorerAddr } from "../../_lib/config";
+import { ELYSIUM, MONTRA_BUILDER_CODE, SLOTS, explorerAddr, splitText } from "../../_lib/config";
 import { FEE_TIERS, LAUNCH_ABI, MONTRA_FACTORY, SNIPE_WINDOWS, builderSuffix, incubatorSplit, montra, pickRow, randomSalt, short } from "../../_lib/montra";
 
 type Step = "idle" | "switch" | "upload" | "check" | "sign" | "confirm" | "done";
@@ -22,7 +22,7 @@ export default function LaunchPage() {
   const client = usePublicClient({ chainId: ELYSIUM.chainId });
   const bal = useBalance({ address, chainId: ELYSIUM.chainId, query: { enabled: !!address } });
 
-  const [f, setF] = useState({ name: "", symbol: "", description: "", website: "", twitter: "", telegram: "", discord: "", payout: "", firstBuy: "0.01" });
+  const [f, setF] = useState({ name: "", symbol: "", description: "", website: "", twitter: "", telegram: "", discord: "", firstBuy: "0.01" });
   const [fee, setFee] = useState<number>(10000);
   const [snipe, setSnipe] = useState<number>(60);
   const [img, setImg] = useState<File | null>(null);
@@ -32,15 +32,12 @@ export default function LaunchPage() {
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF((s) => ({ ...s, [k]: e.target.value }));
   const preview = useMemo(() => (img ? URL.createObjectURL(img) : null), [img]);
 
-  const payout = (f.payout.trim() || address || "") as `0x${string}`;
   const firstBuy = (() => { try { return f.firstBuy.trim() ? parseEther(f.firstBuy.trim()) : BigInt(0); } catch { return BigInt(-1); } })();
   const problems = [
     !f.name.trim() && "Add a name.",
     !/^[A-Z0-9]{2,10}$/.test(f.symbol) && "Ticker: 2–10 letters or numbers.",
     !img && "Add an image (PNG, JPEG, WebP or GIF, 2 MB max).",
     img && img.size > 2 * 1024 * 1024 && "Image must be 2 MB or smaller.",
-    payout && !isAddress(payout) && "Payout wallet isn't a valid address.",
-    payout && (payout.toLowerCase() === TREASURY || payout.toLowerCase() === COMMUNITY) && "Your payout wallet can't be an EARLY wallet.",
     firstBuy < BigInt(0) && "First buy must be a number (in HYPE).",
     ...(["website", "twitter", "telegram", "discord"] as const).map((k) => f[k].trim() && !URL_RE.test(f[k].trim()) && `${k[0].toUpperCase() + k.slice(1)} link must start with https://`),
     !ack && "Tick the box to confirm you've read how it works.",
@@ -71,7 +68,7 @@ export default function LaunchPage() {
         client.readContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launchEnabled" }),
       ]);
       if (!enabled) throw new Error("Montra has launches paused at the moment. Try again later.");
-      const { feeRecipients, feeShares } = incubatorSplit(payout);
+      const { feeRecipients, feeShares } = incubatorSplit();
       const params = {
         name: f.name.trim(), symbol: f.symbol, metadataURI: meta.metadataUri,
         profile: { logo: meta.imageUri, description: f.description.trim(), socials: { telegram: meta.socials.telegram ?? "", twitter: meta.socials.twitter ?? "", discord: meta.socials.discord ?? "", website: meta.socials.website ?? "", extra: "" } },
@@ -105,7 +102,7 @@ export default function LaunchPage() {
     <section className="blk" style={{ paddingTop: 36 }}>
       <div className="eyebrow">Launch through EARLY · Montra on Elysium</div>
       <h1 style={{ marginTop: 10, fontSize: "clamp(2rem,5vw,3.2rem)" }}>Launch your token</h1>
-      <p className="muted" style={{ maxWidth: "62ch", marginTop: 10 }}>One transaction from your wallet to Montra&apos;s own factory. Your whole supply goes into a Uniswap v4 pool with liquidity locked forever, and your fees split {SPLIT.creator / 100} / {SPLIT.treasury / 100} / {SPLIT.community / 100} on-chain.</p>
+      <p className="muted" style={{ maxWidth: "62ch", marginTop: 10 }}>One transaction from your wallet to Montra&apos;s own factory. Your whole supply goes into a Uniswap v4 pool with liquidity locked forever, and the creator side of your trading fees goes to buybacks on-chain: {splitText()}.</p>
 
       <div className="grid2" style={{ marginTop: 26 }}>
         <div className="card pad" style={{ display: "grid", gap: 16 }}>
@@ -132,20 +129,17 @@ export default function LaunchPage() {
           </div>
           <div className="field"><label>Anti-snipe</label>
             <div className="chips">{SNIPE_WINDOWS.map((w) => <button key={w.s} type="button" className={`chip ${snipe === w.s ? "on" : ""}`} onClick={() => setSnipe(w.s)}>{w.label}</button>)}</div>
-            <span className="hint">Buys start at a 99% fee and fall to your fee over this window, so bots that buy in the first second pay you instead. Your own first buy is exempt.</span>
+            <span className="hint">Buys start at a 99% fee and fall to your fee over this window, so bots that buy in the first second pay into the buyback split instead. Your own first buy is exempt.</span>
           </div>
           <div className="field"><label>Your first buy (HYPE)</label><input className="inp mono" value={f.firstBuy} onChange={set("firstBuy")} inputMode="decimal" placeholder="0" /><span className="hint">Optional. Lands in the launch transaction itself, so nobody can buy ahead of you.</span></div>
-          <div className="field"><label>Payout wallet for your 80%</label><input className="inp mono" value={f.payout} onChange={set("payout")} placeholder={address ?? "0x… (defaults to your connected wallet)"} /><span className="hint">Use a wallet you control. There&apos;s no undo.</span></div>
         </div>
 
         <div style={{ display: "grid", gap: 14 }}>
           <div className="card pad">
-            <div className="eyebrow">Your split</div>
-            <div className="bar3"><i className="c" style={{ width: "80%" }} /><i className="t" style={{ width: "10%" }} /><i className="h" style={{ width: "10%" }} /></div>
-            <div className="kv"><span>You {payout ? <span className="mono muted">{short(payout)}</span> : null}</span><b>{SPLIT.creator / 100}%</b></div>
-            <div className="kv"><span>EARLY treasury <a className="mono muted" href={explorerAddr(TREASURY)} target="_blank" rel="noreferrer">{short(TREASURY)} ↗</a></span><b>{SPLIT.treasury / 100}%</b></div>
-            <div className="kv"><span>Community rewards <a className="mono muted" href={explorerAddr(COMMUNITY)} target="_blank" rel="noreferrer">{short(COMMUNITY)} ↗</a></span><b>{SPLIT.community / 100}%</b></div>
-            <p className="muted" style={{ fontSize: ".82rem", marginTop: 10 }}>Shares of the creator side of each trade fee, enforced by Montra&apos;s FeeSplitter and fixed at launch. Paid in HYPE.</p>
+            <div className="eyebrow">Where your fees go</div>
+            <div className="bar3">{SLOTS.map((s, i) => <i key={s.key} className={["c", "t", "h", "t"][i]} style={{ width: `${s.bps / 100}%` }} />)}</div>
+            {SLOTS.map((s) => <div key={s.key} className="kv"><span>{s.name} <a className="mono muted" href={explorerAddr(s.wallet)} target="_blank" rel="noreferrer">{short(s.wallet)} ↗</a></span><b>{s.bps / 100}%</b></div>)}
+            <p className="muted" style={{ fontSize: ".82rem", marginTop: 10 }}><b style={{ color: "var(--fg)" }}>You don&apos;t take a cut of trading fees</b> — the whole creator side goes to these buybacks, enforced by Montra&apos;s FeeSplitter and fixed at launch. Buybacks are done by the EARLY team by hand for now, when fees allow.</p>
           </div>
 
           <div className="card pad">
@@ -153,6 +147,7 @@ export default function LaunchPage() {
             <ul style={{ margin: "10px 0 0", paddingLeft: 18, display: "grid", gap: 6, fontSize: ".93rem" }}>
               <li>A launch kit: launch post, thread, pinned welcome, FAQ and a 7-day plan</li>
               <li>Hands-on help from the team, plus a shot at Socials Rising spotlights</li>
+              <li>Buybacks of your token for your community, plus a KNTQ builder fund that unlocks to your team at milestones</li>
               <li>A listing in the EARLY directory from your first trade</li>
               <li>The right to apply for Socials Rising marketing support (approved case by case)</li>
             </ul>
@@ -165,7 +160,7 @@ export default function LaunchPage() {
                 {bal.data && bal.data.value === BigInt(0) && <div className="warn">You need a little HYPE on Elysium for gas{firstBuy > BigInt(0) ? " and your first buy" : ""}. <a href={ELYSIUM.bridgeHelp} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>How to bridge ↗</a></div>}
                 <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: ".86rem" }}>
                   <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} style={{ marginTop: 3 }} />
-                  <span className="muted">I&apos;m launching this token myself on Montra. I understand the split is fixed at launch, nothing here promises returns, airdrops or marketing, and Elysium is a new network.</span>
+                  <span className="muted">I&apos;m launching this token myself on Montra. I understand I receive none of the trading fees, the split is fixed at launch, buybacks and fund unlocks are at EARLY&apos;s discretion, nothing here promises returns, airdrops or marketing, and Elysium is a new network.</span>
                 </label>
                 <button className="btn primary lg full" onClick={launch} disabled={busy}>{busy ? "Launching…" : `Launch $${f.symbol || "TICKER"}`}</button>
                 {busy && <div className="stepper">{STEPS.map(([s, l], i) => <div key={s} className={i < stepIdx ? "done" : i === stepIdx ? "on" : ""}><i>{i < stepIdx ? "✓" : i + 1}</i>{l}</div>)}</div>}

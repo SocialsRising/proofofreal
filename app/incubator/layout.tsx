@@ -6,7 +6,7 @@ import "./incubator.css";
 import { Providers } from "../launchpad/_components/Providers";
 import { ToastProvider } from "../launchpad/_components/Toast";
 import { IncNav } from "./_components/IncNav";
-import { BRAND, LINKS, PARENT, SITE, TREASURY, explorerAddr } from "./_lib/config";
+import { BRAND, LINKS, PARENT, SITE } from "./_lib/config";
 
 const syne = Syne({ subsets: ["latin"], weight: ["600", "700", "800"], variable: "--font-syne" });
 const manrope = Manrope({ subsets: ["latin"], weight: ["500", "600", "700", "800"], variable: "--font-manrope" });
@@ -39,7 +39,7 @@ export default function IncubatorLayout({ children }: { children: React.ReactNod
                 <Link href="/incubator/elysium">Directory</Link><Link href="/incubator/elysium/launch">Launch a token</Link><Link href="/incubator/elysium#how">How it works</Link>
               </div>
               <div className="foot-col"><div className="eyebrow">Verify</div>
-                <a href={explorerAddr(TREASURY)} target="_blank" rel="noreferrer">EARLY treasury ↗</a>
+                <Link href="/incubator/elysium#fees">Fee wallets</Link>
                 <a href="https://montramarkets.xyz/docs/fees" target="_blank" rel="noreferrer">Montra fee docs ↗</a>
                 <a href="https://www.volta.family/docs" target="_blank" rel="noreferrer">Volta docs ↗</a>
               </div>

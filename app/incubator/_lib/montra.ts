@@ -1,7 +1,7 @@
 /* Montra adapter: read-only public API (no key, CORS-open for GETs) + the factory's one-transaction launch.
    Docs: https://montramarkets.xyz/docs/build · API: https://montramarkets.xyz/docs/api */
 import { stringToHex, toHex } from "viem";
-import { COMMUNITY, MONTRA_BUILDER_CODE, SPLIT, TREASURY } from "./config";
+import { DIRECTORY_WALLETS, EARLY_WALLETS, LEGACY_WALLETS, MONTRA_BUILDER_CODE, SLOTS } from "./config";
 
 export const MONTRA_API = "https://api.montramarkets.xyz";
 export const MONTRA_FACTORY = "0x38d3ef3a06d18fa3286fb5deafe611be725fcd15" as const;
@@ -36,22 +36,28 @@ async function get<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const montra = {
-  /** Every token whose creator fees reach the EARLY treasury, directly or through a split = the incubator's directory. */
-  incubated: () => get<{ tokens: TokenCard[] }>(`/api/wallets/${TREASURY}/lanes`).then((r) => r.tokens ?? []),
+  /** Every token whose creator fees reach an EARLY wallet, directly or through a split = the incubator's directory. */
+  incubated: async () => {
+    const lists = await Promise.all(DIRECTORY_WALLETS.map((w) => get<{ tokens: TokenCard[] }>(`/api/wallets/${w}/lanes`).then((r) => r.tokens ?? [])));
+    const seen = new Map<string, TokenCard>();
+    for (const t of lists.flat()) seen.set(t.address.toLowerCase(), t);
+    return [...seen.values()];
+  },
   trending: (limit = 8) => get<{ tokens: TokenCard[] }>(`/api/tokens?sort=trending&limit=${limit}`).then((r) => r.tokens ?? []),
   token: (t: string) => get<TokenDetail>(`/api/tokens/${t.toLowerCase()}`),
   holders: (t: string, limit = 10) => get<Holders>(`/api/tokens/${t.toLowerCase()}/holders?limit=${limit}`),
   config: () => get<{ chainId: number; launchFee: string; launchEnabled: boolean; configs: LaunchRow[] }>(`/api/config`),
 };
 
-/** True when the token's split pays the EARLY treasury. */
-export const isIncubated = (d: Pick<TokenDetail, "splitter" | "recipient">) =>
-  !!d.splitter?.recipients?.some((r) => r.toLowerCase() === TREASURY) || d.recipient?.toLowerCase() === TREASURY;
+const isEarly = (a?: string | null) => !!a && EARLY_WALLETS.includes(a.toLowerCase() as `0x${string}`);
+/** True when the token's fees reach an EARLY wallet. */
+export const isIncubated = (d: Pick<TokenDetail, "splitter" | "recipient">) => !!d.splitter?.recipients?.some(isEarly) || isEarly(d.recipient);
 
 /** Human name for a fee recipient in a token's split. */
 export const recipientLabel = (r: string, token: string, creator: string) => {
   const a = r.toLowerCase();
-  return a === token.toLowerCase() ? "Token holders" : a === TREASURY ? "EARLY treasury" : a === COMMUNITY ? "EARLY community rewards" : a === creator.toLowerCase() ? "Creator" : `${a.slice(0, 6)}…${a.slice(-4)}`;
+  const named = SLOTS.find((s) => s.wallet === a)?.name ?? LEGACY_WALLETS.find((l) => l.wallet === a)?.name;
+  return a === token.toLowerCase() ? "Token holders" : named ?? (a === creator.toLowerCase() ? "Creator" : `${a.slice(0, 6)}…${a.slice(-4)}`);
 };
 
 export const FEE_TIERS = [
@@ -77,12 +83,11 @@ export function builderSuffix(code = MONTRA_BUILDER_CODE): `0x${string}` | undef
   return `0x${ascii}${code.length.toString(16).padStart(2, "0")}0080218021802180218021802180218021`;
 }
 
-/** Creator 80% · EARLY treasury 10% · EARLY community rewards 10% (shares in basis points of the creator side). */
-export function incubatorSplit(creatorWallet: `0x${string}`) {
-  return {
-    feeRecipients: [creatorWallet, TREASURY, COMMUNITY] as `0x${string}`[],
-    feeShares: [SPLIT.creator, SPLIT.treasury, SPLIT.community],
-  };
+/** The incubator split (config SLOTS), in basis points of the creator side. Guards against a bad edit to the config. */
+export function incubatorSplit() {
+  const total = SLOTS.reduce((s, x) => s + x.bps, 0);
+  if (total !== 10000 || SLOTS.length < 2 || SLOTS.length > 4) throw new Error("Incubator split is misconfigured — launches are paused.");
+  return { feeRecipients: SLOTS.map((s) => s.wallet), feeShares: SLOTS.map((s) => s.bps) };
 }
 
 export const randomSalt = () => toHex(crypto.getRandomValues(new Uint8Array(32)));

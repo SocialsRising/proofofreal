@@ -2,8 +2,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { BRAND, COMMUNITY, LAUNCHPADS, PARENT, SPLIT, TREASURY, explorerAddr } from "../_lib/config";
-import { montra, pct, short, usd, ago, type TokenCard } from "../_lib/montra";
+import { BRAND, LAUNCHPADS, PARENT, SLOTS, explorerAddr } from "../_lib/config";
+import { montra, pct, usd, ago, type TokenCard } from "../_lib/montra";
 
 type Tab = "trending" | "latest" | "top";
 
@@ -90,7 +90,7 @@ export default function IncubatorHome() {
 
       <section className="blk">
         <div className="sechead"><div><div className="eyebrow">Directory</div><h2>Incubated projects</h2></div>
-          <a className="muted mono" style={{ fontSize: ".8rem" }} href={explorerAddr(TREASURY)} target="_blank" rel="noreferrer">Every token whose split pays {short(TREASURY)} ↗</a></div>
+          <a className="muted" style={{ fontSize: ".8rem" }} href="#fees">Every token whose fees fund the EARLY buybacks ↓</a></div>
         <div className="tabs">{(["trending", "latest", "top"] as Tab[]).map((t) => <button key={t} className={tab === t ? "on" : ""} onClick={() => setTab(t)}>{t === "top" ? "Top market cap" : t[0].toUpperCase() + t.slice(1)}</button>)}</div>
         {mine == null ? <div className="empty">Loading the directory from Montra…</div> :
           <TokenTable tokens={sorted} empty={<><b style={{ color: "var(--fg)" }}>Be the first project in the incubator.</b><br />Launch through EARLY and you&apos;ll appear here the moment your first trade lands. <Link href="/incubator/elysium/launch" style={{ textDecoration: "underline" }}>Launch now →</Link></>} />}
@@ -100,23 +100,24 @@ export default function IncubatorHome() {
       <section className="blk" id="how">
         <div className="sechead"><div><div className="eyebrow">How it works</div><h2>Three steps. No new contracts.</h2></div></div>
         <div className="steps3">
-          <div className="step-card"><div className="n">1</div><h3>Launch on Montra, through EARLY</h3><p className="muted">Same Montra factory, same locked liquidity, same one transaction from your own wallet. We add the incubator split and credit the launch to EARLY.</p></div>
+          <div className="step-card"><div className="n">1</div><h3>Launch on Montra, through EARLY</h3><p className="muted">Same Montra factory, same locked liquidity, same one transaction from your own wallet. Your trading fees are routed to buybacks for your community, our supporters and a KNTQ builder fund.</p></div>
           <div className="step-card"><div className="n">2</div><h3>Get your launch kit and the team</h3><p className="muted">Your project page comes with a launch post, thread, pinned welcome, FAQ and a 7-day plan filled in from your live data — and we review every incubated launch by hand to help you grow.</p></div>
           <div className="step-card"><div className="n">3</div><h3>Grow with the network</h3><p className="muted">You&apos;re listed in the directory and can apply for {PARENT} spotlights, art, memes and campaigns. Support is approved case by case, never automatic.</p></div>
         </div>
       </section>
 
-      <section className="blk">
-        <div className="sechead"><div><div className="eyebrow">Where every fee goes</div><h2>The incubator split</h2></div></div>
+      <section className="blk" id="fees">
+        <div className="sechead"><div><div className="eyebrow">Where every fee goes</div><h2>100% of the creator side goes back into buybacks</h2></div></div>
         <div className="card pad">
-          <p className="muted" style={{ maxWidth: "70ch" }}>Every trade on Montra pays one fee (1–10%, you pick). Montra keeps 0.4% and liquidity providers get a small cut past the LP line; the rest is the <b style={{ color: "var(--fg)" }}>creator side</b>, and an incubated token splits it like this — on-chain, by Montra&apos;s own splitter, fixed at launch:</p>
-          <div className="bar3"><i className="c" style={{ width: `${SPLIT.creator / 100}%` }} /><i className="t" style={{ width: `${SPLIT.treasury / 100}%` }} /><i className="h" style={{ width: `${SPLIT.community / 100}%` }} /></div>
+          <p className="muted" style={{ maxWidth: "72ch" }}>Every trade on Montra pays one fee (1–10%, picked at launch). Montra keeps 0.4% and liquidity providers get a small cut; the rest is the <b style={{ color: "var(--fg)" }}>creator side</b>. On an incubated token, Montra&apos;s own splitter sends it to three public wallets, fixed at launch:</p>
+          <div className="bar3">{SLOTS.map((s, i) => <i key={s.key} className={["c", "t", "h", "t"][i]} style={{ width: `${s.bps / 100}%` }} />)}</div>
           <div className="split3" style={{ marginTop: 14 }}>
-            <div className="slot"><div className="p">{SPLIT.creator / 100}%</div><div className="who">You</div><small>Your wallet, claimable any time on Montra.</small></div>
-            <div className="slot"><div className="p">{SPLIT.treasury / 100}%</div><div className="who">EARLY treasury</div><small>Funds the incubator, the directory and ecosystem development. <a href={explorerAddr(TREASURY)} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>Public wallet ↗</a></small></div>
-            <div className="slot"><div className="p">{SPLIT.community / 100}%</div><div className="who">Community rewards</div><small>Funds bounties, meme contests and rewards for incubated communities. <a href={explorerAddr(COMMUNITY)} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>Public wallet ↗</a></small></div>
+            {SLOTS.map((s) => (
+              <div key={s.key} className="slot"><div className="p">{s.bps / 100}%</div><div className="who">{s.name}</div>
+                <small>{s.desc} <a href={explorerAddr(s.wallet)} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>Public wallet ↗</a></small></div>
+            ))}
           </div>
-          <p className="muted" style={{ fontSize: ".84rem", marginTop: 14 }}>Montra may also pay EARLY a share of its own 0.4% protocol fee through the Montra Builders programme — that comes out of Montra&apos;s cut, never yours or your holders&apos;.</p>
+          <p className="muted" style={{ fontSize: ".84rem", marginTop: 14 }}>Buybacks are made by the EARLY team by hand for now (automation comes later), at our discretion and when fees allow — no amounts or schedule are promised. Every wallet is public, so you can check them any time. Montra may also pay EARLY a share of its own 0.4% through the Montra Builders programme; that comes out of Montra&apos;s cut.</p>
         </div>
       </section>
 
