@@ -1,7 +1,7 @@
 /* Montra adapter: read-only public API (no key, CORS-open for GETs) + the factory's one-transaction launch.
    Docs: https://montramarkets.xyz/docs/build · API: https://montramarkets.xyz/docs/api */
 import { stringToHex, toHex } from "viem";
-import { DIRECTORY_WALLETS, EARLY_WALLETS, LEGACY_WALLETS, MONTRA_BUILDER_CODE, SLOTS } from "./config";
+import { HIDDEN_TOKENS, LEGACY_TOKENS, LEGACY_WALLETS, MONTRA_BUILDER_CODE, SLOTS } from "./config";
 
 export const MONTRA_API = "https://api.montramarkets.xyz";
 export const MONTRA_FACTORY = "0x38d3ef3a06d18fa3286fb5deafe611be725fcd15" as const;
@@ -36,12 +36,13 @@ async function get<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const montra = {
-  /** Every token whose creator fees reach an EARLY wallet, directly or through a split = the incubator's directory. */
+  /** The directory: tokens paying the first EARLY slot whose on-chain split matches the incubator split EXACTLY
+      (anyone can add an EARLY wallet to their own split, so presence alone proves nothing), plus legacy tokens. */
   incubated: async () => {
-    const lists = await Promise.all(DIRECTORY_WALLETS.map((w) => get<{ tokens: TokenCard[] }>(`/api/wallets/${w}/lanes`).then((r) => r.tokens ?? [])));
-    const seen = new Map<string, TokenCard>();
-    for (const t of lists.flat()) seen.set(t.address.toLowerCase(), t);
-    return [...seen.values()];
+    const lanes = await get<{ tokens: TokenCard[] }>(`/api/wallets/${SLOTS[0].wallet}/lanes`).then((r) => r.tokens ?? []);
+    const candidates = [...new Set([...lanes.map((t) => t.address.toLowerCase()), ...LEGACY_TOKENS])].filter((a) => isAddr(a) && !HIDDEN_TOKENS.includes(a as `0x${string}`));
+    const details = await Promise.all(candidates.map((a) => get<TokenDetail>(`/api/tokens/${a}`).catch(() => null)));
+    return details.filter((d): d is TokenDetail => !!d && isIncubated(d));
   },
   trending: (limit = 8) => get<{ tokens: TokenCard[] }>(`/api/tokens?sort=trending&limit=${limit}`).then((r) => r.tokens ?? []),
   token: (t: string) => get<TokenDetail>(`/api/tokens/${t.toLowerCase()}`),
@@ -49,9 +50,19 @@ export const montra = {
   config: () => get<{ chainId: number; launchFee: string; launchEnabled: boolean; configs: LaunchRow[] }>(`/api/config`),
 };
 
-const isEarly = (a?: string | null) => !!a && EARLY_WALLETS.includes(a.toLowerCase() as `0x${string}`);
-/** True when the token's fees reach an EARLY wallet. */
-export const isIncubated = (d: Pick<TokenDetail, "splitter" | "recipient">) => !!d.splitter?.recipients?.some(isEarly) || isEarly(d.recipient);
+export const isAddr = (a: string) => /^0x[0-9a-fA-F]{40}$/.test(a);
+/** True only when the token's split is exactly the incubator split (same wallets, same shares), or it's a listed legacy token. */
+export const isIncubated = (d: Pick<TokenDetail, "address" | "splitter">) => {
+  const a = d.address.toLowerCase() as `0x${string}`;
+  if (HIDDEN_TOKENS.includes(a)) return false;
+  if (LEGACY_TOKENS.includes(a)) return true;
+  const s = d.splitter;
+  if (!s || s.recipients.length !== SLOTS.length) return false;
+  return s.recipients.every((r, i) => SLOTS.some((x) => x.wallet === r.toLowerCase() && x.bps === s.shares[i]))
+    && new Set(s.recipients.map((r) => r.toLowerCase())).size === SLOTS.length;
+};
+/** Only https links from token metadata are ever rendered. */
+export const safeUrl = (u?: string | null) => (u && /^https:\/\/[^\s"'<>]{3,300}$/i.test(u.trim()) ? u.trim() : null);
 
 /** Human name for a fee recipient in a token's split. */
 export const recipientLabel = (r: string, token: string, creator: string) => {

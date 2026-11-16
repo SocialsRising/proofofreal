@@ -38,8 +38,12 @@ export const LEGACY_WALLETS: { wallet: `0x${string}`; name: string }[] = [
 
 /** Every wallet that marks a token as incubated. */
 export const EARLY_WALLETS = [...SLOTS.map((s) => s.wallet), ...LEGACY_WALLETS.map((l) => l.wallet)];
-/** Wallets the directory is built from: every new launch pays the first slot; $EARLY pays the old treasury. */
-export const DIRECTORY_WALLETS = [SLOTS[0].wallet, LEGACY_WALLETS[0].wallet];
+/** Tokens listed as incubated although they predate the split (they don't match SLOTS exactly). */
+export const LEGACY_TOKENS: `0x${string}`[] = [
+  "0x2a67aee95a8e28307d720685cf3e8b0ab10284a5", // $EARLY
+];
+/** Tokens never shown as incubated, even with a matching split: test launches, spam, scams. Lowercase. */
+export const HIDDEN_TOKENS: `0x${string}`[] = [];
 export const splitText = () => SLOTS.map((s) => `${s.bps / 100}% ${s.short}`).join(" · ");
 
 export const LINKS = {

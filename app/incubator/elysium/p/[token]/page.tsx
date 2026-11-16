@@ -4,7 +4,7 @@ import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useToast } from "../../../../launchpad/_components/Toast";
 import { LINKS, PARENT, explorerAddr, explorerTx } from "../../../_lib/config";
-import { isIncubated, montra, pct, recipientLabel, short, units, usd, type Holders, type TokenDetail } from "../../../_lib/montra";
+import { isAddr, isIncubated, montra, pct, recipientLabel, safeUrl, short, units, usd, type Holders, type TokenDetail } from "../../../_lib/montra";
 
 function Copy({ text }: { text: string }) {
   const toast = useToast();
@@ -93,7 +93,9 @@ function Project() {
   const [h, setH] = useState<Holders | null>(null);
   const [err, setErr] = useState("");
 
+  const valid = isAddr(token ?? "");
   useEffect(() => {
+    if (!valid) return;
     let alive = true, tries = 0;
     const load = () => montra.token(token).then((x) => { if (alive) { setD(x); setErr(""); } }).catch(() => {
       // a brand-new launch can take a few seconds to reach Montra's indexer
@@ -102,14 +104,18 @@ function Project() {
     load(); montra.holders(token, 10).then((x) => alive && setH(x)).catch(() => {});
     const id = setInterval(() => montra.token(token).then((x) => alive && setD(x)).catch(() => {}), 30_000);
     return () => { alive = false; clearInterval(id); };
-  }, [token]);
+  }, [token, valid]);
+
+  if (!valid) return <section className="blk" style={{ paddingTop: 40 }}><div className="empty">That isn&apos;t a token address. <Link href="/incubator/elysium" style={{ textDecoration: "underline" }}>Back to the directory</Link></div></section>;
 
   if (!d) return <section className="blk" style={{ paddingTop: 40 }}><div className="empty">{err || (isNew ? "Your token is live — waiting for Montra's indexer to pick it up…" : "Loading from Montra…")}</div></section>;
 
   const q = d.quote?.symbol ?? "HYPE", dec = d.quote?.decimals ?? 18, inc = isIncubated(d);
   const montraUrl = `https://montramarkets.xyz/token/${d.address.toLowerCase()}`;
   const label = (r: string) => recipientLabel(r, d.address, d.creator);
-  const links = [["Website", d.metadata?.website], ["X", d.metadata?.twitter], ["Telegram", d.metadata?.telegram], ["Discord", d.metadata?.discord]].filter(([, u]) => u) as [string, string][];
+  // Links and descriptions are written by whoever launched the token. Only show them for tokens we incubate, and only https.
+  const links = (inc ? [["Website", d.metadata?.website], ["X", d.metadata?.twitter], ["Telegram", d.metadata?.telegram], ["Discord", d.metadata?.discord]] : [])
+    .map(([l, u]) => [l, safeUrl(u)]).filter(([, u]) => u) as [string, string][];
 
   return (
     <>
@@ -127,10 +133,11 @@ function Project() {
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <a className="btn primary" href={montraUrl} target="_blank" rel="noreferrer">Trade on Montra ↗</a>
-            {links.map(([l, u]) => <a key={l} className="btn sm" href={u} target="_blank" rel="noreferrer">{l} ↗</a>)}
+            {links.map(([l, u]) => <a key={l} className="btn sm" href={u} target="_blank" rel="noopener noreferrer nofollow">{l} ↗</a>)}
           </div>
         </div>
-        {d.description && <p className="muted" style={{ marginTop: 16, maxWidth: "80ch", whiteSpace: "pre-wrap" }}>{d.description}</p>}
+        {!inc && <div className="warn" style={{ marginTop: 16 }}><b>Not incubated by EARLY.</b> This page shows public Montra data for any token. We haven&apos;t reviewed this project, so its description and links are hidden. Do your own research.</div>}
+        {inc && d.description && <p className="muted" style={{ marginTop: 16, maxWidth: "80ch", whiteSpace: "pre-wrap" }}>{d.description}</p>}
 
         <div className="stats" style={{ marginTop: 22 }}>
           <div className="stat"><div className="v">{usd(d.marketCapUsd)}</div><div className="k muted">Market cap</div></div>
@@ -142,7 +149,7 @@ function Project() {
 
       <section className="blk" style={{ paddingTop: 0 }}>
         <div className="grid2">
-          <LaunchKit d={d} label={label} />
+          {inc ? <LaunchKit d={d} label={label} /> : <div className="card pad"><div className="eyebrow">Launch kit</div><p className="muted" style={{ marginTop: 8 }}>Launch kits are made for projects launched through EARLY. <Link href="/incubator/elysium/launch" style={{ textDecoration: "underline" }}>Launch yours →</Link></p></div>}
           <div style={{ display: "grid", gap: 14 }}>
             <Support symbol={d.symbol} />
             <div className="card pad">
