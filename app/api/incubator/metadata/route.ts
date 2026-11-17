@@ -3,17 +3,8 @@
 // Abuse limits are best effort (in memory, per server instance): same-origin only (stops other websites, not scripts),
 // a per-address limit that treats an IPv6 /64 as one address, an overall cap per instance, and timeouts upstream.
 // For a hard limit, add a Vercel Firewall rate-limit rule for /api/incubator/metadata.
-import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { safeLink, type LinkKind } from "../../../incubator/_lib/montra";
-
-/** Volta tokens are hosted in this site's Vercel Blob store: Montra's service clears uploads that no Montra launch uses. */
-const voltaStorage = () => !!process.env.BLOB_READ_WRITE_TOKEN;
-
-/** Lets the launch page know whether Volta launches can be hosted yet. */
-export async function GET() {
-  return NextResponse.json({ volta: voltaStorage() }, { headers: { "Cache-Control": "no-store" } });
-}
 
 export const runtime = "nodejs";
 const API = "https://api.montramarkets.xyz";
@@ -94,16 +85,20 @@ export async function POST(req: Request) {
     socials[k] = ok;
   }
 
+  // Volta tokens: uploaded through Volta's own upload service (it pins image + details on Volta's IPFS account,
+  // which Volta's site always shows). Montra's service only keeps uploads that a Montra launch uses.
   if (String(form.get("launchpad") ?? "") === "volta") {
-    if (!voltaStorage()) return NextResponse.json({ error: "Volta launches are switching on shortly. Try again soon, or launch on Montra." }, { status: 503 });
     try {
-      const id = crypto.randomUUID(), ext = kind.split("/")[1].replace("jpeg", "jpg");
-      const image = await put(`incubator/volta/${id}.${ext}`, Buffer.from(bytes), { access: "public", contentType: kind, addRandomSuffix: false });
-      const doc = { name, symbol, description, image: image.url, ...socials, ...(socials.website ? { external_url: socials.website } : {}) };
-      const meta = await put(`incubator/volta/${id}.json`, JSON.stringify(doc), { access: "public", contentType: "application/json", addRandomSuffix: false });
-      return NextResponse.json({ imageUri: image.url, metadataUri: meta.url, socials });
+      const vf = new FormData();
+      vf.set("name", name); vf.set("symbol", symbol); vf.set("description", description);
+      vf.set("website", socials.website ?? ""); vf.set("x", socials.twitter ?? ""); vf.set("telegram", socials.telegram ?? "");
+      vf.set("image", new Blob([Buffer.from(bytes)], { type: kind }), `image.${kind.split("/")[1]}`);
+      const r = await fetch("https://www.volta.family/api/upload", { method: "POST", body: vf, signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) });
+      const body = await r.json().catch(() => ({}));
+      if (!r.ok || typeof body.tokenUri !== "string") return NextResponse.json({ error: `Volta's upload didn't work (${r.status}). Try again in a minute.` }, { status: 502 });
+      return NextResponse.json({ imageUri: "", metadataUri: body.tokenUri as string, socials });
     } catch {
-      return NextResponse.json({ error: "Couldn't store the image and details. Try again in a minute." }, { status: 502 });
+      return NextResponse.json({ error: "Volta's upload service didn't answer in time. Try again in a minute." }, { status: 504 });
     }
   }
 

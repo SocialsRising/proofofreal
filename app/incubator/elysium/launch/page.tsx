@@ -1,6 +1,6 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { formatEther, parseEther, parseEventLogs, zeroHash } from "viem";
 import { useAccount, useBalance, usePublicClient, useReadContract, useSwitchChain, useWriteContract } from "wagmi";
 import { WalletButton } from "../../../launchpad/_components/Wallet";
@@ -46,9 +46,6 @@ export default function LaunchPage() {
   const [err, setErr] = useState("");
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF((s) => ({ ...s, [k]: e.target.value }));
   const preview = useMemo(() => (img ? URL.createObjectURL(img) : null), [img]);
-  // Volta tokens are hosted in our own storage; until it's connected, Volta launches wait (Montra works either way).
-  const [voltaReady, setVoltaReady] = useState<boolean | null>(null);
-  useEffect(() => { fetch("/api/incubator/metadata").then((r) => r.json()).then((d) => setVoltaReady(!!d.volta)).catch(() => setVoltaReady(false)); }, []);
 
   /** Switching launchpad keeps the choices valid for it (Volta allows fees up to 5% and anti-snipe up to 15 minutes). */
   function pickLaunchpad(k: LaunchpadKey) {
@@ -67,14 +64,13 @@ export default function LaunchPage() {
     img && img.size > 2 * 1024 * 1024 && "Image must be 2 MB or smaller.",
     firstBuy < BigInt(0) && "First buy must be a number (in HYPE).",
     ...LINK_FIELDS.map(([k, , msg]) => f[k].trim() && !safeLink(f[k].trim(), k) && msg),
-    isVolta && voltaReady === false && "Volta launches are switching on shortly. Launch on Montra meanwhile, or check back soon.",
     !ack && "Tick the box to confirm you've read how it works.",
   ].filter(Boolean) as string[];
   const busy = step !== "idle" && step !== "done";
   const launchFeeNow = isVolta ? voltaFee : montraFee;
   const total = firstBuy >= BigInt(0) ? firstBuy + launchFeeNow : null;
 
-  /** Image + details → Montra's metadata service (via our route). Returns the image and document URIs. */
+  /** Image + details → our upload route: Montra's metadata service for Montra launches, Volta's own for Volta launches. */
   async function upload() {
     setStep("upload");
     const fd = new FormData();
@@ -198,7 +194,6 @@ export default function LaunchPage() {
               ))}
             </div>
             <div style={{ marginTop: 8 }}><Bonus lp={lp} /></div>
-            {isVolta && voltaReady === false && <div className="warn" style={{ marginTop: 8 }}>Volta launches are switching on shortly. Launch on Montra meanwhile, or check back soon.</div>}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 16, alignItems: "start" }}>
             <label className="upload" style={{ width: 120 }}>
