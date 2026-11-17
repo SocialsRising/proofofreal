@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useToast } from "../../../../launchpad/_components/Toast";
-import { BUYBACKS, LINKS, PARENT, SITE, SLOTS, explorerAddr, explorerTx, launchpad, splitText, type Launchpad } from "../../../_lib/config";
+import { BUYBACKS, LINKS, PARENT, SITE, explorerAddr, explorerTx, fundToken, launchpad, slotsFor, splitText, type Launchpad } from "../../../_lib/config";
 import { HelpLine } from "../../../_components/Bits";
 import { hasIncubatorSplit, hypeUsd, isAddr, isIncubated, montra, pct, recipientLabel, safeLink, safeUrl, short, units, usd, type Holders, type TokenDetail } from "../../../_lib/montra";
 import { ipfsToHttp, isVoltaIncubated, volta, type VoltaMeta, type VoltaToken } from "../../../_lib/volta";
@@ -23,7 +23,7 @@ function fromMontra(d: TokenDetail, h: Holders | null): View {
   const q = d.quote?.symbol ?? "HYPE", dec = d.quote?.decimals ?? 18;
   const label = (r: string) => recipientLabel(r, d.address, d.creator);
   const feePct = d.totalFeePips / 10000;
-  const route = std ? splitText() : d.splitter ? d.splitter.recipients.map((r, i) => `${d.splitter!.shares[i] / 100}% ${label(r)}`).join(" · ") : d.recipientKind === "holders" ? "100% to holders" : `100% to ${d.recipient ? label(d.recipient) : "the creator"}`;
+  const route = std ? splitText("montra") : d.splitter ? d.splitter.recipients.map((r, i) => `${d.splitter!.shares[i] / 100}% ${label(r)}`).join(" · ") : d.recipientKind === "holders" ? "100% to holders" : `100% to ${d.recipient ? label(d.recipient) : "the creator"}`;
   return {
     lp, address: d.address, name: d.name, symbol: d.symbol, imageUrl: safeUrl(d.imageUrl), description: d.description ?? d.metadata?.description ?? "",
     links: { website: d.metadata?.website, twitter: d.metadata?.twitter, telegram: d.metadata?.telegram, discord: d.metadata?.discord },
@@ -58,7 +58,7 @@ function fromVolta(v: VoltaToken, m: VoltaMeta | null, hype: number | null): Vie
     links: { website: m?.website, twitter: m?.twitter, telegram: m?.telegram, discord: m?.discord },
     inc, std: inc, feePct, tradeUrl: lp.tokenUrl(v.token),
     feeRoute: inc
-      ? `Volta keeps 30%. The other 70% goes to EARLY's community wallet, which holds the creator NFT and splits it ${splitText()}.`
+      ? `Volta keeps 30%. The other 70% goes to EARLY's community wallet, which holds the creator NFT and splits it ${splitText("volta")}.`
       : `Volta keeps 30%; the other 70% is split ${v.split.creator / 100}% creator, ${v.split.buyback / 100}% buyback and ${v.split.holders / 100}% holders.`,
     stats: {
       mcapUsd: toUsd(v.marketCap), volUsd: toUsd(v.volume24h), change: v.price24hAgo ? ((v.price - v.price24hAgo) / v.price24hAgo) * 100 : null,
@@ -68,7 +68,7 @@ function fromVolta(v: VoltaToken, m: VoltaMeta | null, hype: number | null): Vie
       ? [{ label: "EARLY community wallet (creator NFT)", href: explorerAddr(v.creator), pct: "70%" }, { label: "Volta protocol", pct: "30%" }]
       : [{ label: "Creator NFT holder", href: explorerAddr(v.creator), pct: `${(v.split.creator / 100) * 0.7}%` }, { label: "Buyback and burn", pct: `${(v.split.buyback / 100) * 0.7}%` }, { label: "Holder rewards", pct: `${(v.split.holders / 100) * 0.7}%` }, { label: "Volta protocol", pct: "30%" }],
     splitNote: inc
-      ? `Of a ${feePct}% trade fee. EARLY splits its 70%: ${SLOTS.map((s) => `${s.bps / 100}% ${s.short}`).join(", ")}. ${earned} earned so far.`
+      ? `Of a ${feePct}% trade fee. EARLY splits its 70%: ${slotsFor("volta").map((s) => `${s.bps / 100}% ${s.short}`).join(", ")}. ${earned} earned so far.`
       : `Of a ${feePct}% trade fee. ${earned} earned so far.`,
     verify: [
       { label: "Token", href: explorerAddr(v.token), text: `${short(v.token)} ↗` },
@@ -123,7 +123,7 @@ function buildKit(v: View) {
         { q: "How do the buybacks work?", a: `${BUYBACKS} The wallets are public, so anyone can check every buy. Amounts depend on trading volume.` },
         { q: "How does the community get rewarded?", a: `60% ${share} goes to EARLY's public community wallet, which buys back ${t} to reward the community for product launches, feedback, content, referrals and more. Rewards depend on trading volume.` },
         { q: "What are the $EARLY & Early Birds marketing incentives?", a: `20% ${share} goes to EARLY's public incentives wallet, which buys back ${t} for active $EARLY and Early Birds NFT holders only: the ones who buy ${t}, create content and refer others. Passive holders get nothing.` },
-        { q: "What's the Builder Fund?", a: `20% ${share} goes to EARLY's public Builder Fund wallet, which buys KNTQ and MONTRA (10% each). It's held for the team and unlocked as the project hits market-cap and builder milestones.` },
+        { q: "What's the Builder Fund?", a: `20% ${share} goes to EARLY's public Builder Fund wallet, which buys KNTQ and ${fundToken(v.lp.key)} (10% each). It's held for the team and unlocked as the project hits market-cap and builder milestones.` },
       ] : []),
       { q: "How can I verify all this?", a: `Every wallet, the fee route and the launch transaction are linked on the project page: ${page}` },
       { q: "What's the contract?", a: v.address },

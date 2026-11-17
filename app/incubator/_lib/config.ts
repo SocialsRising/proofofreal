@@ -80,7 +80,16 @@ export const LEGACY_TOKENS: `0x${string}`[] = [
 ];
 /** Tokens never shown as incubated, even with a matching split: spam, scams. Lowercase. */
 export const HIDDEN_TOKENS: `0x${string}`[] = [];
-export const splitText = () => SLOTS.map((s) => `${s.bps / 100}% ${s.short}`).join(" · ");
+/** The Builder Fund (same wallet everywhere) buys KNTQ plus the launchpad's own token: MONTRA for Montra launches,
+    VOLTA for Volta launches. "all" is for pages that cover both launchpads. */
+type FundScope = LaunchpadKey | "all";
+const withFund = (text: string, k: FundScope, compact: boolean) =>
+  text.replace(/MONTRA/g, k === "volta" ? "VOLTA" : k === "all" ? (compact ? "MONTRA/VOLTA" : "MONTRA or VOLTA") : "MONTRA");
+export const fundToken = (k: FundScope) => withFund("MONTRA", k, false);
+export const slotsFor = (k: FundScope): Slot[] =>
+  SLOTS.map((s) => (s.key === "builder" ? { ...s, name: withFund(s.name, k, true), short: withFund(s.short, k, true), desc: withFund(s.desc, k, false) } : s));
+export const perksFor = (k: FundScope) => PERKS.map((p) => ({ ...p, text: withFund(p.text, k, false) }));
+export const splitText = (k: FundScope = "montra") => slotsFor(k).map((s) => `${s.bps / 100}% ${s.short}`).join(" · ");
 
 /** How buybacks happen — shown everywhere fees are explained. */
 export const BUYBACKS = "Buybacks run automatically every day, executed by the EARLY AI agent swarm.";

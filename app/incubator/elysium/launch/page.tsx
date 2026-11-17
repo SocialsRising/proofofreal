@@ -1,11 +1,11 @@
 "use client";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { formatEther, parseEther, parseEventLogs, zeroHash } from "viem";
 import { useAccount, useBalance, usePublicClient, useReadContract, useSwitchChain, useWriteContract } from "wagmi";
 import { WalletButton } from "../../../launchpad/_components/Wallet";
 import { useToast } from "../../../launchpad/_components/Toast";
-import { BUYBACKS, DEFAULT_FEE_PCT, ELYSIUM, FEE_TIERS, LAUNCHPADS, MONTRA_BUILDER_CODE, PARENT, PERKS, SLOTS, VOLTA_CREATOR, explorerAddr, launchpad, type LaunchpadKey } from "../../_lib/config";
+import { BUYBACKS, DEFAULT_FEE_PCT, ELYSIUM, FEE_TIERS, LAUNCHPADS, MONTRA_BUILDER_CODE, PARENT, VOLTA_CREATOR, perksFor, slotsFor, explorerAddr, launchpad, type LaunchpadKey } from "../../_lib/config";
 import { Bonus, HelpLine } from "../../_components/Bits";
 import { LAUNCH_ABI, MONTRA_FACTORY, SNIPE_WINDOWS, ZERO, builderSuffix, incubatorSplit, montra, pickRow, randomSalt, safeLink, short } from "../../_lib/montra";
 import { VOLTA_ABI, VOLTA_PM } from "../../_lib/volta";
@@ -36,6 +36,7 @@ export default function LaunchPage() {
   const [lpKey, setLpKey] = useState<LaunchpadKey>("montra");
   const lp = launchpad(lpKey);
   const isVolta = lpKey === "volta";
+  const SLOTS = slotsFor(lpKey), PERKS = perksFor(lpKey);
   const [f, setF] = useState({ name: "", symbol: "", description: "", website: "", twitter: "", telegram: "", discord: "", firstBuy: "0.01" });
   const [feePct, setFeePct] = useState<number>(DEFAULT_FEE_PCT);
   const [snipe, setSnipe] = useState<number>(60);
@@ -45,6 +46,9 @@ export default function LaunchPage() {
   const [err, setErr] = useState("");
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF((s) => ({ ...s, [k]: e.target.value }));
   const preview = useMemo(() => (img ? URL.createObjectURL(img) : null), [img]);
+  // Volta tokens are hosted in our own storage; until it's connected, Volta launches wait (Montra works either way).
+  const [voltaReady, setVoltaReady] = useState<boolean | null>(null);
+  useEffect(() => { fetch("/api/incubator/metadata").then((r) => r.json()).then((d) => setVoltaReady(!!d.volta)).catch(() => setVoltaReady(false)); }, []);
 
   /** Switching launchpad keeps the choices valid for it (Volta allows fees up to 5% and anti-snipe up to 15 minutes). */
   function pickLaunchpad(k: LaunchpadKey) {
@@ -63,6 +67,7 @@ export default function LaunchPage() {
     img && img.size > 2 * 1024 * 1024 && "Image must be 2 MB or smaller.",
     firstBuy < BigInt(0) && "First buy must be a number (in HYPE).",
     ...LINK_FIELDS.map(([k, , msg]) => f[k].trim() && !safeLink(f[k].trim(), k) && msg),
+    isVolta && voltaReady === false && "Volta launches are switching on shortly. Launch on Montra meanwhile, or check back soon.",
     !ack && "Tick the box to confirm you've read how it works.",
   ].filter(Boolean) as string[];
   const busy = step !== "idle" && step !== "done";
@@ -73,7 +78,7 @@ export default function LaunchPage() {
   async function upload() {
     setStep("upload");
     const fd = new FormData();
-    fd.set("image", img!); fd.set("name", f.name.trim()); fd.set("symbol", f.symbol); fd.set("description", f.description.trim());
+    fd.set("launchpad", lpKey); fd.set("image", img!); fd.set("name", f.name.trim()); fd.set("symbol", f.symbol); fd.set("description", f.description.trim());
     for (const [k] of LINK_FIELDS) fd.set(k, f[k].trim());
     const up = await fetch("/api/incubator/metadata", { method: "POST", body: fd });
     const meta = await up.json();
@@ -193,6 +198,7 @@ export default function LaunchPage() {
               ))}
             </div>
             <div style={{ marginTop: 8 }}><Bonus lp={lp} /></div>
+            {isVolta && voltaReady === false && <div className="warn" style={{ marginTop: 8 }}>Volta launches are switching on shortly. Launch on Montra meanwhile, or check back soon.</div>}
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", gap: 16, alignItems: "start" }}>
             <label className="upload" style={{ width: 120 }}>

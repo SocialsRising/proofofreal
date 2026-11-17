@@ -3,8 +3,17 @@
 // Abuse limits are best effort (in memory, per server instance): same-origin only (stops other websites, not scripts),
 // a per-address limit that treats an IPv6 /64 as one address, an overall cap per instance, and timeouts upstream.
 // For a hard limit, add a Vercel Firewall rate-limit rule for /api/incubator/metadata.
+import { put } from "@vercel/blob";
 import { NextResponse } from "next/server";
 import { safeLink, type LinkKind } from "../../../incubator/_lib/montra";
+
+/** Volta tokens are hosted in this site's Vercel Blob store: Montra's service clears uploads that no Montra launch uses. */
+const voltaStorage = () => !!process.env.BLOB_READ_WRITE_TOKEN;
+
+/** Lets the launch page know whether Volta launches can be hosted yet. */
+export async function GET() {
+  return NextResponse.json({ volta: voltaStorage() }, { headers: { "Cache-Control": "no-store" } });
+}
 
 export const runtime = "nodejs";
 const API = "https://api.montramarkets.xyz";
@@ -83,6 +92,19 @@ export async function POST(req: Request) {
     const ok = safeLink(raw, k);
     if (!ok) return NextResponse.json({ error: `The ${{ website: "website", twitter: "X", telegram: "Telegram", discord: "Discord" }[k]} link doesn't look right.` }, { status: 400 });
     socials[k] = ok;
+  }
+
+  if (String(form.get("launchpad") ?? "") === "volta") {
+    if (!voltaStorage()) return NextResponse.json({ error: "Volta launches are switching on shortly. Try again soon, or launch on Montra." }, { status: 503 });
+    try {
+      const id = crypto.randomUUID(), ext = kind.split("/")[1].replace("jpeg", "jpg");
+      const image = await put(`incubator/volta/${id}.${ext}`, Buffer.from(bytes), { access: "public", contentType: kind, addRandomSuffix: false });
+      const doc = { name, symbol, description, image: image.url, ...socials, ...(socials.website ? { external_url: socials.website } : {}) };
+      const meta = await put(`incubator/volta/${id}.json`, JSON.stringify(doc), { access: "public", contentType: "application/json", addRandomSuffix: false });
+      return NextResponse.json({ imageUri: image.url, metadataUri: meta.url, socials });
+    } catch {
+      return NextResponse.json({ error: "Couldn't store the image and details. Try again in a minute." }, { status: 502 });
+    }
   }
 
   try {

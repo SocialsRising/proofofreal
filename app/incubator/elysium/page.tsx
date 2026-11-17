@@ -3,7 +3,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Bonus, RichDesc } from "../_components/Bits";
-import { BUYBACKS, LAUNCHPADS, LINKS, PARENT, PERKS, RESULTS, SLOTS, explorerAddr, launchpad, type Result } from "../_lib/config";
+import { BUYBACKS, LAUNCHPADS, LINKS, PARENT, RESULTS, explorerAddr, launchpad, perksFor, slotsFor, type Result } from "../_lib/config";
+
+const SLOTS = slotsFor("all"), PERKS = perksFor("all");
 import { montra, pct, safeUrl, usd, ago, type DirToken, type TokenCard } from "../_lib/montra";
 
 type Tab = "trending" | "latest" | "top";
