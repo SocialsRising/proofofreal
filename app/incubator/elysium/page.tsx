@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Bonus, RichDesc } from "../_components/Bits";
-import { BUYBACKS, LAUNCHPADS, LINKS, PARENT, PERKS, RESULTS, SLOTS, explorerAddr, type Result } from "../_lib/config";
+import { BUYBACKS, LAUNCHPADS, LINKS, PARENT, PERKS, RESULTS, SLOTS, explorerAddr, launchpad, type Result } from "../_lib/config";
 import { montra, pct, safeUrl, usd, ago, type DirToken, type TokenCard } from "../_lib/montra";
 
 type Tab = "trending" | "latest" | "top";
@@ -22,7 +22,7 @@ function TokenTable({ tokens, empty }: { tokens: DirToken[]; empty: React.ReactN
         <tbody>
           {tokens.map((t) => (
             <tr key={t.address} className="row" onClick={() => router.push(`/incubator/elysium/p/${t.address}`)}>
-              <td><Link className="tok" href={`/incubator/elysium/p/${t.address}`} onClick={(e) => e.stopPropagation()}>{t.imageUrl ? <img src={t.imageUrl} alt="" loading="lazy" /> : <span className="ph" />}<span><b>{t.name}</b><small>${t.symbol}</small></span></Link></td>
+              <td><Link className="tok" href={`/incubator/elysium/p/${t.address}`} onClick={(e) => e.stopPropagation()}>{t.imageUrl ? <img src={t.imageUrl} alt="" loading="lazy" /> : <span className="ph" />}<span><b>{t.name}</b><small>${t.symbol} · {launchpad(t.launchpad).name}</small></span></Link></td>
               <td className="num">{usd(t.marketCapUsd)}</td>
               <td className="num">{usd(t.volume24hUsd)}</td>
               <td className={`num ${(t.change24hPct ?? 0) >= 0 ? "up" : "down"}`}>{pct(t.change24hPct)}</td>
@@ -64,7 +64,6 @@ export default function IncubatorHome() {
   const [live, setLive] = useState<Record<string, TokenCard>>({});
   const [tab, setTab] = useState<Tab>("trending");
   const [err, setErr] = useState("");
-  const lp = LAUNCHPADS[0];
 
   useEffect(() => {
     montra.incubated().then(setMine).catch(() => { setMine([]); setErr("Montra's API is busy — the list will refresh shortly."); });
@@ -91,20 +90,20 @@ export default function IncubatorHome() {
     <>
       <section className="hero">
         <div className="hero-copy">
-          <div className="eyebrow live"><i />Live on {lp.name} · {lp.chain}</div>
+          <div className="eyebrow live"><i />Live on {LAUNCHPADS.map((l) => l.name).join(" and ")} · Elysium</div>
           <h1>Launch with a team<br /><span className="dim">behind you.</span></h1>
           <p className="lead">Launch your token through EARLY and the {PARENT} team and creators get behind it from day one. Your most active holders earn airdrop rewards, and every trade funds daily buybacks for your community.</p>
           <ul className="checks">
             <li><Check />{PARENT} team + creator marketing</li>
             <li><Check />Airdrop rewards for active holders</li>
             <li><Check />Daily buybacks from every trade</li>
-            <li><Check />Liquidity locked forever</li>
+            <li><Check />Whole supply in the pool from day one</li>
           </ul>
           <div className="ctas">
             <Link className="btn primary lg" href="/incubator/elysium/launch">Launch a token</Link>
             <a className="btn lg" href="#perks">See what you get</a>
           </div>
-          <div className="hero-bonus"><Bonus lp={lp} /></div>
+          <div className="hero-bonus">{LAUNCHPADS.map((l) => <Bonus key={l.key} lp={l} />)}</div>
         </div>
         <div className="hero-art" aria-hidden><img src="/incubator/early-bird.webp" alt="" width={720} height={720} /></div>
       </section>
@@ -125,14 +124,14 @@ export default function IncubatorHome() {
       <section className="blk" id="how">
         <div className="sh"><div className="eyebrow">How it works</div><h2>Three steps</h2></div>
         <ol className="steps">
-          <li><span className="n">01</span><h3>Launch</h3><p>Pick a name, image and fee, then confirm one transaction. Liquidity is locked forever.</p></li>
+          <li><span className="n">01</span><h3>Launch</h3><p>Pick Montra or Volta, a name, image and fee, then confirm one transaction. The whole supply goes straight into the pool.</p></li>
           <li><span className="n">02</span><h3>We get to work</h3><p>The team and {PARENT} creators help you build your community and push your launch.</p></li>
           <li><span className="n">03</span><h3>Fees flow back</h3><p>Every trade funds daily buybacks that reward your community and grow your Builder Fund.</p></li>
         </ol>
       </section>
 
       <section className="blk" id="fees">
-        <div className="sh"><div className="eyebrow">Where every fee goes</div><h2>Every trade works for your community</h2><p>Pick a 3%, 5% or 10% fee at launch. Montra keeps 0.4% (plus a 0.5–1% liquidity share once a token passes its LP line), and the rest goes to three public wallets, fixed on-chain forever.</p></div>
+        <div className="sh"><div className="eyebrow">Where every fee goes</div><h2>Every trade works for your community</h2><p>Pick your fee at launch: 3%, 5% or 10% on Montra, 3% or 5% on Volta. On Montra, after its 0.4% (plus a 0.5–1% liquidity share once a token passes its LP line), the rest is split on-chain to three public wallets. On Volta, Volta keeps 30% and the other 70% goes to EARLY&apos;s community wallet, which holds the creator NFT and splits it the same way.</p></div>
         <div className="feesplit">
           <div className="bar3" role="img" aria-label={SLOTS.map((s) => `${s.bps / 100}% ${s.name}`).join(", ")}>{SLOTS.map((s, i) => <i key={s.key} className={["a", "b", "c", "b"][i]} style={{ width: `${s.bps / 100}%` }} />)}</div>
           <div className="split3">
@@ -142,7 +141,7 @@ export default function IncubatorHome() {
                 <a className="wl" href={explorerAddr(s.wallet)} target="_blank" rel="noopener noreferrer">View wallet ↗</a></div>
             ))}
           </div>
-          <p className="feefoot"><b>{BUYBACKS}</b> The wallets are run by EARLY and shared by every incubated project; each project&apos;s own fee splitter shows exactly what it paid in. Amounts depend on trading volume. Separately, EARLY earns a share of Montra&apos;s own 0.4% through Montra Builders, never from your fees.</p>
+          <p className="feefoot"><b>{BUYBACKS}</b> The wallets are run by EARLY and shared by every incubated project, and each launch&apos;s fee route is public on-chain. Amounts depend on trading volume. Separately, EARLY earns a share of Montra&apos;s own 0.4% through Montra Builders, never from your fees.</p>
         </div>
       </section>
 

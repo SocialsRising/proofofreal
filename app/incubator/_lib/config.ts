@@ -16,7 +16,7 @@ export type Slot = { key: string; bps: number; wallet: `0x${string}`; name: stri
 export const SLOTS: Slot[] = [
   {
     key: "community", bps: 6000, wallet: "0x65d9d73d1ebcf503a7341a161f2dce660cb5952a",
-    name: "Your Community Initiatives", short: "your community initiatives",
+    name: "Your Community Initiatives", short: "community initiatives",
     desc: "Buys back your token to reward your community for product launches, feedback, content, referrals and more.",
   },
   {
@@ -26,7 +26,7 @@ export const SLOTS: Slot[] = [
   },
   {
     key: "builder", bps: 2000, wallet: "0xcde4df4245c295d505f2d25034da3a3395e7ae9b",
-    name: "Your Builder Fund (KNTQ + MONTRA)", short: "your Builder Fund (KNTQ + MONTRA)",
+    name: "Your Builder Fund (KNTQ + MONTRA)", short: "Builder Fund (KNTQ + MONTRA)",
     desc: "Buys KNTQ and MONTRA (10% each), held for your team and unlocked as you hit market-cap and builder milestones.",
   },
 ];
@@ -78,11 +78,8 @@ export const LEGACY_WALLETS: { wallet: `0x${string}`; name: string }[] = [
 export const LEGACY_TOKENS: `0x${string}`[] = [
   "0x2a67aee95a8e28307d720685cf3e8b0ab10284a5", // $EARLY
 ];
-/** Tokens never shown as incubated, even with a matching split: test launches, spam, scams. Lowercase. */
-export const HIDDEN_TOKENS: `0x${string}`[] = [
-  "0xe56419c4b1558609297b7d9c7006ecbfeb7118d7", // $HERMES — test launch, 16 Nov
-  "0x6e1a6f8c355d094847e75d50bfd27d949b96de4c", // $ZOO — test launch, 16 Nov
-];
+/** Tokens never shown as incubated, even with a matching split: spam, scams. Lowercase. */
+export const HIDDEN_TOKENS: `0x${string}`[] = [];
 export const splitText = () => SLOTS.map((s) => `${s.bps / 100}% ${s.short}`).join(" · ");
 
 /** How buybacks happen — shown everywhere fees are explained. */
@@ -99,13 +96,18 @@ export const LINKS = {
   helpX: "https://x.com/Tradesgiving",
 };
 
-/** Trading fee options on the launch page (total fee per trade, in pips of 1,000,000). */
+/** Trading fee options on the launch page: total fee per trade, in percent. Each launchpad offers a subset (`fees`). */
 export const FEE_TIERS = [
-  { pips: 30000, label: "3%", name: "Growth", desc: "Lower fees for more trading, liquidity and community growth." },
-  { pips: 50000, label: "5%", name: "Balanced", desc: "The sweet spot between trading activity and buybacks, right for most projects.", recommended: true },
-  { pips: 100000, label: "10%", name: "Max Reinvestment", desc: "The most buybacks and rewards, for highly committed communities." },
+  { pct: 3, label: "3%", name: "Growth", desc: "Lower fees for more trading, liquidity and community growth." },
+  { pct: 5, label: "5%", name: "Balanced", desc: "The sweet spot between trading activity and buybacks, right for most projects.", recommended: true },
+  { pct: 10, label: "10%", name: "Max Reinvestment", desc: "The most buybacks and rewards, for highly committed communities." },
 ] as const;
-export const DEFAULT_FEE = 50000;
+export const DEFAULT_FEE_PCT = 5;
+
+/** Volta can only pay a token's fees to one wallet: whoever holds its creator NFT. Launches through EARLY send the creator
+    NFT (and with it the whole creator side, 70% of every trade fee) to the 60% Community Initiatives wallet, and EARLY
+    splits it 60/20/20 across the three wallets itself. Fixed per token at launch. */
+export const VOLTA_CREATOR = SLOTS[0].wallet;
 
 export const ELYSIUM = {
   chainId: 99901,
@@ -116,15 +118,20 @@ export const ELYSIUM = {
 } as const;
 
 /** A launchpad you can launch on through EARLY (each one is a small adapter in _lib/<key>.ts).
-    `bonus` is the incentive note shown under it; `extra.until` hides a time-limited line automatically. */
+    `fees` are the FEE_TIERS percentages it allows; `snipe` its anti-snipe windows in seconds.
+    `bonus` is the incentive note shown for it: `until` hides the whole note after that time, `extra.until` just one line. */
+export type LaunchpadKey = "montra" | "volta";
 export type Launchpad = {
-  key: "montra"; name: string; chain: string;
-  bonus?: { title: string; text: string; href: string; extra?: { text: string; until: string } };
+  key: LaunchpadKey; name: string; chain: string; site: string; tokenUrl: (t: string) => string;
+  fees: number[]; snipe: number[];
+  bonus?: { title: string; text: string; href: string; until?: string; extra?: { text: string; until: string } };
 };
 
 export const LAUNCHPADS: Launchpad[] = [
   {
-    key: "montra", name: "Montra", chain: "Elysium",
+    key: "montra", name: "Montra", chain: "Elysium", site: "https://montramarkets.xyz",
+    tokenUrl: (t) => `https://montramarkets.xyz/token/${t.toLowerCase()}`,
+    fees: [3, 5, 10], snipe: [0, 30, 60, 300, 900, 1800],
     bonus: {
       title: "Montra Season 2 airdrop is live",
       text: "Launching and trading earn points toward the 25% MONTRA airdrop, and tokens that hold market-cap levels earn their creator more.",
@@ -132,7 +139,19 @@ export const LAUNCHPADS: Launchpad[] = [
       extra: { text: "Trades count double until 17 Nov.", until: "2026-11-17T00:00:00Z" },
     },
   },
+  {
+    key: "volta", name: "Volta", chain: "Elysium", site: "https://www.volta.family",
+    tokenUrl: (t) => `https://www.volta.family/token/${t}`,
+    fees: [3, 5], snipe: [0, 30, 60, 300, 900],
+    bonus: {
+      title: "Volta airdrop is live until Nov 20",
+      text: "Every trade on Volta earns points toward 20% of the $VOLTA supply.",
+      href: "https://www.volta.family/airdrop",
+      until: "2026-11-20T00:00:00Z",
+    },
+  },
 ];
+export const launchpad = (k: LaunchpadKey) => LAUNCHPADS.find((l) => l.key === k)!;
 
 export const explorerAddr = (a: string) => `${ELYSIUM.explorer}/address/${a}`;
 export const explorerTx = (h: string) => `${ELYSIUM.explorer}/tx/${h}`;

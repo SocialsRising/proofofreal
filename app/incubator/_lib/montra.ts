@@ -1,7 +1,7 @@
 /* Montra adapter: read-only public API (no key, CORS-open for GETs) + the factory's one-transaction launch.
    Docs: https://montramarkets.xyz/docs/build · API: https://montramarkets.xyz/docs/api */
 import { stringToHex, toHex } from "viem";
-import { FEE_TIERS, HIDDEN_TOKENS, LEGACY_TOKENS, LEGACY_WALLETS, MONTRA_BUILDER_CODE, SLOTS } from "./config";
+import { HIDDEN_TOKENS, LEGACY_TOKENS, LEGACY_WALLETS, MONTRA_BUILDER_CODE, SLOTS, launchpad, type LaunchpadKey } from "./config";
 
 export const MONTRA_API = "https://api.montramarkets.xyz";
 export const MONTRA_FACTORY = "0x38d3ef3a06d18fa3286fb5deafe611be725fcd15" as const;
@@ -36,7 +36,7 @@ async function get<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 /** What the directory needs per project (kept small: it's served to every visitor). */
-export type DirToken = Pick<TokenCard, "address" | "name" | "symbol" | "imageUrl" | "marketCapUsd" | "volume24hUsd" | "change24hPct" | "holders" | "launchedAt" | "trend">;
+export type DirToken = Pick<TokenCard, "address" | "name" | "symbol" | "imageUrl" | "marketCapUsd" | "volume24hUsd" | "change24hPct" | "holders" | "launchedAt" | "trend"> & { launchpad: LaunchpadKey };
 
 /** Runs fn over items with at most n requests in flight, to stay polite to Montra's API. */
 async function inBatches<T, R>(items: T[], n: number, fn: (x: T) => Promise<R>): Promise<R[]> {
@@ -61,9 +61,14 @@ export async function loadDirectory(): Promise<DirToken[]> {
   const candidates = [...addrs].filter((a) => isAddr(a) && !HIDDEN_TOKENS.includes(a as `0x${string}`));
   const details = await inBatches(candidates, 6, (a) => get<TokenDetail>(`/api/tokens/${a}`).catch(() => null));
   return details.filter((d): d is TokenDetail => !!d && isIncubated(d)).map((d) => ({
-    address: d.address, name: d.name, symbol: d.symbol, imageUrl: safeUrl(d.imageUrl), marketCapUsd: d.marketCapUsd,
+    launchpad: "montra" as const, address: d.address, name: d.name, symbol: d.symbol, imageUrl: safeUrl(d.imageUrl), marketCapUsd: d.marketCapUsd,
     volume24hUsd: d.volume24hUsd, change24hPct: d.change24hPct, holders: d.holders, launchedAt: d.launchedAt, trend: d.trend,
   }));
+}
+
+/** HYPE's USD price as Montra reports it, or null. Used to show Volta's HYPE figures in USD. */
+export async function hypeUsd(): Promise<number | null> {
+  try { return (await get<{ tokens?: TokenCard[] }>(`/api/tokens?limit=1`)).tokens?.[0]?.quote?.usd ?? null; } catch { return null; }
 }
 
 export const montra = {
@@ -86,7 +91,7 @@ export const isIncubated = (d: Pick<TokenDetail, "address" | "splitter" | "quote
   if (HIDDEN_TOKENS.includes(a)) return false;
   if (LEGACY_TOKENS.includes(a)) return true;
   const nativeQuote = d.quote?.native === true || d.quote?.address?.toLowerCase() === ZERO;
-  return hasIncubatorSplit(d) && nativeQuote && FEE_TIERS.some((t) => t.pips === d.totalFeePips) && d.pool?.feeLocked !== false;
+  return hasIncubatorSplit(d) && nativeQuote && launchpad("montra").fees.some((pct) => pct * 10000 === d.totalFeePips) && d.pool?.feeLocked !== false;
 };
 /** The token's on-chain split is exactly the incubator split: same wallets, same shares, no extras. */
 export function hasIncubatorSplit(d: Pick<TokenDetail, "splitter">) {
