@@ -56,7 +56,7 @@ function ResultCard({ r, live }: { r: Result; live?: TokenCard }) {
           <div><dt>Holders</dt><dd>{live.holders > 0 ? live.holders.toLocaleString() : "—"}</dd></div>
         </dl>
       )}
-      {r.links && <div className="rlinks">{r.links.map((l) => <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">{l.label} ↗</a>)}</div>}
+      {r.links && <div className="rlinks">{r.links.map((l) => l.href.startsWith("/") ? <Link key={l.href} href={l.href}>{l.label} →</Link> : <a key={l.href} href={l.href} target="_blank" rel="noopener noreferrer">{l.label} ↗</a>)}</div>}
     </article>
   );
 }
@@ -105,7 +105,10 @@ export default function IncubatorHome() {
             <Link className="btn primary lg" href="/incubator/elysium/launch">Launch a token</Link>
             <a className="btn lg" href="#perks">See what you get</a>
           </div>
-          <div className="hero-bonus">{LAUNCHPADS.map((l) => <Bonus key={l.key} lp={l} />)}</div>
+          <div className="hero-bonus">
+            <Link className="bonus" href="/incubator/olympus"><span className="bonus-dot" aria-hidden /><span><b>Kalos Season 1 is live</b> Trade $EARLY and the incubated projects on Olympus to earn points toward the $KALOS airdrop, on top of the launchpad airdrops.</span><span className="bonus-go" aria-hidden>→</span></Link>
+            {LAUNCHPADS.map((l) => <Bonus key={l.key} lp={l} />)}
+          </div>
         </div>
         <div className="hero-art" aria-hidden><img src="/incubator/early-bird.webp" alt="" width={720} height={720} /></div>
       </section>

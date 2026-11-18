@@ -5,7 +5,7 @@ import { formatUnits } from "viem";
 import { useToast } from "../../launchpad/_components/Toast";
 import { launchpad } from "../_lib/config";
 import { pct, usd, type DirToken } from "../_lib/montra";
-import { EARLY_BIRDS, GODS, LOW_ROUTE_EFFICIENCY, MAJORS, godFor, godImg, kalosCollectionUrl, kalosTradeUrl, majorOf, type OlyNft, type OlyQuote, type OlyToken } from "../_lib/olympus";
+import { EARLY_BIRDS, GODS, KALOS_REWARDS, LOW_ROUTE_EFFICIENCY, MAJORS, godFor, godImg, kalosCollectionUrl, kalosTradeUrl, majorOf, type OlyNft, type OlyQuote, type OlyToken } from "../_lib/olympus";
 
 type Tab = "pantheon" | "verified" | "search";
 const BIRDS_ID = "early-birds", BIRDS_IMG = "/olympus/gods/early-birds.webp";
@@ -20,6 +20,10 @@ const compact = (n: number) => (n === 0 ? "0" : n < 0.0001 ? plain(n) : new Intl
 const units = (raw: string | null | undefined, decimals: number) => { try { return raw ? Number(formatUnits(BigInt(raw), decimals)) : null; } catch { return null; } };
 const hype = (raw: string | null | undefined) => { const v = units(raw, 18); return v == null ? "—" : `${compact(v)} HYPE`; };
 const title = (t: OlyToken) => (t.kind === "nft" ? t.name : `$${t.symbol}`);
+/** The launchpad airdrop an incubated token's trades also count toward ($VOLTA only while Volta's airdrop runs). */
+const VOLTA_AIRDROP_END = Date.parse(launchpad("volta").bonus?.until ?? "1970-01-01");
+const lpDrop = (t: OlyToken, voltaLive: boolean) => (t.tier !== "pantheon" || t.kind === "nft" ? null : t.launchpad === "Volta" ? (voltaLive ? "$VOLTA" : null) : "$MONTRA");
+const dropsLine = (t: OlyToken, voltaLive: boolean) => { const lp = lpDrop(t, voltaLive); return lp ? `$KALOS + ${lp} airdrops` : "the $KALOS airdrop"; };
 
 function Avatar({ t, size = 40 }: { t: OlyToken; size?: number }) {
   const src = t.kind === "nft" ? BIRDS_IMG : t.god ? godImg(t.god) : null;
@@ -47,13 +51,14 @@ function Chart({ points, label }: { points: number[]; label: string }) {
   );
 }
 
-function ProjectCard({ t, onOracle, throne = false }: { t: OlyToken; onOracle: () => void; throne?: boolean }) {
+function ProjectCard({ t, onOracle, throne = false, voltaLive }: { t: OlyToken; onOracle: () => void; throne?: boolean; voltaLive: boolean }) {
   return (
     <article className={`oly-card ${throne ? "throne" : ""}`}>
       <div className="oly-card-art"><img src={godImg(t.god!, throne && t.god === "Zeus")} alt={t.god} loading="lazy" /><span className="oly-god">{t.god}</span></div>
       <div className="oly-card-body">
         <div className="oly-card-head">{t.imageUrl ? <img src={t.imageUrl} alt="" /> : null}<div><b>${t.symbol}</b><small>{t.name}</small></div></div>
         <div className="oly-card-stats"><span>{usd(t.marketCapUsd)}<i>mcap</i></span><span className={(t.change24hPct ?? 0) >= 0 ? "up" : "down"}>{pct(t.change24hPct)}<i>24h</i></span>{throne && t.holders ? <span>{t.holders.toLocaleString()}<i>holders</i></span> : null}</div>
+        <div className="oly-drop"><i aria-hidden>✦</i> Trades earn {dropsLine(t, voltaLive)}</div>
         <div className="oly-card-ctas">
           <a className={`btn sm ${throne ? "primary" : "ink"}`} href={kalosTradeUrl(t.address)} target="_blank" rel="noopener noreferrer">Trade on Kalos ↗</a>
           <button className="btn sm" onClick={onOracle}>Consult the Oracle</button>
@@ -94,6 +99,8 @@ export default function Olympus() {
   const [searching, setSearching] = useState(false);
   const [sel, setSel] = useState<OlyToken | null>(null);
   const [side, setSide] = useState<"buy" | "sell">("buy");
+  const [voltaLive, setVoltaLive] = useState(true); // set after mount so the static page and the browser agree
+  useEffect(() => { setVoltaLive(Date.now() < VOLTA_AIRDROP_END); }, []);
   const [amount, setAmount] = useState("1");
   const [quote, setQuote] = useState<OlyQuote | null>(null);
   const [quoting, setQuoting] = useState(false);
@@ -212,11 +219,17 @@ export default function Olympus() {
 
   return (
     <>
+      <a className="oly-season" href={KALOS_REWARDS} target="_blank" rel="noopener noreferrer">
+        <span className="oly-season-tag">Kalos Season 1 · live</span>
+        <span className="oly-season-text"><b>Every trade on Kalos earns points toward the $KALOS airdrop.</b> Trade $EARLY and the incubated projects here and you also qualify for the {voltaLive ? "$MONTRA and $VOLTA airdrops" : "$MONTRA airdrop"}.</span>
+        <span className="oly-season-go">Your points ↗</span>
+      </a>
+
       <section className="oly-hero">
         <div className="oly-hero-copy">
           <div className="oly-kicker">Olympus · powered by Kalos</div>
           <h1>Trade like<br /><span className="gold">a god.</span></h1>
-          <p className="oly-lead">EARLY, the Early Birds and every incubated project sit at the top of Olympus. Everything else on Elysium is one search away, all routed by Kalos for the best price across every venue.</p>
+          <p className="oly-lead">EARLY, the Early Birds and every incubated project sit at the top of Olympus. Everything else on Elysium is one search away, routed by Kalos for the best price across every venue, and every trade stacks Kalos Season 1 points.</p>
           <div className="oly-ctas">
             <a className="btn primary lg" href="#terminal">Enter the terminal</a>
             <a className="btn lg" href="#pantheon">Meet the Pantheon</a>
@@ -232,12 +245,12 @@ export default function Olympus() {
         {pantheon == null ? <div className="empty">Summoning the Pantheon…</div> : (
           <>
             <div className="oly-thrones">
-              {throne && <ProjectCard t={throne} throne onOracle={() => select(throne, true)} />}
+              {throne && <ProjectCard t={throne} throne voltaLive={voltaLive} onOracle={() => select(throne, true)} />}
               <BirdsCard nft={nft} onOpen={() => select(BIRDS, true)} />
             </div>
             {rest.length > 0 && <>
               <h3 className="oly-sub">Incubated projects</h3>
-              <div className="oly-cards">{rest.map((t) => <ProjectCard key={t.address} t={t} onOracle={() => select(t, true)} />)}</div>
+              <div className="oly-cards">{rest.map((t) => <ProjectCard key={t.address} t={t} voltaLive={voltaLive} onOracle={() => select(t, true)} />)}</div>
             </>}
           </>
         )}
@@ -349,6 +362,7 @@ export default function Olympus() {
               )}
               {lowRoute && <div className="oly-heads">Heads up: this route returns about <b>{Math.round((1 - eff!) * 100)}% less</b> than ${sel?.symbol}&apos;s market price right now. Try a smaller amount, or refresh in a moment as routes update every block.</div>}
               <div className="oly-refresh"><span>{quoting ? "Updating…" : ageS != null && quote ? `Updated ${ageS < 2 ? "just now" : `${ageS}s ago`}` : ""}</span><button onClick={() => setTick((t) => t + 1)} aria-label="Refresh quote">↻ Refresh</button></div>
+              {sel && <a className="oly-earn" href={KALOS_REWARDS} target="_blank" rel="noopener noreferrer"><i aria-hidden>✦</i><span>This trade earns <b>Kalos Season 1 points</b> toward the $KALOS airdrop{lpDrop(sel, voltaLive) ? <> and counts toward the <b>{lpDrop(sel, voltaLive)} airdrop</b></> : null}.</span></a>}
               {sel && <a className="btn primary lg full" href={kalosTradeUrl(sel.address)} target="_blank" rel="noopener noreferrer">{side === "buy" ? "Buy" : "Sell"} ${sel.symbol} on Kalos ↗</a>}
               <p className="oly-fine">Quotes are estimates from Kalos&apos;s router and move with the market. You trade on kalos.fun with your own wallet, so review the trade there before you sign. Not financial advice.</p>
             </div>

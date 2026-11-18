@@ -5,7 +5,7 @@ import "./olympus.css";
 const cinzel = Cinzel({ subsets: ["latin"], weight: ["600", "700"], variable: "--font-cinzel" });
 
 const TITLE = "Olympus · the EARLY trading terminal";
-const DESC = "Trade EARLY and its incubated projects first, then anything on Elysium — routed by Kalos for the best price.";
+const DESC = "Trade $EARLY, the Early Birds and the incubated projects on Kalos, routed for the best price. Every trade earns Kalos Season 1 points toward the $KALOS airdrop.";
 export const metadata: Metadata = {
   title: TITLE,
   description: DESC,

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { LINKS, type Launchpad } from "../_lib/config";
 
 const TOKENS: Record<string, [string, string]> = {
@@ -11,7 +12,9 @@ export function RichDesc({ text }: { text: string }) {
     <>
       {text.split(/(\{[A-Z]+\})/).map((part, i) => {
         const hit = TOKENS[part.slice(1, -1)];
-        return hit ? <a key={i} className="inlink" href={hit[1]} target="_blank" rel="noopener noreferrer">{hit[0]} ↗</a> : <span key={i}>{part}</span>;
+        if (!hit) return <span key={i}>{part}</span>;
+        return hit[1].startsWith("/") ? <Link key={i} className="inlink" href={hit[1]}>{hit[0]}</Link>
+          : <a key={i} className="inlink" href={hit[1]} target="_blank" rel="noopener noreferrer">{hit[0]} ↗</a>;
       })}
     </>
   );

@@ -178,3 +178,19 @@
 .mm.inc .oly .oly-refresh button{color:var(--gold-2);font-weight:600}
 .mm.inc .oly .oly-refresh button:hover{text-decoration:underline}
 .mm.inc .oly .oly-route b.up{color:var(--up)} .mm.inc .oly .oly-route b.down{color:var(--warn)}
+/* Kalos Season 1: the banner on top, the chip on each card and the line above the trade button. */
+.mm.inc .oly .oly-season{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-top:22px;padding:14px 18px;border-radius:16px;border:1px solid rgba(217,183,95,.55);background:radial-gradient(120% 180% at 0% 0%,rgba(217,183,95,.2),transparent 60%),linear-gradient(180deg,#0e0d0a,#08080a);box-shadow:0 20px 50px -34px rgba(217,183,95,.8);color:var(--fg-2);font-size:.92rem;line-height:1.5;transition:border-color .2s,transform .2s}
+.mm.inc .oly .oly-season:hover{border-color:var(--gold);transform:translateY(-1px)}
+.mm.inc .oly .oly-season-tag{flex:none;font-size:.7rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#120d02;background:linear-gradient(180deg,var(--gold-2),var(--gold));padding:5px 10px;border-radius:999px;position:relative}
+.mm.inc .oly .oly-season-tag::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#120d02;margin-right:7px;vertical-align:1px;animation:olyPulse 1.8s ease-in-out infinite}
+.mm.inc .oly .oly-season-text{flex:1 1 320px;min-width:0}
+.mm.inc .oly .oly-season-text b{color:var(--fg)}
+.mm.inc .oly .oly-season-go{flex:none;font-weight:600;color:var(--gold-2)}
+@keyframes olyPulse{50%{opacity:.25}}
+@media(prefers-reduced-motion:reduce){.mm.inc .oly .oly-season-tag::before{animation:none}}
+.mm.inc .oly .oly-drop{font-size:.78rem;font-weight:600;color:var(--gold-2)}
+.mm.inc .oly .oly-drop i{font-style:normal;color:var(--gold)}
+.mm.inc .oly .oly-earn{display:flex;gap:9px;align-items:flex-start;padding:10px 12px;border-radius:12px;border:1px solid rgba(217,183,95,.35);background:var(--gold-soft);font-size:.8rem;line-height:1.45;color:var(--fg-2)}
+.mm.inc .oly .oly-earn:hover{border-color:var(--gold)}
+.mm.inc .oly .oly-earn i{font-style:normal;color:var(--gold)}
+.mm.inc .oly .oly-earn b{color:var(--gold-2)}

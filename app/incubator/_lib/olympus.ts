@@ -8,6 +8,8 @@ export const KALOS = "https://www.kalos.fun";
 export const WHYPE = "0xba876237b0f021a6c6d852d6c26e107997cc5e81" as const;
 export const kalosTradeUrl = (token: string) => `${KALOS}/trade/${token.toLowerCase()}`;
 /** Kalos opens a listed collection from its contract address (it redirects to the collection's own page). */
+/** Kalos Season 1: points from trading on Kalos count toward the $KALOS airdrop. */
+export const KALOS_REWARDS = `${KALOS}/rewards`;
 export const kalosCollectionUrl = (contract: string) => `${KALOS}/collections/${contract.toLowerCase()}`;
 
 /** The Early Birds NFT collection (ERC-721 on Elysium, 100 gods). Its holders share the incubator's 20% incentives slot. */

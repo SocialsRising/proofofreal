@@ -63,7 +63,7 @@ export const RESULTS: Result[] = [
       "Its 3% trading fee is committed to $EARLY buybacks",
       "Early Birds NFT collection live alongside the token",
     ],
-    links: [{ label: "Trade $EARLY", href: "https://montramarkets.xyz/token/0x2a67aee95a8e28307d720685cf3e8b0ab10284a5" }, { label: "Early Birds", href: "https://opensea.io/collection/early-birdss" }],
+    links: [{ label: "Trade $EARLY on Olympus", href: "/incubator/olympus?t=0x2a67aee95a8e28307d720685cf3e8b0ab10284a5" }, { label: "Early Birds", href: "/incubator/olympus?t=early-birds" }],
     date: "Nov 2026",
   },
 ];
@@ -99,8 +99,9 @@ export const LINKS = {
   discord: "https://discord.gg/krVPuyksQy",
   article: "https://x.com/tradesgiving/status/2119840504795812285", // the team / why we launched EARLY
   telegram: "https://t.me/+Wzr9-0gNQtM2YTEx",
-  earlyToken: "https://montramarkets.xyz/token/0x2a67aee95a8e28307d720685cf3e8b0ab10284a5",
-  earlyBirds: "https://opensea.io/collection/early-birdss",
+  // On-site: the Olympus terminal (trades on Kalos). Early Birds shows its contract address there and links to Kalos once listed.
+  earlyToken: "/incubator/olympus?t=0x2a67aee95a8e28307d720685cf3e8b0ab10284a5",
+  earlyBirds: "/incubator/olympus?t=early-birds",
   helpTelegram: "https://t.me/Tradesgiving",
   helpX: "https://x.com/Tradesgiving",
 };
