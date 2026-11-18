@@ -68,7 +68,11 @@ export async function loadDirectory(): Promise<DirToken[]> {
 
 /** HYPE's USD price as Montra reports it, or null. Used to show Volta's HYPE figures in USD. */
 export async function hypeUsd(): Promise<number | null> {
-  try { return (await get<{ tokens?: TokenCard[] }>(`/api/tokens?limit=1`)).tokens?.[0]?.quote?.usd ?? null; } catch { return null; }
+  // Ask for a HYPE-quoted token: Montra also lists KNTQ-quoted ones, whose quote.usd is KNTQ's price.
+  try {
+    const t = (await get<{ tokens?: TokenCard[] }>(`/api/tokens?quote=${ZERO}&limit=1`)).tokens?.[0];
+    return t?.quote?.native && t.quote.symbol === "HYPE" ? t.quote.usd ?? null : null;
+  } catch { return null; }
 }
 
 export const montra = {

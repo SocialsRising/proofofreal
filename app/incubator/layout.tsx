@@ -26,7 +26,7 @@ export const metadata: Metadata = {
 
 export default function IncubatorLayout({ children }: { children: React.ReactNode }) {
   const cols: [string, [string, string, boolean?][]][] = [
-    ["Incubator", [["Launch a token", "/incubator/elysium/launch", true], ["What you get", "/incubator/elysium#perks", true], ["Where fees go", "/incubator/elysium#fees", true], ["Projects", "/incubator/elysium#projects", true]]],
+    ["Incubator", [["Launch a token", "/incubator/elysium/launch", true], ["Trade on Olympus", "/incubator/olympus", true], ["What you get", "/incubator/elysium#perks", true], ["Where fees go", "/incubator/elysium#fees", true], ["Projects", "/incubator/elysium#projects", true]]],
     ["EARLY", [["$EARLY", LINKS.earlyToken], ["Early Birds NFTs", LINKS.earlyBirds], ["Why we built EARLY", LINKS.article]]],
     ["Community", [["Telegram", LINKS.telegram], ["X · @socialsrising", LINKS.x], ["Discord", LINKS.discord], ["Help · @Tradesgiving", LINKS.helpTelegram]]],
   ];

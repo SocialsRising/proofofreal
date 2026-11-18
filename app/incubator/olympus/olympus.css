@@ -1,0 +1,128 @@
+/* Olympus terminal: the EARLY look (true black, white type) with gold, marble and a Greek-key border. Scoped to .oly. */
+.mm.inc .oly{
+  --gold:#D9B75F; --gold-2:#F3DFA2; --gold-soft:rgba(217,183,95,.12); --marble:#EDEBE6;
+  --meander:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='12' viewBox='0 0 24 12'%3E%3Cpath d='M0 11h10V3H4v4h2V5h2v4H2V1h12v10h10' fill='none' stroke='%23D9B75F' stroke-opacity='.55' stroke-width='1'/%3E%3C/svg%3E");
+}
+.mm.inc .oly h1,.mm.inc .oly h2,.mm.inc .oly h3{font-family:var(--font-cinzel),"Trajan Pro",Georgia,serif;letter-spacing:.01em;font-weight:700}
+.mm.inc .oly .gold{color:var(--gold);background:linear-gradient(180deg,var(--gold-2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent}
+.mm.inc .oly .oly-kicker{font-size:.72rem;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
+.mm.inc .oly .btn.primary{background:linear-gradient(180deg,var(--gold-2),var(--gold));border-color:var(--gold);color:#120d02;box-shadow:0 10px 30px -12px rgba(217,183,95,.6)}
+.mm.inc .oly .btn.primary:hover{filter:brightness(1.06);background:linear-gradient(180deg,var(--gold-2),var(--gold))}
+.mm.inc .oly .btn.ink{background:var(--marble);border-color:var(--marble);color:#000}
+.mm.inc .oly .empty{border-color:rgba(217,183,95,.25)}
+
+/* hero */
+.mm.inc .oly .oly-hero{display:grid;grid-template-columns:1fr;gap:10px;align-items:center;padding:40px 0 10px;position:relative}
+@media(min-width:960px){.mm.inc .oly .oly-hero{grid-template-columns:1.05fr .95fr;padding:70px 0 20px}}
+.mm.inc .oly .oly-hero h1{font-size:clamp(2.8rem,7vw,5.4rem);line-height:.98;margin-top:16px}
+.mm.inc .oly .oly-lead{color:var(--fg-2);font-size:1.1rem;max-width:50ch;margin-top:22px}
+.mm.inc .oly .oly-ctas{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+.mm.inc .oly .oly-hero-art{position:relative;display:grid;place-items:center;order:-1}
+.mm.inc .oly .oly-hero-art::before{content:"";position:absolute;inset:8% 6%;border-radius:50%;background:radial-gradient(closest-side,rgba(74,108,247,.32),rgba(217,183,95,.08) 60%,transparent);filter:blur(18px)}
+.mm.inc .oly .oly-hero-art img{position:relative;width:min(300px,70vw);height:auto;border-radius:28px;-webkit-mask-image:radial-gradient(closest-side,#000 70%,transparent);mask-image:radial-gradient(closest-side,#000 70%,transparent)}
+@media(min-width:960px){.mm.inc .oly .oly-hero-art{order:0}.mm.inc .oly .oly-hero-art img{width:100%;max-width:520px}}
+
+/* frieze of gods */
+.mm.inc .oly .oly-frieze{position:relative;overflow:hidden;margin:26px 0 6px;padding:12px 0;border-top:12px solid transparent;border-bottom:12px solid transparent;border-image:var(--meander) 12 0 round;-webkit-mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent);mask-image:linear-gradient(90deg,transparent,#000 8%,#000 92%,transparent)}
+.mm.inc .oly .oly-frieze-track{display:flex;gap:12px;width:max-content;animation:oly-drift 90s linear infinite}
+.mm.inc .oly .oly-frieze:hover .oly-frieze-track{animation-play-state:paused}
+.mm.inc .oly .oly-frieze img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:1px solid rgba(217,183,95,.35);filter:grayscale(.25)}
+@keyframes oly-drift{to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.mm.inc .oly .oly-frieze-track{animation:none}}
+
+/* section heads */
+.mm.inc .oly .oly-sh{display:grid;gap:10px;margin-bottom:24px;max-width:660px}
+.mm.inc .oly .oly-sh h2{font-size:clamp(1.6rem,3.4vw,2.4rem)}
+.mm.inc .oly .oly-sh p{color:var(--fg-2)}
+
+/* pantheon cards */
+.mm.inc .oly .oly-cards{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}
+.mm.inc .oly .oly-card{border:1px solid rgba(217,183,95,.22);border-radius:18px;overflow:hidden;background:linear-gradient(180deg,#0b0c11,#07080b);transition:transform .2s,border-color .2s,box-shadow .2s}
+.mm.inc .oly .oly-card:hover{transform:translateY(-3px);border-color:var(--gold);box-shadow:0 24px 50px -30px rgba(217,183,95,.55)}
+.mm.inc .oly .oly-card.zeus{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold) inset,0 30px 60px -36px rgba(217,183,95,.7)}
+.mm.inc .oly .oly-card-art{position:relative;aspect-ratio:1/0.82;overflow:hidden}
+.mm.inc .oly .oly-card-art img{width:100%;height:100%;object-fit:cover;object-position:center 22%;transition:transform .5s}
+.mm.inc .oly .oly-card:hover .oly-card-art img{transform:scale(1.04)}
+.mm.inc .oly .oly-card-art::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,#07080b)}
+.mm.inc .oly .oly-god{position:absolute;left:14px;bottom:10px;z-index:1;font-family:var(--font-cinzel),Georgia,serif;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--gold-2);font-size:.9rem}
+.mm.inc .oly .oly-card-body{padding:14px 16px 16px;display:grid;gap:12px}
+.mm.inc .oly .oly-card-head{display:flex;gap:10px;align-items:center}
+.mm.inc .oly .oly-card-head img{width:34px;height:34px;border-radius:10px;object-fit:cover;border:1px solid var(--line)}
+.mm.inc .oly .oly-card-head b{display:block;font-size:1.05rem}
+.mm.inc .oly .oly-card-head small{color:var(--fg-3);font-size:.78rem}
+.mm.inc .oly .oly-card-stats{display:flex;gap:18px;font-family:var(--font-display);font-weight:600}
+.mm.inc .oly .oly-card-stats i{display:block;font-style:normal;font-family:var(--font-body);font-weight:500;font-size:.72rem;color:var(--fg-3)}
+.mm.inc .oly .oly-card-ctas{display:flex;gap:8px;flex-wrap:wrap}
+
+/* terminal */
+.mm.inc .oly .oly-term{display:grid;gap:14px;align-items:start}
+@media(min-width:1000px){.mm.inc .oly .oly-term{grid-template-columns:260px minmax(0,1fr) 320px}}
+.mm.inc .oly .oly-list,.mm.inc .oly .oly-main,.mm.inc .oly .oly-oracle{border:1px solid var(--line);border-radius:16px;background:var(--card);min-width:0}
+.mm.inc .oly .oly-list{padding:10px;display:grid;gap:8px}
+.mm.inc .oly .oly-tabs{display:flex;gap:2px;padding:3px;border-radius:10px;background:var(--bg-2)}
+.mm.inc .oly .oly-tabs button{flex:1;padding:7px 6px;border-radius:8px;font-size:.82rem;font-weight:600;color:var(--fg-3)}
+.mm.inc .oly .oly-tabs button.on{background:var(--gold-soft);color:var(--gold-2)}
+.mm.inc .oly .oly-search{padding:10px 12px;font-size:.92rem}
+.mm.inc .oly .oly-rows{display:grid;gap:2px;max-height:430px;overflow-y:auto}
+.mm.inc .oly .oly-row{display:flex;gap:10px;align-items:center;padding:8px;border-radius:10px;text-align:left;color:var(--fg);transition:background .12s}
+.mm.inc .oly .oly-row:hover{background:rgba(255,255,255,.04)}
+.mm.inc .oly .oly-row.on{background:var(--gold-soft);box-shadow:0 0 0 1px rgba(217,183,95,.4) inset}
+.mm.inc .oly .oly-row-main{flex:1;min-width:0}
+.mm.inc .oly .oly-row-main b{display:block;font-size:.92rem}
+.mm.inc .oly .oly-row-main small{display:block;color:var(--fg-3);font-size:.74rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mm.inc .oly .oly-tier{font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 7px;border-radius:999px;border:1px solid var(--line-hi);color:var(--fg-3);flex:none}
+.mm.inc .oly .oly-tier.pantheon{color:#120d02;background:var(--gold);border-color:var(--gold)}
+.mm.inc .oly .oly-tier.verified{color:var(--accent);border-color:rgba(140,165,255,.4)}
+.mm.inc .oly .oly-tier.unverified{color:var(--warn);border-color:rgba(242,201,125,.35)}
+.mm.inc .oly .oly-av{border-radius:50%;object-fit:cover;border:1px solid rgba(217,183,95,.45);flex:none}
+.mm.inc .oly .oly-av.mortal{display:grid;place-items:center;background:var(--bg-2);color:var(--fg-3);font-weight:700;border-color:var(--line)}
+.mm.inc .oly .oly-hint{color:var(--fg-3);font-size:.82rem;padding:6px 4px}
+.mm.inc .oly .oly-main{padding:18px}
+.mm.inc .oly .oly-sel{display:flex;gap:14px;align-items:center}
+.mm.inc .oly .oly-sel h3{font-size:1.6rem;margin-top:4px}
+.mm.inc .oly .oly-sel h3 small{font-family:var(--font-body);font-size:.85rem;color:var(--fg-3);font-weight:500;letter-spacing:0}
+.mm.inc .oly .oly-sel-name{min-width:0}
+.mm.inc .oly .oly-addr{display:block;font-size:.72rem;color:var(--fg-3);overflow-wrap:anywhere;margin-top:4px}
+.mm.inc .oly .oly-addr:hover{color:var(--fg)}
+.mm.inc .oly .oly-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-top:16px}
+@media(min-width:640px){.mm.inc .oly .oly-stats{grid-template-columns:repeat(4,1fr)}}
+.mm.inc .oly .oly-stats>div{background:var(--card);padding:12px 14px;display:grid;gap:2px}
+.mm.inc .oly .oly-stats b{font-family:var(--font-display);font-weight:600;font-size:1.1rem}
+.mm.inc .oly .oly-stats span{font-size:.74rem;color:var(--fg-3)}
+.mm.inc .oly .oly-chartbox{position:relative;margin-top:16px;border:1px solid var(--line);border-radius:12px;background:linear-gradient(180deg,rgba(217,183,95,.04),transparent);height:170px;overflow:hidden}
+.mm.inc .oly .oly-chart{display:block;width:100%;height:100%}
+.mm.inc .oly .oly-chart-note{position:absolute;right:10px;top:8px;font-size:.7rem;color:var(--fg-3)}
+.mm.inc .oly .empty-chart{display:grid;place-items:center}
+.mm.inc .oly .empty-chart a{color:var(--gold);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+
+/* the oracle */
+.mm.inc .oly .oly-oracle{padding:18px;display:grid;gap:14px;position:relative;overflow:hidden}
+.mm.inc .oly .oly-oracle::before{content:"";position:absolute;inset:0 0 auto;height:12px;background:var(--meander) repeat-x;background-size:24px 12px;opacity:.6}
+.mm.inc .oly .oly-oracle>.oly-kicker{margin-top:8px}
+.mm.inc .oly .oly-side{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:3px;border-radius:12px;background:var(--bg-2)}
+.mm.inc .oly .oly-side button{padding:9px;border-radius:9px;font-weight:600;color:var(--fg-3)}
+.mm.inc .oly .oly-side button.on.buy{background:rgba(111,221,163,.14);color:var(--up)}
+.mm.inc .oly .oly-side button.on.sell{background:rgba(240,140,140,.14);color:var(--down)}
+.mm.inc .oly .oly-field{display:grid;gap:6px}
+.mm.inc .oly .oly-field>span{font-size:.78rem;color:var(--fg-3)}
+.mm.inc .oly .oly-amt{display:flex;align-items:center;gap:8px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
+.mm.inc .oly .oly-amt:focus-within{border-color:var(--gold)}
+.mm.inc .oly .oly-amt input{flex:1;min-width:0;background:transparent;border:0;outline:none;font-family:var(--font-display);font-size:1.5rem;font-weight:600;color:var(--fg)}
+.mm.inc .oly .oly-amt b{color:var(--fg-2);font-size:.9rem}
+.mm.inc .oly .oly-out{padding:12px 14px;border:1px dashed rgba(217,183,95,.3);border-radius:12px;font-size:.95rem;min-height:52px;display:flex;align-items:center;gap:6px;overflow-wrap:anywhere}
+.mm.inc .oly .oly-out b{font-family:var(--font-display);font-size:1.5rem;font-weight:600;color:var(--gold-2)}
+.mm.inc .oly .oly-shimmer{color:var(--fg-3);animation:oly-pulse 1.2s ease-in-out infinite}
+@keyframes oly-pulse{50%{opacity:.4}}
+.mm.inc .oly .oly-route{list-style:none;margin:0;padding:0;display:grid;gap:6px;font-size:.8rem}
+.mm.inc .oly .oly-route li{display:flex;justify-content:space-between;gap:10px;color:var(--fg-3)}
+.mm.inc .oly .oly-route b{color:var(--fg-2);font-weight:500;text-align:right}
+.mm.inc .oly .oly-fine{font-size:.74rem;color:var(--fg-3);line-height:1.5}
+.mm.inc .oly .oly-via{margin-left:6px;font-size:.76rem;color:var(--fg-3)}
+.mm.inc .oly .oly-redirect{display:grid;gap:6px;padding:12px 14px;border-radius:12px;background:rgba(242,201,125,.07);border:1px solid rgba(242,201,125,.3);font-size:.84rem;color:var(--fg-2);line-height:1.5}
+.mm.inc .oly .oly-redirect b{color:var(--warn)}
+.mm.inc .oly .oly-alt{justify-self:center;font-size:.82rem;color:var(--fg-3);text-decoration:underline;text-underline-offset:3px}
+.mm.inc .oly .oly-alt:hover{color:var(--fg)}
+/* inputs have a built-in minimum width; keep the Oracle's single column inside its card */
+.mm.inc .oly .oly-oracle{grid-template-columns:minmax(0,1fr)}
+.mm.inc .oly .oly-field,.mm.inc .oly .oly-amt{min-width:0}
+.mm.inc .oly .oly-amt input{width:100%}

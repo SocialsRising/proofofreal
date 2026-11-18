@@ -6,7 +6,7 @@ import { useAccount } from "wagmi";
 import { WalletButton } from "../../launchpad/_components/Wallet";
 import { ELYSIUM } from "../_lib/config";
 
-const NAV = [["/incubator/elysium", "Overview"], ["/incubator/elysium#projects", "Projects"], ["/incubator/elysium#fees", "Where fees go"], ["/incubator/elysium/launch", "Launch"]] as const;
+const NAV = [["/incubator/elysium", "Overview"], ["/incubator/elysium#projects", "Projects"], ["/incubator/elysium#fees", "Where fees go"], ["/incubator/olympus", "Trade"], ["/incubator/elysium/launch", "Launch"]] as const;
 
 export function IncNav() {
   const path = usePathname();
