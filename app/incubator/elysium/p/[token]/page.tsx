@@ -3,23 +3,24 @@ import Link from "next/link";
 import { useParams, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { useToast } from "../../../../launchpad/_components/Toast";
-import { BUYBACKS, LINKS, PARENT, SITE, explorerAddr, explorerTx, fundToken, launchpad, slotsFor, splitText, type Launchpad } from "../../../_lib/config";
+import { BUYBACKS, LINKS, MEME, PARENT, SITE, explorerAddr, explorerTx, fundToken, launchpad, slotsFor, splitText, type Launchpad } from "../../../_lib/config";
 import { HelpLine } from "../../../_components/Bits";
-import { hasIncubatorSplit, hypeUsd, isAddr, isIncubated, montra, pct, recipientLabel, safeLink, safeUrl, short, units, usd, type Holders, type TokenDetail } from "../../../_lib/montra";
+import { hasIncubatorSplit, hypeUsd, isAddr, isIncubated, isMemeLaunch, montra, pct, pctOf, recipientLabel, safeLink, safeUrl, short, units, usd, type Holders, type TokenDetail } from "../../../_lib/montra";
 import { ipfsToHttp, isVoltaIncubated, volta, type VoltaMeta, type VoltaToken } from "../../../_lib/volta";
 
 /** Everything the page shows about a project, whichever launchpad it's on. */
 type View = {
   lp: Launchpad; address: string; name: string; symbol: string; imageUrl: string | null; description: string;
   links: { website?: string | null; twitter?: string | null; telegram?: string | null; discord?: string | null };
-  inc: boolean; std: boolean; feePct: number; tradeUrl: string; feeRoute: string;
+  inc: boolean; std: boolean; meme: number | null; feePct: number; tradeUrl: string; feeRoute: string;
   stats: { mcapUsd: number | null; volUsd: number | null; change: number | null; holders: number; top10: number | null; fees: string; feesLabel: string };
   splitRows: { label: string; href?: string; pct: string }[]; splitNote: string;
   verify: { label: string; href: string; text: string }[];
 };
 
-function fromMontra(d: TokenDetail, h: Holders | null): View {
-  const lp = launchpad("montra"), inc = isIncubated(d), std = hasIncubatorSplit(d);
+function fromMontra(d: TokenDetail, h: Holders | null, treasuryPct: number): View {
+  const meme = isMemeLaunch(d, treasuryPct) ? treasuryPct : null;
+  const lp = launchpad("montra"), inc = isIncubated(d) || meme != null, std = hasIncubatorSplit(d);
   const q = d.quote?.symbol ?? "HYPE", dec = d.quote?.decimals ?? 18;
   const label = (r: string) => recipientLabel(r, d.address, d.creator);
   const feePct = d.totalFeePips / 10000;
@@ -27,12 +28,12 @@ function fromMontra(d: TokenDetail, h: Holders | null): View {
   return {
     lp, address: d.address, name: d.name, symbol: d.symbol, imageUrl: safeUrl(d.imageUrl), description: d.description ?? d.metadata?.description ?? "",
     links: { website: d.metadata?.website, twitter: d.metadata?.twitter, telegram: d.metadata?.telegram, discord: d.metadata?.discord },
-    inc, std, feePct, tradeUrl: lp.tokenUrl(d.address),
+    inc, std, meme, feePct, tradeUrl: lp.tokenUrl(d.address),
     feeRoute: `After Montra's cut, it's split on-chain: ${route}.`,
     stats: {
       mcapUsd: d.marketCapUsd, volUsd: d.volume24hUsd, change: d.change24hPct, holders: d.holders, top10: h?.top10Pct ?? null,
-      fees: `${units(inc ? d.stats?.creatorFees : d.rewards?.received ?? d.rewardsReceived, dec).toFixed(3)} ${q}`,
-      feesLabel: inc ? (std ? "Fees to buybacks" : "Creator fees earned") : "Paid to holders",
+      fees: `${units(inc && meme == null ? d.stats?.creatorFees : d.rewards?.received ?? d.rewardsReceived, dec).toFixed(3)} ${q}`,
+      feesLabel: meme != null ? "Paid to holders" : inc ? (std ? "Fees to buybacks" : "Creator fees earned") : "Paid to holders",
     },
     splitRows: d.splitter
       ? d.splitter.recipients.map((r, i) => ({ label: label(r), href: explorerAddr(r), pct: `${d.splitter!.shares[i] / 100}%` }))
@@ -42,6 +43,7 @@ function fromMontra(d: TokenDetail, h: Holders | null): View {
       { label: "Token", href: explorerAddr(d.address), text: `${short(d.address)} ↗` },
       ...(d.splitter ? [{ label: "Fee splitter", href: explorerAddr(d.splitter.address), text: `${short(d.splitter.address)} ↗` }] : []),
       { label: "Creator", href: explorerAddr(d.creator), text: `${short(d.creator)} ↗` },
+      ...(meme != null ? [{ label: `EARLY treasury holds ${meme.toFixed(2)}%`, href: explorerAddr(MEME.treasury), text: `${short(MEME.treasury)} ↗` }] : []),
       ...(d.launchTx ? [{ label: "Launch tx", href: explorerTx(d.launchTx), text: `${short(d.launchTx)} ↗` }] : []),
       { label: "Montra page", href: lp.tokenUrl(d.address), text: "Open ↗" },
     ],
@@ -56,7 +58,7 @@ function fromVolta(v: VoltaToken, m: VoltaMeta | null, hype: number | null): Vie
   return {
     lp, address: v.token, name: v.name, symbol: v.symbol, imageUrl: ipfsToHttp(m?.image), description: m?.description ?? "",
     links: { website: m?.website, twitter: m?.twitter, telegram: m?.telegram, discord: m?.discord },
-    inc, std: inc, feePct, tradeUrl: lp.tokenUrl(v.token),
+    inc, std: inc, meme: null, feePct, tradeUrl: lp.tokenUrl(v.token),
     feeRoute: inc
       ? `Volta keeps 30%. The other 70% goes to EARLY's community wallet, which holds the creator NFT and splits it ${splitText("volta")}.`
       : `Volta keeps 30%; the other 70% is split ${v.split.creator / 100}% creator, ${v.split.buyback / 100}% buyback and ${v.split.holders / 100}% holders.`,
@@ -187,7 +189,10 @@ function Support() {
 /** Finds the token on Montra or Volta (whichever knows it) and builds its view. null = neither knows it (yet). */
 async function loadView(token: string): Promise<View | null> {
   const [m, v] = await Promise.allSettled([montra.token(token), volta.token(token)]);
-  if (m.status === "fulfilled") return fromMontra(m.value, await montra.holders(token, 10).catch(() => null));
+  if (m.status === "fulfilled") {
+    const [h, pos] = await Promise.all([montra.holders(token, 10).catch(() => null), m.value.recipientKind === "holders" ? montra.position(token, MEME.treasury).catch(() => null) : null]);
+    return fromMontra(m.value, h, pctOf(pos?.balance, m.value.supply));
+  }
   if (v.status === "fulfilled" && v.value) {
     const [meta, hype] = await Promise.all([volta.meta(v.value.tokenUri), hypeUsd()]);
     return fromVolta(v.value, meta, hype);
@@ -232,7 +237,7 @@ function Project() {
           {v.imageUrl ? <img className="ptoken" src={v.imageUrl} alt="" /> : null}
           <div style={{ flex: 1, minWidth: 220 }}>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-              <span className={`tag ${v.inc ? "mint" : "soft"}`}>{v.inc ? "Incubated by EARLY" : "Not incubated"}</span>
+              <span className={`tag ${v.inc ? "mint" : "soft"}`}>{v.meme != null ? "EARLY meme launch" : v.inc ? "Incubated by EARLY" : "Not incubated"}</span>
               <span className="tag soft">{v.lp.name} · {v.lp.chain}</span>
             </div>
             <h1 style={{ fontSize: "clamp(2rem,5vw,3rem)", marginTop: 8 }}>{v.name} <span className="muted" style={{ fontSize: ".55em" }}>${v.symbol}</span></h1>

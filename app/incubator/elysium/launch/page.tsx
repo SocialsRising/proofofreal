@@ -1,19 +1,19 @@
 "use client";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
-import { formatEther, parseEther, parseEventLogs, zeroHash } from "viem";
+import { formatEther, parseEther, parseEventLogs } from "viem";
 import { useAccount, useBalance, usePublicClient, useReadContract, useSwitchChain, useWriteContract } from "wagmi";
 import { WalletButton } from "../../../launchpad/_components/Wallet";
 import { useToast } from "../../../launchpad/_components/Toast";
 import { BUYBACKS, DEFAULT_FEE_PCT, ELYSIUM, FEE_TIERS, LAUNCHPADS, MONTRA_BUILDER_CODE, PARENT, VOLTA_CREATOR, perksFor, slotsFor, explorerAddr, launchpad, type LaunchpadKey } from "../../_lib/config";
 import { Bonus, HelpLine } from "../../_components/Bits";
-import { LAUNCH_ABI, MONTRA_FACTORY, SNIPE_WINDOWS, ZERO, builderSuffix, incubatorSplit, montra, pickRow, randomSalt, safeLink, short } from "../../_lib/montra";
+import { LAUNCH_ABI, MONTRA_FACTORY, SNIPE_WINDOWS, ZERO, incubatorSplit, safeLink, short } from "../../_lib/montra";
+import { MAX_LAUNCH_FEE, launchedToken, prepareMontraLaunch } from "../../_lib/montraLaunch";
 import { VOLTA_ABI, VOLTA_PM } from "../../_lib/volta";
 
 type Step = "idle" | "switch" | "check" | "upload" | "sign" | "confirm" | "done";
 const STEPS: [Step, string][] = [["switch", "Switch to Elysium"], ["check", "Check the launch terms on-chain"], ["upload", "Upload image + details"], ["sign", "Confirm in your wallet"], ["confirm", "Wait for Elysium to confirm"]];
-/** Both launchpads charge no launch fee today. If one ever jumps above this, the page stops and asks the creator to check first. */
-const MAX_LAUNCH_FEE = parseEther("1");
 const LINK_FIELDS = [
   ["website", "Website", "Website must be an https:// link."],
   ["twitter", "X", "X link must be an https://x.com/… link."],
@@ -84,45 +84,14 @@ export default function LaunchPage() {
 
   async function launchMontra(from: `0x${string}`) {
     const c = client!;
-    // Check the terms before uploading anything: Montra's menu row, then that same row on the contract itself,
-    // so a wrong or tampered API answer can never put a different fee into what the creator signs.
-    setStep("check");
-    const fee = feePct * 10000;
-    const cfg = await montra.config();
-    if (cfg.contracts?.factory && cfg.contracts.factory.toLowerCase() !== MONTRA_FACTORY) throw new Error("Montra reports a different factory than this page expects, so we stopped. Message @Tradesgiving.");
-    const row = pickRow(cfg.configs, fee, snipe);
-    if (!row) throw new Error("Montra doesn't offer that fee + anti-snipe combination right now. Pick another.");
-    const [onchain, launchFee, enabled] = await Promise.all([
-      c.readContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "getConfig", args: [BigInt(row.id)] }),
-      c.readContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launchFee" }),
-      c.readContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launchEnabled" }),
-    ]);
-    if (!enabled) throw new Error("Montra has launches paused at the moment. Try again later.");
-    const termsMatch = onchain.exists && onchain.enabled && onchain.quote.toLowerCase() === ZERO && onchain.totalFeePips === fee
-      && onchain.earlyBuyFeeWindow === snipe && (snipe === 0 || onchain.earlyBuyFeeStartPips > 0);
-    if (!termsMatch) throw new Error("Montra's fee menu doesn't match its contract right now, so we stopped before anything was signed. Try again in a few minutes.");
-    if (launchFee > MAX_LAUNCH_FEE) throw new Error(`Montra's launch fee is now ${formatEther(launchFee)} HYPE, above this page's safety limit. Message @Tradesgiving before launching.`);
-
-    const meta = await upload();
-    const { feeRecipients, feeShares } = incubatorSplit();
-    const params = {
-      name: f.name.trim(), symbol: f.symbol, metadataURI: meta.metadataUri,
-      profile: { logo: meta.imageUri, description: f.description.trim(), socials: { telegram: meta.socials.telegram ?? "", twitter: meta.socials.twitter ?? "", discord: meta.socials.discord ?? "", website: meta.socials.website ?? "", extra: "" } },
-      configId: BigInt(row.id), supply: BigInt(0), salt: randomSalt(), feeRecipients, feeShares,
-      firstBuyAmount: firstBuy, firstBuyMinOut: BigInt(0),
-      permit: { deadline: BigInt(0), v: 0, r: zeroHash, s: zeroHash },
-    } as const;
-    const value = launchFee + firstBuy;
-    const dataSuffix = builderSuffix();
-    await c.simulateContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launch", args: [params], account: from, value, dataSuffix });
-
+    const call = await prepareMontraLaunch(c, from, {
+      name: f.name.trim(), symbol: f.symbol, description: f.description.trim(), feePct, snipe, firstBuy,
+      fees: incubatorSplit(), upload, onStep: setStep,
+    });
     setStep("sign");
-    const hash = await writeContractAsync({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launch", args: [params], value, dataSuffix, chainId: ELYSIUM.chainId });
+    const hash = await writeContractAsync({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launch", ...call, chainId: ELYSIUM.chainId });
     setStep("confirm");
-    const receipt = await c.waitForTransactionReceipt({ hash, timeout: 180_000 });
-    const [ev] = parseEventLogs({ abi: LAUNCH_ABI, eventName: "TokenLaunched", logs: receipt.logs.filter((l) => l.address.toLowerCase() === MONTRA_FACTORY) });
-    if (!ev) throw new Error("Launched, but the receipt had no TokenLaunched event. Check your wallet's activity.");
-    return ev.args.token;
+    return launchedToken(await c.waitForTransactionReceipt({ hash, timeout: 180_000 })).token;
   }
 
   async function launchVolta(from: `0x${string}`) {
@@ -182,6 +151,7 @@ export default function LaunchPage() {
       <div className="eyebrow">Launch through EARLY</div>
       <h1 style={{ marginTop: 12, fontSize: "clamp(2.2rem,5vw,3.4rem)" }}>Launch your token</h1>
       <p className="muted" style={{ maxWidth: "60ch", marginTop: 12, fontSize: "1.05rem" }}>One transaction from your wallet. Liquidity is locked forever, the {PARENT} team gets behind you, and every trade funds daily buybacks for your community.</p>
+      <Link className="bonus" href="/incubator/elysium/meme" style={{ marginTop: 16, maxWidth: 760 }}><span className="bonus-dot" aria-hidden /><span><b>Launching a meme coin?</b> Use the meme template: 100% of fees to holders, a dev buy, and a 24-hour push from the {PARENT} network.</span><span className="bonus-go" aria-hidden>→</span></Link>
 
       <div className="grid2" style={{ marginTop: 26 }}>
         <div className="card pad" style={{ display: "grid", gap: 16 }}>

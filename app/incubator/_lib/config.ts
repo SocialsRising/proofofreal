@@ -165,3 +165,35 @@ export const launchpad = (k: LaunchpadKey) => LAUNCHPADS.find((l) => l.key === k
 
 export const explorerAddr = (a: string) => `${ELYSIUM.explorer}/address/${a}`;
 export const explorerTx = (h: string) => `${ELYSIUM.explorer}/tx/${h}`;
+
+/* ----------------------------------------------------------------------------------- Meme coin launch template */
+/** Meme coin launches (Montra only). Every creator-side fee goes to the token's holders, fixed forever. The creator makes
+    a first buy, sends EARLY's treasury (the 60% Community Initiatives wallet) at least 2% of supply, then DMs @Tradesgiving
+    for a 24-hour amplification push. A bigger allocation gets bigger creators and more posts. */
+export const MEME = {
+  fees: [
+    { pct: 1, name: "Degen", desc: "Lowest fee for max trading. Holders get up to 0.6% of every trade." },
+    { pct: 2, name: "Balanced", desc: "The sweet spot for most memes. Holders get up to 1.6% of every trade.", recommended: true },
+    { pct: 3, name: "Max rewards", desc: "Biggest holder rewards. Holders get up to 2.6% of every trade." },
+  ],
+  defaultFee: 2,
+  /** Montra's HOLDERS route: address(1) in the fee recipients makes the token pay its own holders. */
+  holders: "0x0000000000000000000000000000000000000001" as `0x${string}`,
+  treasury: SLOTS[0].wallet,
+  minAllocPct: 2,
+  allocChoices: [2, 3, 5, 10],
+  firstBuyPresets: ["0.5", "1", "2", "5"],
+  defaultFirstBuy: "2",
+  /** The 24h amplification push, by how much of the supply the creator sends. Keep it honest: effort, not results. */
+  pushTiers: [
+    { pct: 2, text: "Core push: EARLY + Socials Rising accounts, community raids and a creator wave in the first 24 hours." },
+    { pct: 5, text: "Bigger push: larger creators on X and Telegram, more posts and more meme rounds." },
+    { pct: 10, text: "Max push: our biggest creators, the most posts, and priority for spotlights and collabs." },
+  ],
+  /** Trending themes to riff on. Parody only: no official names or logos, no affiliation, never a share in a company. */
+  ideas: [
+    { theme: "GTA 6 season", hook: "Heists, wanted stars, Vice-City-at-sunset energy and Florida-man chaos.", tickers: ["WANTED", "HEIST", "FIVESTAR", "GETAWAY"] },
+    { theme: "AI IPO season", hook: "The Anthropic IPO buzz: ringing the bell, AI-pilled traders, agents doing the work while you post.", tickers: ["BELL", "IPOSZN", "PILLED", "AGENTS"] },
+  ],
+  parodyLine: "Parody meme coin for fun. Not affiliated with, endorsed by or a share in any company.",
+};

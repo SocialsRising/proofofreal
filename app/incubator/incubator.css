@@ -297,3 +297,37 @@
 @media(min-width:720px){.mm.inc .statline.four{grid-template-columns:repeat(4,1fr)}.mm.inc .statline.four>div{border-top:0}.mm.inc .statline.four>div+div{border-left:1px solid var(--line);padding-left:20px}}
 .mm.inc .byline{margin-top:10px;font-size:.8rem;color:var(--fg-3);max-width:80ch}
 .mm.inc .hero-bonus{display:grid;gap:8px}
+
+/* ---------- meme coin launch template ---------- */
+.mm.inc{
+  .memesteps{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
+  @media(min-width:860px){.memesteps{grid-template-columns:repeat(4,minmax(0,1fr))}}
+  .memesteps li{display:grid;gap:4px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
+  .memesteps b{font-family:var(--font-display);font-weight:600}
+  .memesteps span{font-size:.84rem;color:var(--fg-2)}
+  .memeideas{margin-top:14px}
+  .memeidea-grid{display:grid;gap:12px;margin-top:12px}
+  @media(min-width:720px){.memeidea-grid{grid-template-columns:1fr 1fr}}
+  .memeidea{display:grid;gap:8px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
+  .memeidea p{font-size:.88rem;color:var(--fg-2)}
+  .memenext h2{font-size:clamp(1.5rem,3vw,2.1rem)}
+  .memeflow{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:14px}
+  .memeflow li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2)}
+  .memeflow li.on{border-color:rgba(140,165,255,.45);background:var(--accent-soft)}
+  .memeflow li.done{opacity:.85}
+  .memeflow li>i{font-style:normal;display:grid;place-items:center;width:30px;height:30px;border-radius:50%;border:1px solid var(--line-hi);font-weight:600;font-size:.9rem}
+  .memeflow li.on>i{background:var(--accent);border-color:var(--accent);color:#000}
+  .memeflow li.done>i{background:var(--up);border-color:var(--up);color:#000}
+  .memeflow b{font-weight:600}
+  .memeflow p{font-size:.9rem;color:var(--fg-2);margin-top:4px}
+  .memeflow .chips{margin-top:10px}
+  .memedm{margin-top:10px;padding:12px 14px;border:1px solid var(--line);border-radius:10px;background:#000;font-family:var(--font-mono,ui-monospace),monospace;font-size:.8rem;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--fg)}
+  .memegrid{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  .memecard{display:grid;grid-template-columns:44px minmax(0,1fr) auto;gap:4px 12px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);transition:border-color .15s}
+  .memecard:hover{border-color:var(--line-hi)}
+  .memecard img,.memecard .ph{width:44px;height:44px;border-radius:10px;object-fit:cover;background:var(--card-2);grid-row:span 2}
+  .memecard small{display:block;color:var(--fg-3);font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .memecard .r{text-align:right}
+  .memecard .up{color:var(--up)} .memecard .down{color:var(--down)}
+  .memecard em{grid-column:2 / 4;font-style:normal;font-size:.76rem;color:var(--accent)}
+}

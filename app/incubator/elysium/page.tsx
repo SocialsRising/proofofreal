@@ -103,7 +103,7 @@ export default function IncubatorHome() {
           </ul>
           <div className="ctas">
             <Link className="btn primary lg" href="/incubator/elysium/launch">Launch a token</Link>
-            <a className="btn lg" href="#perks">See what you get</a>
+            <Link className="btn lg" href="/incubator/elysium/meme">Launch a meme coin</Link>
           </div>
           <div className="hero-bonus">
             <Link className="bonus" href="/incubator/olympus"><span className="bonus-dot" aria-hidden /><span><b>Kalos Season 1 is live</b> Trade on Olympus through Kalos Swap to earn points toward the $KALOS airdrop, on top of the launchpad airdrops.</span><span className="bonus-go" aria-hidden>→</span></Link>

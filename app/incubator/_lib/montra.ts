@@ -1,7 +1,7 @@
 /* Montra adapter: read-only public API (no key, CORS-open for GETs) + the factory's one-transaction launch.
    Docs: https://montramarkets.xyz/docs/build · API: https://montramarkets.xyz/docs/api */
 import { stringToHex, toHex } from "viem";
-import { HIDDEN_TOKENS, LEGACY_TOKENS, LEGACY_WALLETS, MONTRA_BUILDER_CODE, SLOTS, launchpad, type LaunchpadKey } from "./config";
+import { HIDDEN_TOKENS, LEGACY_TOKENS, LEGACY_WALLETS, MEME, MONTRA_BUILDER_CODE, SLOTS, launchpad, type LaunchpadKey } from "./config";
 
 export const MONTRA_API = "https://api.montramarkets.xyz";
 export const MONTRA_FACTORY = "0x38d3ef3a06d18fa3286fb5deafe611be725fcd15" as const;
@@ -83,6 +83,8 @@ export const montra = {
     return ((await r.json()) as { tokens?: DirToken[] }).tokens ?? [];
   },
   token: (t: string) => get<TokenDetail>(`/api/tokens/${t.toLowerCase()}`),
+  /** A wallet's balance of a token, in its smallest unit. */
+  position: (t: string, w: string) => get<{ balance?: string }>(`/api/tokens/${t.toLowerCase()}/position/${w.toLowerCase()}`),
   holders: (t: string, limit = 10) => get<Holders>(`/api/tokens/${t.toLowerCase()}/holders?limit=${limit}`),
   config: () => get<{ chainId: number; launchFee: string; launchEnabled: boolean; configs: LaunchRow[]; contracts?: { factory?: string } }>(`/api/config`),
 };
@@ -97,6 +99,18 @@ export const isIncubated = (d: Pick<TokenDetail, "address" | "splitter" | "quote
   const nativeQuote = d.quote?.native === true || d.quote?.address?.toLowerCase() === ZERO;
   return hasIncubatorSplit(d) && nativeQuote && launchpad("montra").fees.some((pct) => pct * 10000 === d.totalFeePips) && d.pool?.feeLocked !== false;
 };
+/** A meme launch as the meme feed serves it, with the share of supply EARLY's treasury holds. */
+export type MemeToken = Pick<TokenCard, "address" | "name" | "symbol" | "imageUrl" | "marketCapUsd" | "change24hPct" | "holders" | "launchedAt"> & { allocPct: number };
+/** Percent of a token's supply that a balance is (both in the smallest unit). */
+export const pctOf = (balance: string | null | undefined, supply: string | null | undefined) => {
+  try { const s = BigInt(supply ?? "0"); return s > BigInt(0) ? Number((BigInt(balance ?? "0") * BigInt(1_000_000)) / s) / 10_000 : 0; } catch { return 0; }
+};
+/** A meme launch through EARLY: the meme template's terms (100% of fees to holders, HYPE pair, one of its fee tiers)
+    and EARLY's treasury holds at least the minimum allocation. The allocation is what makes it ours, so it's read live. */
+export const isMemeLaunch = (d: Pick<TokenCard, "address" | "recipientKind" | "quote" | "totalFeePips">, treasuryPct: number) =>
+  !HIDDEN_TOKENS.includes(d.address.toLowerCase() as `0x${string}`) && d.recipientKind === "holders"
+  && (d.quote?.native === true || d.quote?.address?.toLowerCase() === ZERO) && MEME.fees.some((f) => f.pct * 10000 === d.totalFeePips)
+  && treasuryPct >= MEME.minAllocPct;
 /** The token's on-chain split is exactly the incubator split: same wallets, same shares, no extras. */
 export function hasIncubatorSplit(d: Pick<TokenDetail, "splitter">) {
   const s = d.splitter;
