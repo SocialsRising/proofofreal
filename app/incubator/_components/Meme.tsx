@@ -73,7 +73,7 @@ export function MemeNextSteps({ token, firstBuyOut }: { token: `0x${string}`; fi
           <i>{sent ? "✓" : "1"}</i>
           <div>
             <b>Send EARLY {MEME.minAllocPct}%+ of the supply</b>
-            <p>Bigger allocation, bigger creators, more posts. Goes to <a className="mono" href={explorerAddr(MEME.treasury)} target="_blank" rel="noreferrer">{short(MEME.treasury)} ↗</a></p>
+            <p>Bigger allocation, bigger creators, more posts, plus bonus <Link href={LINKS.earlyBirds} style={{ textDecoration: "underline" }}>Early Birds NFT</Link> rewards. Goes to <a className="mono" href={explorerAddr(MEME.treasury)} target="_blank" rel="noreferrer">{short(MEME.treasury)} ↗</a></p>
             <div className="chips" role="group" aria-label="Share of supply to send">
               {MEME.allocChoices.map((p) => <button key={p} type="button" aria-pressed={alloc === p} className={`chip ${alloc === p ? "on" : ""}`} onClick={() => setAlloc(p)}>{p}%</button>)}
             </div>

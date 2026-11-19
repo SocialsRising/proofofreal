@@ -158,6 +158,8 @@ export const MEME = {
   firstBuyPresets: ["1", "3", "5"],
   defaultFirstBuy: "3",
   /** The 24h push by how much of the supply the creator sends. Effort, never results. */
+  /** Bonus for deployers who send the minimum allocation or more. */
+  birdsBonus: "Deployers who send 2%+ also get bonus Early Birds NFT rewards.",
   pushTiers: [
     { pct: 2, text: "EARLY + Socials Rising accounts, raids and a creator wave." },
     { pct: 5, text: "Bigger creators and more posts." },

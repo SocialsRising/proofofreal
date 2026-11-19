@@ -8,7 +8,8 @@ import { formatEther, parseEther } from "viem";
 import { useAccount, useBalance, usePublicClient, useReadContract, useSwitchChain, useWriteContract } from "wagmi";
 import { WalletButton } from "../../../launchpad/_components/Wallet";
 import { useToast } from "../../../launchpad/_components/Toast";
-import { BUYBACKS, DEFAULT_FEE_PCT, ELYSIUM, FEE_TIERS, MEME, MONTRA_BUILDER_CODE, PERKS, SLOTS, explorerAddr, launchpad } from "../../_lib/config";
+import Link from "next/link";
+import { BUYBACKS, DEFAULT_FEE_PCT, ELYSIUM, FEE_TIERS, LINKS, MEME, MONTRA_BUILDER_CODE, PERKS, SLOTS, explorerAddr, launchpad } from "../../_lib/config";
 import { Bonus, HelpLine } from "../../_components/Bits";
 import { MemeFeed, MemeNextSteps, fmtPct } from "../../_components/Meme";
 import { LAUNCH_ABI, MONTRA_FACTORY, SNIPE_WINDOWS, ZERO, incubatorSplit, isAddr, montra, safeLink, short } from "../../_lib/montra";
@@ -216,6 +217,7 @@ function Launch() {
                     <ul className="perklist" style={{ marginTop: 10 }}>
                       {MEME.pushTiers.map((t, i) => <li key={t.pct}><Check /><span><b>{t.pct}%{i === MEME.pushTiers.length - 1 ? "+" : ""}</b>{t.text}</span></li>)}
                     </ul>
+                    <Link className="birdsbonus" href={LINKS.earlyBirds}><img src="/olympus/gods/early-birds.webp" alt="" width={40} height={40} /><span><b>Bonus: Early Birds NFT rewards</b>{MEME.birdsBonus}</span></Link>
                   </div>
                 )}
 

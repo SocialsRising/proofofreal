@@ -307,6 +307,10 @@
   .hot-emoji{position:absolute;right:18px;top:12px;font-size:3.2rem;line-height:1;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
   .hot b{font-family:var(--font-display);font-weight:600;font-size:clamp(1.6rem,3.4vw,2.2rem);letter-spacing:-.03em;margin-top:6px}
   .hot p{color:var(--fg-2);font-size:.95rem;max-width:40ch}
+  .birdsbonus{display:flex;gap:12px;align-items:center;margin-top:14px;padding:12px 14px;border-radius:12px;border:1px solid rgba(217,183,95,.5);background:radial-gradient(300px 120px at 0% 0%,rgba(217,183,95,.2),transparent 70%),var(--bg-2);font-size:.86rem;color:var(--fg-2);transition:border-color .15s}
+  .birdsbonus:hover{border-color:#D9B75F}
+  .birdsbonus img{flex:none;width:40px;height:40px;border-radius:10px;object-fit:cover}
+  .birdsbonus b{display:block;color:#F3DFA2;font-weight:600}
   .memenext h2{font-size:clamp(1.5rem,3vw,2.1rem)}
   .memeflow{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:14px}
   .memeflow li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2)}
