@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import { SITE } from "../../../_lib/config";
-import { MONTRA_API, hasIncubatorSplit, isAddr, isIncubated, type TokenDetail } from "../../../_lib/montra";
-import { VOLTA_INDEXER, isVoltaIncubated, type VoltaToken } from "../../../_lib/volta";
+import { MEME, SITE } from "../../../_lib/config";
+import { MONTRA_API, hasIncubatorSplit, isAddr, isIncubated, isMemeLaunch, pctOf, type TokenDetail } from "../../../_lib/montra";
 
 // Link previews for project pages. Only incubated projects get their name in the title; any other token gets a
 // generic, non-indexed page so our domain can't be used to dress up someone else's token.
@@ -18,16 +17,14 @@ export async function generateMetadata({ params }: { params: Promise<{ token: st
     const m = await fetch(`${MONTRA_API}/api/tokens/${a}`, { next: { revalidate: 300 } });
     if (m.ok) {
       const d = (await m.json()) as TokenDetail;
+      if (d.recipientKind === "holders") {
+        const pos = await fetch(`${MONTRA_API}/api/tokens/${a}/position/${MEME.treasury}`, { next: { revalidate: 300 } }).then((r) => r.json() as Promise<{ balance?: string }>).catch(() => null);
+        if (isMemeLaunch(d, pctOf(pos?.balance, d.supply))) return named(d.name, d.symbol, `${d.name} ($${d.symbol}), a meme coin launched with EARLY on Montra · Elysium. 100% of trading fees go to holders.`);
+      }
       if (!isIncubated(d)) return generic;
       return named(d.name, d.symbol, hasIncubatorSplit(d)
         ? `${d.name} launched through EARLY on Montra · Elysium. Every trade funds daily buybacks for its community.`
         : `${d.name} on Montra · Elysium, part of the EARLY Incubator.`);
-    }
-    const v = await fetch(`${VOLTA_INDEXER}/tokens/${a}`, { next: { revalidate: 300 } });
-    if (v.ok) {
-      const t = (await v.json()) as VoltaToken;
-      if (!isVoltaIncubated(t)) return generic;
-      return named(t.name, t.symbol, `${t.name} launched through EARLY on Volta · Elysium. Every trade funds daily buybacks for its community.`);
     }
   } catch { /* fall through */ }
   return generic;

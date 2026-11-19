@@ -15,26 +15,16 @@ type KalosRoute = { amountOut?: unknown; minimumOut?: unknown; error?: unknown; 
 const uint = (v: unknown) => (typeof v === "string" && /^\d{1,60}$/.test(v) ? v : null);
 const int = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? Math.max(0, Math.floor(v)) : 0);
 
-/** The token's market price in HYPE per token, from its own pool (Montra or Volta). null = no reference. */
+/** The token's market price in HYPE per token, from its own Montra pool. null = no reference. */
 async function marketPrice(token: string): Promise<number | null> {
-  const opts = { signal: AbortSignal.timeout(8000), cache: "no-store" as const };
   try {
-    const m = await fetch(`https://api.montramarkets.xyz/api/tokens/${token}`, opts);
-    if (m.ok) {
-      const d = (await m.json()) as { price?: string; priceUsd?: number | null; quote?: { native?: boolean } };
-      if (d.quote?.native) return Number(d.price) > 0 ? Number(d.price) : null;
-      const usd = await hypeUsd(); // pools quoted in another asset (e.g. KNTQ) go through USD
-      return usd && d.priceUsd ? d.priceUsd / usd : null;
-    }
-  } catch { /* try Volta */ }
-  try {
-    const v = await fetch(`https://volta-indexer-production.up.railway.app/tokens/${token}`, opts);
-    if (v.ok) {
-      const d = (await v.json()) as { price?: number; quote?: string };
-      if (d.quote === "0x0000000000000000000000000000000000000000" && (d.price ?? 0) > 0) return d.price!;
-    }
-  } catch { /* no reference */ }
-  return null;
+    const m = await fetch(`https://api.montramarkets.xyz/api/tokens/${token}`, { signal: AbortSignal.timeout(8000), cache: "no-store" });
+    if (!m.ok) return null;
+    const d = (await m.json()) as { price?: string; priceUsd?: number | null; quote?: { native?: boolean } };
+    if (d.quote?.native) return Number(d.price) > 0 ? Number(d.price) : null;
+    const usd = await hypeUsd(); // pools quoted in another asset (e.g. KNTQ) go through USD
+    return usd && d.priceUsd ? d.priceUsd / usd : null;
+  } catch { return null; }
 }
 
 export async function GET(req: Request) {

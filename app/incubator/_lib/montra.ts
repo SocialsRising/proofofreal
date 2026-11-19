@@ -66,7 +66,7 @@ export async function loadDirectory(): Promise<DirToken[]> {
   }));
 }
 
-/** HYPE's USD price as Montra reports it, or null. Used to show Volta's HYPE figures in USD. */
+/** HYPE's USD price as Montra reports it, or null. */
 export async function hypeUsd(): Promise<number | null> {
   // Ask for a HYPE-quoted token: Montra also lists KNTQ-quoted ones, whose quote.usd is KNTQ's price.
   try {

@@ -80,16 +80,8 @@ export const LEGACY_TOKENS: `0x${string}`[] = [
 ];
 /** Tokens never shown as incubated, even with a matching split: spam, scams. Lowercase. */
 export const HIDDEN_TOKENS: `0x${string}`[] = [];
-/** The Builder Fund (same wallet everywhere) buys KNTQ plus the launchpad's own token: MONTRA for Montra launches,
-    VOLTA for Volta launches. "all" is for pages that cover both launchpads. */
-type FundScope = LaunchpadKey | "all";
-const withFund = (text: string, k: FundScope, compact: boolean) =>
-  text.replace(/MONTRA/g, k === "volta" ? "VOLTA" : k === "all" ? (compact ? "MONTRA/VOLTA" : "MONTRA or VOLTA") : "MONTRA");
-export const fundToken = (k: FundScope) => withFund("MONTRA", k, false);
-export const slotsFor = (k: FundScope): Slot[] =>
-  SLOTS.map((s) => (s.key === "builder" ? { ...s, name: withFund(s.name, k, true), short: withFund(s.short, k, true), desc: withFund(s.desc, k, false) } : s));
-export const perksFor = (k: FundScope) => PERKS.map((p) => ({ ...p, text: withFund(p.text, k, false) }));
-export const splitText = (k: FundScope = "montra") => slotsFor(k).map((s) => `${s.bps / 100}% ${s.short}`).join(" · ");
+/** The split as one line, e.g. "60% community initiatives · 20% … · 20% …". */
+export const splitText = () => SLOTS.map((s) => `${s.bps / 100}% ${s.short}`).join(" · ");
 
 /** How buybacks happen — shown everywhere fees are explained. */
 export const BUYBACKS = "Buybacks run automatically every day, executed by the EARLY AI agent swarm.";
@@ -106,18 +98,13 @@ export const LINKS = {
   helpX: "https://x.com/Tradesgiving",
 };
 
-/** Trading fee options on the launch page: total fee per trade, in percent. Each launchpad offers a subset (`fees`). */
+/** Utility template fee options: total fee per trade, in percent. */
 export const FEE_TIERS = [
-  { pct: 3, label: "3%", name: "Growth", desc: "Lower fees for more trading, liquidity and community growth." },
-  { pct: 5, label: "5%", name: "Balanced", desc: "The sweet spot between trading activity and buybacks, right for most projects.", recommended: true },
-  { pct: 10, label: "10%", name: "Max Reinvestment", desc: "The most buybacks and rewards, for highly committed communities." },
+  { pct: 3, label: "3%", name: "Growth", desc: "Lower fee, more trading." },
+  { pct: 5, label: "5%", name: "Balanced", desc: "Right for most projects.", recommended: true },
+  { pct: 10, label: "10%", name: "Max Reinvestment", desc: "The most buybacks and rewards." },
 ] as const;
 export const DEFAULT_FEE_PCT = 5;
-
-/** Volta can only pay a token's fees to one wallet: whoever holds its creator NFT. Launches through EARLY send the creator
-    NFT (and with it the whole creator side, 70% of every trade fee) to the 60% Community Initiatives wallet, and EARLY
-    splits it 60/20/20 across the three wallets itself. Fixed per token at launch. */
-export const VOLTA_CREATOR = SLOTS[0].wallet;
 
 export const ELYSIUM = {
   chainId: 99901,
@@ -127,14 +114,13 @@ export const ELYSIUM = {
   bridgeHelp: "https://montramarkets.xyz/docs/elysium",
 } as const;
 
-/** A launchpad you can launch on through EARLY (each one is a small adapter in _lib/<key>.ts).
-    `fees` are the FEE_TIERS percentages it allows; `snipe` its anti-snipe windows in seconds.
-    `bonus` is the incentive note shown for it: `until` hides the whole note after that time, `extra.until` just one line. */
-export type LaunchpadKey = "montra" | "volta";
+/** Montra, the launchpad EARLY launches on. `fees` are the utility template's FEE_TIERS percentages; `snipe` its
+    anti-snipe windows in seconds. `bonus` is the incentive note shown for it (`until` hides it after that time). */
+export type LaunchpadKey = "montra";
 export type Launchpad = {
   key: LaunchpadKey; name: string; chain: string; site: string; tokenUrl: (t: string) => string;
   fees: number[]; snipe: number[];
-  bonus?: { title: string; text: string; href: string; until?: string; extra?: { text: string; until: string } };
+  bonus?: { title: string; text: string; href: string; until?: string };
 };
 
 export const LAUNCHPADS: Launchpad[] = [
@@ -144,20 +130,8 @@ export const LAUNCHPADS: Launchpad[] = [
     fees: [3, 5, 10], snipe: [0, 30, 60, 300, 900, 1800],
     bonus: {
       title: "Montra Season 2 airdrop is live",
-      text: "Launching and trading earn points toward the 25% MONTRA airdrop, and tokens that hold market-cap levels earn their creator more.",
+      text: "Launching and trading earn points toward the 25% MONTRA airdrop.",
       href: "https://montramarkets.xyz/airdrop",
-      extra: { text: "Trades count double until 17 Nov.", until: "2026-11-17T00:00:00Z" },
-    },
-  },
-  {
-    key: "volta", name: "Volta", chain: "Elysium", site: "https://www.volta.family",
-    tokenUrl: (t) => `https://www.volta.family/token/${t}`,
-    fees: [3, 5], snipe: [0, 30, 60, 300, 900],
-    bonus: {
-      title: "Volta airdrop is live until Nov 20",
-      text: "Every trade on Volta earns points toward 20% of the $VOLTA supply.",
-      href: "https://www.volta.family/airdrop",
-      until: "2026-11-20T00:00:00Z",
     },
   },
 ];
@@ -167,14 +141,13 @@ export const explorerAddr = (a: string) => `${ELYSIUM.explorer}/address/${a}`;
 export const explorerTx = (h: string) => `${ELYSIUM.explorer}/tx/${h}`;
 
 /* ----------------------------------------------------------------------------------- Meme coin launch template */
-/** Meme coin launches (Montra only). Every creator-side fee goes to the token's holders, fixed forever. The creator makes
-    a first buy, sends EARLY's treasury (the 60% Community Initiatives wallet) at least 2% of supply, then DMs @Tradesgiving
-    for a 24-hour amplification push. A bigger allocation gets bigger creators and more posts. */
+/** The meme template: every creator-side fee goes to the token's holders, fixed forever. The creator makes a dev buy,
+    sends EARLY's treasury (the 60% Community Initiatives wallet) 2%+ of supply, then DMs @Tradesgiving for a 24-hour push. */
 export const MEME = {
   fees: [
-    { pct: 1, name: "Degen", desc: "Lowest fee for max trading. Holders get up to 0.6% of every trade." },
-    { pct: 2, name: "Balanced", desc: "The sweet spot for most memes. Holders get up to 1.6% of every trade.", recommended: true },
-    { pct: 3, name: "Max rewards", desc: "Biggest holder rewards. Holders get up to 2.6% of every trade." },
+    { pct: 1, name: "Degen", desc: "Holders get up to 0.6% of every trade." },
+    { pct: 2, name: "Balanced", desc: "Holders get up to 1.6% of every trade.", recommended: true },
+    { pct: 3, name: "Max rewards", desc: "Holders get up to 2.6% of every trade." },
   ],
   defaultFee: 2,
   /** Montra's HOLDERS route: address(1) in the fee recipients makes the token pay its own holders. */
@@ -182,18 +155,17 @@ export const MEME = {
   treasury: SLOTS[0].wallet,
   minAllocPct: 2,
   allocChoices: [2, 3, 5, 10],
-  firstBuyPresets: ["0.5", "1", "2", "5"],
-  defaultFirstBuy: "2",
-  /** The 24h amplification push, by how much of the supply the creator sends. Keep it honest: effort, not results. */
+  firstBuyPresets: ["1", "3", "5"],
+  defaultFirstBuy: "3",
+  /** The 24h push by how much of the supply the creator sends. Effort, never results. */
   pushTiers: [
-    { pct: 2, text: "Core push: EARLY + Socials Rising accounts, community raids and a creator wave in the first 24 hours." },
-    { pct: 5, text: "Bigger push: larger creators on X and Telegram, more posts and more meme rounds." },
-    { pct: 10, text: "Max push: our biggest creators, the most posts, and priority for spotlights and collabs." },
+    { pct: 2, text: "EARLY + Socials Rising accounts, raids and a creator wave." },
+    { pct: 5, text: "Bigger creators and more posts." },
+    { pct: 10, text: "Our biggest creators, the most posts, priority spotlights." },
   ],
-  /** Trending themes to riff on. Parody only: no official names or logos, no affiliation, never a share in a company. */
+  /** Trending themes, shown big on the meme template. */
   ideas: [
-    { theme: "GTA 6 season", hook: "Heists, wanted stars, Vice-City-at-sunset energy and Florida-man chaos.", tickers: ["WANTED", "HEIST", "FIVESTAR", "GETAWAY"] },
-    { theme: "AI IPO season", hook: "The Anthropic IPO buzz: ringing the bell, AI-pilled traders, agents doing the work while you post.", tickers: ["BELL", "IPOSZN", "PILLED", "AGENTS"] },
+    { theme: "GTA 6", emoji: "🌴", hook: "Heists, wanted stars, Vice City sunsets." },
+    { theme: "Anthropic IPO", emoji: "🔔", hook: "Ringing the bell, AI-pilled traders, agents doing the work." },
   ],
-  parodyLine: "Parody meme coin for fun. Not affiliated with, endorsed by or a share in any company.",
 };

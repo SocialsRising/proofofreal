@@ -237,14 +237,13 @@
   .feeopt .nm{font-weight:600;font-size:.9rem}
   .feeopt .ds{display:block;color:var(--fg-2);font-size:.82rem;line-height:1.45;margin-top:6px}
   .feeopt .rec{position:absolute;top:12px;right:12px;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--accent);color:#000}
-  .lppick{display:flex;gap:10px;flex-wrap:wrap}
-  .lpopt{display:flex;flex-direction:column;gap:2px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);min-width:160px;flex:1;text-align:left;color:var(--fg);cursor:pointer;transition:border-color .15s,background .15s}
-  .lpopt:hover{border-color:var(--line-hi)}
-  .lpopt.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
-  .lpopt:disabled{cursor:default;opacity:.7}
-  .lpopt b{font-weight:600}
-  .lpopt small{color:var(--fg-2)}
-  .lpopt.soon{border-style:dashed;border-color:var(--line);color:var(--fg-3);background:transparent;justify-content:center}
+  .tplpick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:18px;max-width:760px}
+  .tplopt{display:grid;gap:4px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2);text-align:left;color:var(--fg);cursor:pointer;transition:border-color .15s,background .15s}
+  .tplopt:hover{border-color:var(--line-hi)}
+  .tplopt.on{border-color:var(--accent);background:var(--accent-soft);box-shadow:0 0 0 1px var(--accent) inset}
+  .tplopt:disabled{cursor:default;opacity:.7}
+  .tplopt b{font-family:var(--font-display);font-weight:600;font-size:1.25rem;letter-spacing:-.02em}
+  .tplopt small{color:var(--fg-2);font-size:.85rem}
 }
 
 /* ---------- launch page + project page ---------- */
@@ -300,16 +299,14 @@
 
 /* ---------- meme coin launch template ---------- */
 .mm.inc{
-  .memesteps{list-style:none;margin:22px 0 0;padding:0;display:grid;gap:10px;grid-template-columns:repeat(2,minmax(0,1fr))}
-  @media(min-width:860px){.memesteps{grid-template-columns:repeat(4,minmax(0,1fr))}}
-  .memesteps li{display:grid;gap:4px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
-  .memesteps b{font-family:var(--font-display);font-weight:600}
-  .memesteps span{font-size:.84rem;color:var(--fg-2)}
-  .memeideas{margin-top:14px}
-  .memeidea-grid{display:grid;gap:12px;margin-top:12px}
-  @media(min-width:720px){.memeidea-grid{grid-template-columns:1fr 1fr}}
-  .memeidea{display:grid;gap:8px;padding:14px 16px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2)}
-  .memeidea p{font-size:.88rem;color:var(--fg-2)}
+  .memehot{display:grid;gap:12px;margin-top:20px}
+  @media(min-width:720px){.memehot{grid-template-columns:1fr 1fr}}
+  .hot{position:relative;overflow:hidden;display:grid;gap:6px;padding:22px 22px 20px;border-radius:18px;border:1px solid rgba(255,138,76,.45);background:radial-gradient(420px 220px at 100% 0%,rgba(255,94,58,.28),transparent 70%),radial-gradient(360px 200px at 0% 100%,rgba(140,165,255,.18),transparent 70%),var(--card);box-shadow:0 24px 60px -36px rgba(255,110,60,.7)}
+  .hot+.hot{border-color:rgba(140,165,255,.5);background:radial-gradient(420px 220px at 100% 0%,rgba(140,165,255,.3),transparent 70%),radial-gradient(360px 200px at 0% 100%,rgba(255,94,58,.14),transparent 70%),var(--card);box-shadow:0 24px 60px -36px rgba(74,108,247,.8)}
+  .hot-tag{justify-self:start;font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.08);color:var(--fg)}
+  .hot-emoji{position:absolute;right:18px;top:12px;font-size:3.2rem;line-height:1;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
+  .hot b{font-family:var(--font-display);font-weight:600;font-size:clamp(1.6rem,3.4vw,2.2rem);letter-spacing:-.03em;margin-top:6px}
+  .hot p{color:var(--fg-2);font-size:.95rem;max-width:40ch}
   .memenext h2{font-size:clamp(1.5rem,3vw,2.1rem)}
   .memeflow{list-style:none;margin:18px 0 0;padding:0;display:grid;gap:14px}
   .memeflow li{display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px;padding:16px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2)}

@@ -85,23 +85,6 @@ export async function POST(req: Request) {
     socials[k] = ok;
   }
 
-  // Volta tokens: uploaded through Volta's own upload service (it pins image + details on Volta's IPFS account,
-  // which Volta's site always shows). Montra's service only keeps uploads that a Montra launch uses.
-  if (String(form.get("launchpad") ?? "") === "volta") {
-    try {
-      const vf = new FormData();
-      vf.set("name", name); vf.set("symbol", symbol); vf.set("description", description);
-      vf.set("website", socials.website ?? ""); vf.set("x", socials.twitter ?? ""); vf.set("telegram", socials.telegram ?? "");
-      vf.set("image", new Blob([Buffer.from(bytes)], { type: kind }), `image.${kind.split("/")[1]}`);
-      const r = await fetch("https://www.volta.family/api/upload", { method: "POST", body: vf, signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS) });
-      const body = await r.json().catch(() => ({}));
-      if (!r.ok || typeof body.tokenUri !== "string") return NextResponse.json({ error: `Volta's upload didn't work (${r.status}). Try again in a minute.` }, { status: 502 });
-      return NextResponse.json({ imageUri: "", metadataUri: body.tokenUri as string, socials });
-    } catch {
-      return NextResponse.json({ error: "Volta's upload service didn't answer in time. Try again in a minute." }, { status: 504 });
-    }
-  }
-
   try {
     const img = await upstream("/api/metadata/image", { method: "POST", headers: { "content-type": kind }, body: Buffer.from(bytes) });
     const imgBody = await img.json().catch(() => ({}));

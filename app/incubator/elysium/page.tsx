@@ -3,9 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { Bonus, RichDesc } from "../_components/Bits";
-import { BUYBACKS, LAUNCHPADS, LINKS, PARENT, RESULTS, explorerAddr, launchpad, perksFor, slotsFor, type Result } from "../_lib/config";
-
-const SLOTS = slotsFor("all"), PERKS = perksFor("all");
+import { BUYBACKS, LAUNCHPADS, LINKS, PARENT, PERKS, RESULTS, SLOTS, explorerAddr, type Result } from "../_lib/config";
 import { montra, pct, safeUrl, usd, ago, type DirToken, type TokenCard } from "../_lib/montra";
 
 type Tab = "trending" | "latest" | "top";
@@ -24,7 +22,7 @@ function TokenTable({ tokens, empty }: { tokens: DirToken[]; empty: React.ReactN
         <tbody>
           {tokens.map((t) => (
             <tr key={t.address} className="row" onClick={() => router.push(`/incubator/elysium/p/${t.address}`)}>
-              <td><Link className="tok" href={`/incubator/elysium/p/${t.address}`} onClick={(e) => e.stopPropagation()}>{t.imageUrl ? <img src={t.imageUrl} alt="" loading="lazy" /> : <span className="ph" />}<span><b>{t.name}</b><small>${t.symbol} · {launchpad(t.launchpad).name}</small></span></Link></td>
+              <td><Link className="tok" href={`/incubator/elysium/p/${t.address}`} onClick={(e) => e.stopPropagation()}>{t.imageUrl ? <img src={t.imageUrl} alt="" loading="lazy" /> : <span className="ph" />}<span><b>{t.name}</b><small>${t.symbol}</small></span></Link></td>
               <td className="num">{usd(t.marketCapUsd)}</td>
               <td className="num">{usd(t.volume24hUsd)}</td>
               <td className={`num ${(t.change24hPct ?? 0) >= 0 ? "up" : "down"}`}>{pct(t.change24hPct)}</td>
@@ -103,7 +101,7 @@ export default function IncubatorHome() {
           </ul>
           <div className="ctas">
             <Link className="btn primary lg" href="/incubator/elysium/launch">Launch a token</Link>
-            <Link className="btn lg" href="/incubator/elysium/meme">Launch a meme coin</Link>
+            <Link className="btn lg" href="/incubator/elysium/launch?template=meme">Launch a meme coin</Link>
           </div>
           <div className="hero-bonus">
             <Link className="bonus" href="/incubator/olympus"><span className="bonus-dot" aria-hidden /><span><b>Kalos Season 1 is live</b> Trade on Olympus through Kalos Swap to earn points toward the $KALOS airdrop, on top of the launchpad airdrops.</span><span className="bonus-go" aria-hidden>→</span></Link>
@@ -129,14 +127,14 @@ export default function IncubatorHome() {
       <section className="blk" id="how">
         <div className="sh"><div className="eyebrow">How it works</div><h2>Three steps</h2></div>
         <ol className="steps">
-          <li><span className="n">01</span><h3>Launch</h3><p>Pick Montra or Volta, a name, image and fee, then confirm one transaction. The whole supply goes straight into the pool.</p></li>
+          <li><span className="n">01</span><h3>Launch</h3><p>Pick utility or meme, a name, image and fee, then confirm one transaction on Montra. The whole supply goes straight into the pool.</p></li>
           <li><span className="n">02</span><h3>We get to work</h3><p>The team and {PARENT} creators help you build your community and push your launch.</p></li>
           <li><span className="n">03</span><h3>Fees flow back</h3><p>Every trade funds daily buybacks that reward your community and grow your Builder Fund.</p></li>
         </ol>
       </section>
 
       <section className="blk" id="fees">
-        <div className="sh"><div className="eyebrow">Where every fee goes</div><h2>Every trade works for your community</h2><p>Pick your fee at launch: 3%, 5% or 10% on Montra, 3% or 5% on Volta. On Montra, after its 0.4% (plus a 0.5–1% liquidity share once a token passes its LP line), the rest is split on-chain to three public wallets. On Volta, Volta keeps 30% and the other 70% goes to EARLY&apos;s community wallet, which holds the creator NFT and splits it the same way.</p></div>
+        <div className="sh"><div className="eyebrow">Where every fee goes</div><h2>Every trade works for your community</h2><p>Utility launches pick 3%, 5% or 10%. After Montra&apos;s 0.4%, the rest is split on-chain to three public wallets.</p></div>
         <div className="feesplit">
           <div className="bar3" role="img" aria-label={SLOTS.map((s) => `${s.bps / 100}% ${s.name}`).join(", ")}>{SLOTS.map((s, i) => <i key={s.key} className={["a", "b", "c", "b"][i]} style={{ width: `${s.bps / 100}%` }} />)}</div>
           <div className="split3">

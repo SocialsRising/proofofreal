@@ -39,13 +39,12 @@ export function godFor(address: string): God {
   return pool[parseInt(a.slice(-6), 16) % pool.length];
 }
 
-/** Verified Elysium assets: Volta's approved quote assets (read from its PairedTokenRegistry price calculators) and
-    MONTRA from Montra's own index. Kalos indexes every token, copycats included, so only these get the verified badge. */
+/** Verified Elysium assets: the main quote assets on Elysium (checked on-chain) and MONTRA from Montra's own index.
+    Kalos indexes every token, copycats included, so only these get the verified badge. */
 export type Major = { address: `0x${string}`; symbol: string; name: string; decimals: number; god: God; group: "Ecosystem" | "Majors" | "Stocks" };
 export const MAJORS: Major[] = [
   { address: "0xe45a355d9e9cad2ad85f2d03e3ee3102a036acf0", symbol: "KNTQ", name: "Kinetiq", decimals: 18, god: "Atlas", group: "Ecosystem" },
   { address: "0x063f7cc5339f92a5fd7baf3d22233044fda1f327", symbol: "MONTRA", name: "Montra", decimals: 18, god: "Hermes", group: "Ecosystem" },
-  { address: "0x0f79931689af199e7cf868ed1107bba2c83c68f7", symbol: "VOLTA", name: "Volta", decimals: 18, god: "Brontes", group: "Ecosystem" },
   { address: "0xb47c4c8f73f009cc0c0d3f92b388d13e293f0b65", symbol: "USDC", name: "USD Coin", decimals: 6, god: "Coeus", group: "Majors" },
   { address: "0xe9c29585eae4b9a55b02a9605aea892b40d972e8", symbol: "UBTC", name: "Unit Bitcoin", decimals: 8, god: "Kratos", group: "Majors" },
   { address: "0x7a66a75fe41bc26867c17fe1bc7d1c076ebd4ecd", symbol: "UETH", name: "Unit Ethereum", decimals: 18, god: "Aether", group: "Majors" },

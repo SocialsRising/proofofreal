@@ -20,15 +20,14 @@ export function RichDesc({ text }: { text: string }) {
   );
 }
 
-/** "Season 2 is live"-style incentive note for a launchpad. The dated extra line hides itself once it expires. */
+/** "Season 2 is live"-style incentive note for a launchpad. Hides itself after `until`. */
 export function Bonus({ lp }: { lp: Launchpad }) {
   if (!lp.bonus || (lp.bonus.until && Date.now() >= Date.parse(lp.bonus.until))) return null;
-  const { title, text, href, extra } = lp.bonus;
-  const showExtra = extra && Date.now() < Date.parse(extra.until);
+  const { title, text, href } = lp.bonus;
   return (
     <a className="bonus" href={href} target="_blank" rel="noopener noreferrer">
       <span className="bonus-dot" aria-hidden />
-      <span><b>{title}</b> {text}{showExtra ? <> <b>{extra!.text}</b></> : null}</span>
+      <span><b>{title}</b> {text}</span>
       <span className="bonus-go" aria-hidden>↗</span>
     </a>
   );
