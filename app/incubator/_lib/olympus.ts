@@ -6,7 +6,14 @@ export const KALOS_QUOTER = "https://kalos-quoter.onrender.com";
 export const KALOS = "https://www.kalos.fun";
 /** Wrapped HYPE on Elysium mainnet, as Kalos uses it for routing (from Kalos's live config). */
 export const WHYPE = "0xba876237b0f021a6c6d852d6c26e107997cc5e81" as const;
+/** Kalos's token page ("Sniper"): trades straight through the token's own launchpad pool. */
 export const kalosTradeUrl = (token: string) => `${KALOS}/trade/${token.toLowerCase()}`;
+/** Kalos Swap, Kalos's aggregator: the route that earns Kalos Season 1 points. Opens with the pair (and amount) filled in. */
+export const kalosSwapUrl = (token: string, side: "buy" | "sell", amount?: string) => {
+  const t = token.toLowerCase(), q = new URLSearchParams(side === "buy" ? { inputCurrency: "HYPE", outputCurrency: t } : { inputCurrency: t, outputCurrency: "HYPE" });
+  if (amount) q.set("exactAmount", amount);
+  return `${KALOS}/?${q}`;
+};
 /** Kalos opens a listed collection from its contract address (it redirects to the collection's own page). */
 /** Kalos Season 1: points from trading on Kalos count toward the $KALOS airdrop. */
 export const KALOS_REWARDS = `${KALOS}/rewards`;

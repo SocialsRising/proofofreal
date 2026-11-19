@@ -106,7 +106,7 @@ export default function IncubatorHome() {
             <a className="btn lg" href="#perks">See what you get</a>
           </div>
           <div className="hero-bonus">
-            <Link className="bonus" href="/incubator/olympus"><span className="bonus-dot" aria-hidden /><span><b>Kalos Season 1 is live</b> Trade $EARLY and the incubated projects on Olympus to earn points toward the $KALOS airdrop, on top of the launchpad airdrops.</span><span className="bonus-go" aria-hidden>→</span></Link>
+            <Link className="bonus" href="/incubator/olympus"><span className="bonus-dot" aria-hidden /><span><b>Kalos Season 1 is live</b> Trade on Olympus through Kalos Swap to earn points toward the $KALOS airdrop, on top of the launchpad airdrops.</span><span className="bonus-go" aria-hidden>→</span></Link>
             {LAUNCHPADS.map((l) => <Bonus key={l.key} lp={l} />)}
           </div>
         </div>

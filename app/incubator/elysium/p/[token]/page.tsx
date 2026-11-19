@@ -239,7 +239,7 @@ function Project() {
           </div>
           <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <a className="btn primary" href={v.tradeUrl} target="_blank" rel="noreferrer">Trade on {v.lp.name} ↗</a>
-            {v.inc && <Link className="btn" href={`/incubator/olympus?t=${v.address}`} title="Trades on Kalos and earns Kalos Season 1 points toward the $KALOS airdrop">Trade on Olympus · earn $KALOS</Link>}
+            {v.inc && <Link className="btn" href={`/incubator/olympus?t=${v.address}`} title="Live quotes from Kalos, with a Kalos Swap link when Kalos lists the token">Trade on Olympus</Link>}
             {links.map(([l, u]) => <a key={l} className="btn sm" href={u} target="_blank" rel="noopener noreferrer nofollow">{l} ↗</a>)}
           </div>
         </div>

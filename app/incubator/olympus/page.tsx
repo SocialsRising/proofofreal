@@ -5,7 +5,7 @@ import { formatUnits } from "viem";
 import { useToast } from "../../launchpad/_components/Toast";
 import { launchpad } from "../_lib/config";
 import { pct, usd, type DirToken } from "../_lib/montra";
-import { EARLY_BIRDS, GODS, KALOS_REWARDS, LOW_ROUTE_EFFICIENCY, MAJORS, godFor, godImg, kalosCollectionUrl, kalosTradeUrl, majorOf, type OlyNft, type OlyQuote, type OlyToken } from "../_lib/olympus";
+import { EARLY_BIRDS, GODS, KALOS_REWARDS, LOW_ROUTE_EFFICIENCY, MAJORS, godFor, godImg, kalosCollectionUrl, kalosSwapUrl, kalosTradeUrl, majorOf, type OlyNft, type OlyQuote, type OlyToken } from "../_lib/olympus";
 
 type Tab = "pantheon" | "verified" | "search";
 const BIRDS_ID = "early-birds", BIRDS_IMG = "/olympus/gods/early-birds.webp";
@@ -51,16 +51,16 @@ function Chart({ points, label }: { points: number[]; label: string }) {
   );
 }
 
-function ProjectCard({ t, onOracle, throne = false, voltaLive }: { t: OlyToken; onOracle: () => void; throne?: boolean; voltaLive: boolean }) {
+function ProjectCard({ t, onOracle, throne = false, voltaLive, onSwap }: { t: OlyToken; onOracle: () => void; throne?: boolean; voltaLive: boolean; onSwap: boolean }) {
   return (
     <article className={`oly-card ${throne ? "throne" : ""}`}>
       <div className="oly-card-art"><img src={godImg(t.god!, throne && t.god === "Zeus")} alt={t.god} loading="lazy" /><span className="oly-god">{t.god}</span></div>
       <div className="oly-card-body">
         <div className="oly-card-head">{t.imageUrl ? <img src={t.imageUrl} alt="" /> : null}<div><b>${t.symbol}</b><small>{t.name}</small></div></div>
         <div className="oly-card-stats"><span>{usd(t.marketCapUsd)}<i>mcap</i></span><span className={(t.change24hPct ?? 0) >= 0 ? "up" : "down"}>{pct(t.change24hPct)}<i>24h</i></span>{throne && t.holders ? <span>{t.holders.toLocaleString()}<i>holders</i></span> : null}</div>
-        <div className="oly-drop"><i aria-hidden>✦</i> Trades earn {dropsLine(t, voltaLive)}</div>
+        <div className="oly-drop"><i aria-hidden>✦</i> {onSwap ? <>Trades earn {dropsLine(t, voltaLive)}</> : <>$KALOS points once it&apos;s on Kalos Swap</>}</div>
         <div className="oly-card-ctas">
-          <a className={`btn sm ${throne ? "primary" : "ink"}`} href={kalosTradeUrl(t.address)} target="_blank" rel="noopener noreferrer">Trade on Kalos ↗</a>
+          <a className={`btn sm ${throne ? "primary" : "ink"}`} href={onSwap ? kalosSwapUrl(t.address, "buy") : kalosTradeUrl(t.address)} target="_blank" rel="noopener noreferrer">Trade on Kalos ↗</a>
           <button className="btn sm" onClick={onOracle}>Consult the Oracle</button>
         </div>
       </div>
@@ -92,6 +92,7 @@ function BirdsCard({ nft, onOpen }: { nft: OlyNft | null; onOpen: () => void }) 
 export default function Olympus() {
   const [pantheon, setPantheon] = useState<OlyToken[] | null>(null);
   const [nft, setNft] = useState<OlyNft | null>(null);
+  const [swapList, setSwapList] = useState<Set<string>>(new Set()); // tokens Kalos Swap (the points route) can open from a link
   const verified = useMemo<OlyToken[]>(() => MAJORS.map((m) => ({ ...m, tier: "verified" as const })), []);
   const [tab, setTab] = useState<Tab>("pantheon");
   const [query, setQuery] = useState("");
@@ -121,6 +122,7 @@ export default function Olympus() {
       setPantheon(list);
     }).catch(() => setPantheon([]));
     fetch("/api/incubator/olympus/nft").then((r) => r.json()).then(setNft).catch(() => setNft({ listed: false }));
+    fetch("/api/incubator/olympus/swap").then((r) => r.json()).then((d: { tokens?: string[] }) => setSwapList(new Set(d.tokens ?? []))).catch(() => {});
   }, []);
 
   const select = useCallback((t: OlyToken, scroll = false) => {
@@ -207,6 +209,8 @@ export default function Olympus() {
   const inSym = side === "buy" ? "HYPE" : sel?.symbol ?? "", outSym = side === "buy" ? sel?.symbol ?? "" : "HYPE";
   const rate = got != null && Number(amount) > 0 ? got / Number(amount) : null;
   const eff = quote?.efficiency ?? null, lowRoute = eff != null && eff < LOW_ROUTE_EFFICIENCY;
+  // Kalos Swap (points) when it can open this token and its route is near the market price; else the token's Kalos page.
+  const viaSwap = !!sel && sel.kind !== "nft" && swapList.has(sel.address) && !lowRoute;
   // Switching sides carries the current estimate over, so "buy 1 HYPE" flips to "sell the EARLY you'd get".
   const switchSide = (next: "buy" | "sell") => {
     if (next === side) return;
@@ -221,7 +225,7 @@ export default function Olympus() {
     <>
       <a className="oly-season" href={KALOS_REWARDS} target="_blank" rel="noopener noreferrer">
         <span className="oly-season-tag">Kalos Season 1 · live</span>
-        <span className="oly-season-text"><b>Every trade on Kalos earns points toward the $KALOS airdrop.</b> Trade $EARLY and the incubated projects here and you also qualify for the {voltaLive ? "$MONTRA and $VOLTA airdrops" : "$MONTRA airdrop"}.</span>
+        <span className="oly-season-text"><b>Trades through Kalos Swap earn points toward the $KALOS airdrop.</b> Trading $EARLY and the incubated projects also qualifies you for the {voltaLive ? "$MONTRA and $VOLTA airdrops" : "$MONTRA airdrop"}.</span>
         <span className="oly-season-go">Your points ↗</span>
       </a>
 
@@ -229,7 +233,7 @@ export default function Olympus() {
         <div className="oly-hero-copy">
           <div className="oly-kicker">Olympus · powered by Kalos</div>
           <h1>Trade like<br /><span className="gold">a god.</span></h1>
-          <p className="oly-lead">EARLY, the Early Birds and every incubated project sit at the top of Olympus. Everything else on Elysium is one search away, routed by Kalos for the best price across every venue, and every trade stacks Kalos Season 1 points.</p>
+          <p className="oly-lead">EARLY, the Early Birds and every incubated project sit at the top of Olympus. Everything else on Elysium is one search away, routed by Kalos for the best price across every venue, and Kalos Swap trades stack Season 1 points.</p>
           <div className="oly-ctas">
             <a className="btn primary lg" href="#terminal">Enter the terminal</a>
             <a className="btn lg" href="#pantheon">Meet the Pantheon</a>
@@ -245,12 +249,12 @@ export default function Olympus() {
         {pantheon == null ? <div className="empty">Summoning the Pantheon…</div> : (
           <>
             <div className="oly-thrones">
-              {throne && <ProjectCard t={throne} throne voltaLive={voltaLive} onOracle={() => select(throne, true)} />}
+              {throne && <ProjectCard t={throne} throne voltaLive={voltaLive} onSwap={swapList.has(throne.address)} onOracle={() => select(throne, true)} />}
               <BirdsCard nft={nft} onOpen={() => select(BIRDS, true)} />
             </div>
             {rest.length > 0 && <>
               <h3 className="oly-sub">Incubated projects</h3>
-              <div className="oly-cards">{rest.map((t) => <ProjectCard key={t.address} t={t} voltaLive={voltaLive} onOracle={() => select(t, true)} />)}</div>
+              <div className="oly-cards">{rest.map((t) => <ProjectCard key={t.address} t={t} voltaLive={voltaLive} onSwap={swapList.has(t.address)} onOracle={() => select(t, true)} />)}</div>
             </>}
           </>
         )}
@@ -362,8 +366,10 @@ export default function Olympus() {
               )}
               {lowRoute && <div className="oly-heads">Heads up: this route returns about <b>{Math.round((1 - eff!) * 100)}% less</b> than ${sel?.symbol}&apos;s market price right now. Try a smaller amount, or refresh in a moment as routes update every block.</div>}
               <div className="oly-refresh"><span>{quoting ? "Updating…" : ageS != null && quote ? `Updated ${ageS < 2 ? "just now" : `${ageS}s ago`}` : ""}</span><button onClick={() => setTick((t) => t + 1)} aria-label="Refresh quote">↻ Refresh</button></div>
-              {sel && <a className="oly-earn" href={KALOS_REWARDS} target="_blank" rel="noopener noreferrer"><i aria-hidden>✦</i><span>This trade earns <b>Kalos Season 1 points</b> toward the $KALOS airdrop{lpDrop(sel, voltaLive) ? <> and counts toward the <b>{lpDrop(sel, voltaLive)} airdrop</b></> : null}.</span></a>}
-              {sel && <a className="btn primary lg full" href={kalosTradeUrl(sel.address)} target="_blank" rel="noopener noreferrer">{side === "buy" ? "Buy" : "Sell"} ${sel.symbol} on Kalos ↗</a>}
+              {sel && (viaSwap
+                ? <a className="oly-earn" href={KALOS_REWARDS} target="_blank" rel="noopener noreferrer"><i aria-hidden>✦</i><span>Routed through <b>Kalos Swap</b>: this trade earns <b>Kalos Season 1 points</b> toward the $KALOS airdrop{lpDrop(sel, voltaLive) ? <> and counts toward the <b>{lpDrop(sel, voltaLive)} airdrop</b></> : null}.</span></a>
+                : <div className="oly-earn"><i aria-hidden>✦</i><span>Kalos Season 1 points come from trades on <b>Kalos Swap</b>, Kalos&apos;s aggregator. {swapList.has(sel.address) ? "Its route for this amount is far below market right now" : `$${sel.symbol} isn't on Kalos Swap yet`}, so this opens ${sel.symbol}&apos;s Kalos page at the market price.</span></div>)}
+              {sel && <a className="btn primary lg full" href={viaSwap ? kalosSwapUrl(sel.address, side, validAmount ? amount.trim() : undefined) : kalosTradeUrl(sel.address)} target="_blank" rel="noopener noreferrer">{side === "buy" ? "Buy" : "Sell"} ${sel.symbol} on {viaSwap ? "Kalos Swap" : "Kalos"} ↗</a>}
               <p className="oly-fine">Quotes are estimates from Kalos&apos;s router and move with the market. You trade on kalos.fun with your own wallet, so review the trade there before you sign. Not financial advice.</p>
             </div>
           )}
