@@ -1,0 +1,2 @@
+# Solidity sources are hashed into the compiled bytecode: keep them byte-identical everywhere.
+*.sol text eol=lf
