@@ -1,33 +1,34 @@
-/* Genesis NFT Incubator: launch a genesis collection with EARLY's community behind it, build traction for a few weeks,
-   then graduate into the token incubator on Montra. Interest goes to @Tradesgiving. */
+/* Genesis NFT Incubator: marketing consultation for a genesis collection's main campaign, with EARLY's community and
+   amplification around it. After several weeks of traction, projects can launch a token through EARLY. */
 import Link from "next/link";
 import { LINKS, PARENT } from "../_lib/config";
 
 const ART = ["zeus", "poseidon", "nyx", "helios", "artemis", "hermes", "selene", "apollo", "hecate"];
+const CHAINS = ["Ethereum", "Robinhood", "Base", "Elysium"];
 
 const PERKS: { icon: string; title: string; text: string }[] = [
-  { icon: "🐦", title: "A community on day one", text: "$EARLY and Early Birds NFT holders join from the start, so your mint opens to a crowd, not an empty room." },
-  { icon: "📣", title: "Campaign-built marketing", text: "A structured campaign around your mint: teasers, countdown, mint day, reveal and the weeks after." },
-  { icon: "🚀", title: "Social media amplification", text: `Your mint and milestones pushed across the EARLY and ${PARENT} accounts and communities.` },
-  { icon: "🤝", title: "Creator partnerships", text: "Creators amplify your collection, each for a free NFT. Their audiences become your holders." },
-  { icon: "💎", title: "Buy & trade bounties", text: "Rewards for collectors who buy and trade your NFT, so the floor and volume get going early." },
-  { icon: "🔗", title: "Referral rewards", text: "Holders get rewarded for bringing friends in. Every holder becomes a recruiter." },
+  { icon: "🧭", title: "Campaign consultation", text: "We help you plan your main campaign: teasers, countdown, mint day, reveal and the weeks after. You run it." },
+  { icon: "🐦", title: "Day-one community", text: "$EARLY and Early Birds holders join early, so your mint opens to a crowd." },
+  { icon: "🚀", title: "Amplification", text: `Your key posts pushed across the EARLY and ${PARENT} accounts and communities.` },
+  { icon: "🤝", title: "Creator intros", text: "Creators who amplify your collection, each for a free NFT." },
+  { icon: "💎", title: "Bounty design", text: "Rewards that get people buying, trading and referring, set up your way." },
+  { icon: "🪜", title: "A path to a token", text: "When the traction is real, launch your token through EARLY." },
 ];
 
-const BOUNTIES: { icon: string; title: string; text: string }[] = [
-  { icon: "💬", title: "Join the Discord", text: "Get in, grab a role, say gm." },
-  { icon: "𝕏", title: "Follow on X", text: "Follow the collection's account." },
-  { icon: "📌", title: "Amplify the mint tweet", text: "Like, repost and quote the pinned mint post." },
-  { icon: "🎨", title: "Share your art post-mint", text: "Post the NFT you minted and tag the project." },
-  { icon: "🛒", title: "Buy & trade", text: "Pick one up on the market or trade between collectors." },
-  { icon: "👥", title: "Refer a friend", text: "Bring someone in who mints or buys." },
+const BOUNTIES: { icon: string; title: string }[] = [
+  { icon: "💬", title: "Join the Discord" },
+  { icon: "𝕏", title: "Follow on X" },
+  { icon: "📌", title: "Amplify the mint tweet" },
+  { icon: "🎨", title: "Share your art post-mint" },
+  { icon: "🛒", title: "Buy & trade" },
+  { icon: "👥", title: "Refer a friend" },
 ];
 
 const ROADMAP: { when: string; title: string; text: string }[] = [
-  { when: "Week 0", title: "Plan the mint", text: "Art, supply and price, plus the campaign and bounty board." },
-  { when: "Mint week", title: "Launch with a crowd", text: "EARLY + Early Birds holders, creators and amplification all at once." },
-  { when: "Weeks 2–6+", title: "Build real traction", text: "Bounties, referrals and post-mint content keep holders, volume and the floor growing." },
-  { when: "Then", title: "Launch your token", text: "Graduate into the EARLY token incubator on Montra, with your NFT holders as day-one community. More chains after." },
+  { when: "Week 0", title: "Plan the campaign", text: "We map your mint campaign and bounties with you." },
+  { when: "Mint week", title: "You launch, we amplify", text: "Your campaign goes live with our community and creators behind it." },
+  { when: "Weeks 2–6+", title: "Build traction", text: "Bounties and post-mint content grow holders and volume." },
+  { when: "Then", title: "Launch a token", text: "Graduate into the EARLY token incubator on Montra, with more chains after." },
 ];
 
 export default function GenesisPage() {
@@ -36,8 +37,13 @@ export default function GenesisPage() {
       <section className="gen-hero">
         <div className="gen-copy">
           <div className="eyebrow live"><i />Genesis NFT Incubator</div>
-          <h1>Mint your genesis collection<br /><span className="dim">with a community on day one.</span></h1>
-          <p className="lead">We bring the holders, the creators and the campaign. You bring the art. Build traction with your genesis NFT first, then launch your token through EARLY.</p>
+          <h1>You bring the vision<br /><span className="dim">and the art.</span></h1>
+          <p className="lead">We help you shape the main campaign for your genesis mint and amplify it, with a community ready on day one.</p>
+          <div className="gen-chains" aria-label="Live chains">
+            <span className="muted">Live on</span>
+            {CHAINS.map((c) => <span key={c} className="gen-chain">{c}</span>)}
+            <span className="gen-chain more">+ more soon</span>
+          </div>
           <div className="ctas">
             <a className="btn primary lg" href={LINKS.helpTelegram} target="_blank" rel="noopener noreferrer">Message @Tradesgiving ↗</a>
             <a className="btn lg" href="#how">How it works</a>
@@ -50,28 +56,26 @@ export default function GenesisPage() {
       </section>
 
       <section className="blk" id="perks">
-        <div className="sh"><div className="eyebrow">What you get</div><h2>Everything a genesis mint needs</h2></div>
+        <div className="sh"><div className="eyebrow">What you get</div><h2>Your campaign, our reach</h2></div>
         <div className="gen-perks">
           {PERKS.map((p) => <div key={p.title} className="gen-perk"><span className="gen-ico" aria-hidden>{p.icon}</span><h3>{p.title}</h3><p>{p.text}</p></div>)}
         </div>
       </section>
 
       <section className="blk" id="bounties">
-        <div className="sh"><div className="eyebrow">The bounty board</div><h2>Every action earns</h2><p>Quests that turn new faces into holders, and holders into your loudest promoters.</p></div>
+        <div className="sh"><div className="eyebrow">Bounty ideas</div><h2>Every action can earn</h2></div>
         <div className="gen-board">
-          {BOUNTIES.map((b) => (
-            <div key={b.title} className="gen-quest"><span className="gen-ico" aria-hidden>{b.icon}</span><div><b>{b.title}</b><small>{b.text}</small></div><span className="gen-reward">Reward</span></div>
-          ))}
+          {BOUNTIES.map((b) => <div key={b.title} className="gen-quest"><span className="gen-ico" aria-hidden>{b.icon}</span><b>{b.title}</b><span className="gen-reward">Reward</span></div>)}
         </div>
       </section>
 
       <section className="blk" id="how">
-        <div className="sh"><div className="eyebrow">From genesis to token</div><h2>NFT first, token when it&apos;s earned</h2><p>A token comes after your genesis NFT has real traction: several weeks minimum.</p></div>
+        <div className="sh"><div className="eyebrow">From genesis to token</div><h2>NFT first, token when it&apos;s earned</h2><p>A token comes after several weeks of real traction, minimum.</p></div>
         <ol className="gen-road">
           {ROADMAP.map((r, i) => <li key={r.title}><span className="gen-when">{r.when}</span><span className="gen-dot" aria-hidden>{i + 1}</span><h3>{r.title}</h3><p>{r.text}</p></li>)}
         </ol>
         <div className="gen-funnel">
-          <div><b>Ready for a token?</b><span>Launch through the EARLY token incubator on Montra, with fees that fund your community.</span></div>
+          <div><b>Ready for a token?</b><span>Launch through the EARLY token incubator on Montra.</span></div>
           <Link className="btn" href="/incubator/elysium">Token incubator →</Link>
         </div>
       </section>
@@ -82,7 +86,7 @@ export default function GenesisPage() {
           <div>
             <div className="eyebrow">Limited spots</div>
             <h2>Want in? Message @Tradesgiving</h2>
-            <p>Tell us about your collection: art, supply and timeline. We&apos;ll confirm if it&apos;s a fit and map out your mint.</p>
+            <p>Share your collection, chain and timeline. We&apos;ll confirm if it&apos;s a fit.</p>
           </div>
           <div className="ctas">
             <a className="btn primary lg" href={LINKS.helpTelegram} target="_blank" rel="noopener noreferrer">Telegram ↗</a>

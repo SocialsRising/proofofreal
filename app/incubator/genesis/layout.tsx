@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 const TITLE = "Genesis NFT Incubator · EARLY";
-const DESC = "Mint your genesis NFT collection with a community on day one: EARLY + Early Birds holders, creators, bounties and amplification. Then launch your token through EARLY.";
+const DESC = "You bring the vision and the art. We help plan your genesis NFT campaign and amplify it. Live on Ethereum, Robinhood, Base and Elysium.";
 export const metadata: Metadata = {
   title: TITLE,
   description: DESC,

@@ -341,6 +341,9 @@
   .gen-copy h1 .dim{color:var(--fg-3)}
   .gen-copy .lead{font-size:1.12rem;color:var(--fg-2);max-width:50ch;margin-top:20px}
   .gen-copy .ctas{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+  .gen-chains{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:22px;font-size:.85rem}
+  .gen-chain{padding:5px 12px;border-radius:999px;border:1px solid var(--line-hi);background:var(--bg-2);font-weight:600;color:var(--fg)}
+  .gen-chain.more{border-style:dashed;color:var(--fg-3);background:transparent;font-weight:500}
   .gen-art{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:480px;width:100%;justify-self:center;padding-bottom:22px}
   .gen-art::before{content:"";position:absolute;inset:8% 8% 14%;border-radius:50%;background:radial-gradient(closest-side,rgba(74,108,247,.35),transparent);filter:blur(20px);z-index:0}
   .gen-art>img{position:relative;z-index:1;width:100%;height:auto;aspect-ratio:1;object-fit:cover;border-radius:16px;border:1px solid var(--line-hi);box-shadow:0 18px 40px -24px rgba(0,0,0,.9);animation:genFloat 6s ease-in-out infinite}
@@ -357,8 +360,9 @@
   .gen-perk p{color:var(--fg-2);font-size:.94rem}
   .gen-ico{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--accent-soft);border:1px solid rgba(140,165,255,.25);font-size:1.3rem;line-height:1}
   .gen-board{display:grid;gap:10px}
-  @media(min-width:760px){.gen-board{grid-template-columns:repeat(2,1fr)}}
-  .gen-quest{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2)}
+  @media(min-width:640px){.gen-board{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:1000px){.gen-board{grid-template-columns:repeat(3,1fr)}}
+  .gen-quest{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2)}
   .gen-quest b{display:block;font-weight:600}
   .gen-quest small{color:var(--fg-2);font-size:.86rem}
   .gen-reward{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;border-radius:999px;color:#120d02;background:linear-gradient(180deg,#F3DFA2,#D9B75F)}
