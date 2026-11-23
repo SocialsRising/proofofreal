@@ -380,3 +380,52 @@
   .gen-cta>img{opacity:.22}
   .gen-cta .ctas{position:relative;display:flex;gap:10px;flex-wrap:wrap}
 }
+
+/* ---------- JPEG Anvil ---------- */
+.mm.inc{
+  .anv-hero{display:grid;gap:14px;justify-items:start;padding:50px 0 24px}
+  .anv-hero h1{font-size:clamp(2.3rem,5.4vw,3.8rem);line-height:1.03;letter-spacing:-.04em;margin-top:4px}
+  .anv-hero h1 .dim{color:var(--fg-3)}
+  .anv-hero .lead{font-size:1.1rem;color:var(--fg-2);max-width:52ch}
+  .anv-flow{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:8px}
+  .anv-flow span{padding:12px 18px;border-radius:14px;border:1px solid var(--line-hi);background:var(--card);font-weight:600}
+  .anv-flow i{font-style:normal;font-size:.82rem;line-height:1.5;color:var(--fg-2);text-align:center;font-family:var(--font-mono)}
+  .anv-panel{display:grid;gap:16px}
+  .anv-head{display:flex;justify-content:space-between;align-items:end;gap:14px;flex-wrap:wrap}
+  .anv-head h2{font-size:clamp(1.4rem,3vw,2rem);margin-top:6px}
+  .anv-rate{text-align:right;padding:10px 14px;border-radius:12px;border:1px solid rgba(255,138,76,.45);background:radial-gradient(240px 100px at 100% 0%,rgba(255,94,58,.2),transparent 70%),var(--bg-2)}
+  .anv-rate b{display:block;font-family:var(--font-display);font-weight:600;font-size:1.1rem}
+  .anv-rate small{color:var(--fg-3)}
+  .anv-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .anv-stats>div{background:var(--bg-2);padding:12px 14px;display:grid;gap:2px}
+  .anv-stats b{font-family:var(--font-display);font-weight:600;font-size:1.15rem;overflow-wrap:anywhere}
+  .anv-stats span{font-size:.76rem;color:var(--fg-3)}
+  .anv-tabs{display:flex;gap:6px;padding:4px;border:1px solid var(--line);border-radius:12px;background:var(--bg-2);width:max-content;max-width:100%}
+  .anv-tabs button{padding:8px 14px;border-radius:9px;color:var(--fg-2);font-weight:600;font-size:.9rem}
+  .anv-tabs button.on{background:var(--accent-soft);color:var(--fg);box-shadow:0 0 0 1px rgba(140,165,255,.4) inset}
+  .anv-hint{font-size:.9rem}
+  .anv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:8px;max-height:420px;overflow:auto;padding:2px}
+  .anv-tile{position:relative;aspect-ratio:1;border-radius:12px;border:1px solid var(--line);background:var(--card-2);overflow:hidden;display:grid;place-items:center;cursor:pointer;transition:border-color .15s,transform .15s}
+  .anv-tile:hover{border-color:var(--line-hi);transform:translateY(-1px)}
+  .anv-tile.on{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent) inset}
+  .anv-tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+  .anv-ph{font-size:1.6rem;opacity:.5}
+  .anv-id{position:absolute;left:6px;bottom:6px;font-family:var(--font-mono);font-size:.7rem;padding:2px 6px;border-radius:6px;background:rgba(0,0,0,.7)}
+  .anv-action{display:grid;gap:10px;padding-top:4px;border-top:1px solid var(--line)}
+  .anv-action .kv{margin-top:10px}
+  .anv-verify{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:.8rem;color:var(--fg-3)}
+  .anv-verify a{color:var(--fg-2)}
+  .anv-list{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
+  .anv-card{display:grid;gap:4px;padding:16px 18px;border:1px solid var(--line);border-radius:14px;background:var(--card);transition:border-color .15s}
+  .anv-card:hover{border-color:rgba(140,165,255,.45)}
+  .anv-card span{color:var(--accent);font-weight:600;font-size:.9rem}
+  .anv-card small{color:var(--fg-3)}
+  .anv-steps{list-style:none;margin:0;padding:0;display:grid;gap:10px;align-content:start}
+  .anv-steps li{position:relative;display:grid;grid-template-columns:30px 1fr;gap:12px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2)}
+  .anv-steps li .gen-dot{position:static}
+  .anv-steps b{font-weight:600}
+  .anv-steps p{color:var(--fg-2);font-size:.9rem}
+  .anv-steps a{font-size:.86rem;color:var(--accent)}
+  .anv-steps li.anv-note{display:block;border-style:dashed}
+  .anv-create{display:grid;gap:14px;align-content:start}
+}
