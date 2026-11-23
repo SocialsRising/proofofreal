@@ -104,6 +104,7 @@ export default function IncubatorHome() {
             <Link className="btn lg" href="/incubator/elysium/launch?template=meme">Launch a meme coin</Link>
           </div>
           <div className="hero-bonus">
+            <Link className="bonus" href="/incubator/genesis"><span className="bonus-dot" aria-hidden /><span><b>New: Genesis NFT Incubator</b> Mint your genesis collection with a community on day one, then launch your token.</span><span className="bonus-go" aria-hidden>→</span></Link>
             <Link className="bonus" href="/incubator/olympus"><span className="bonus-dot" aria-hidden /><span><b>Kalos Season 1 is live</b> Trade on Olympus through Kalos Swap to earn points toward the $KALOS airdrop, on top of the launchpad airdrops.</span><span className="bonus-go" aria-hidden>→</span></Link>
             {LAUNCHPADS.map((l) => <Bonus key={l.key} lp={l} />)}
           </div>

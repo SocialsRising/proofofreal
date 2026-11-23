@@ -332,3 +332,47 @@
   .memecard .up{color:var(--up)} .memecard .down{color:var(--down)}
   .memecard em{grid-column:2 / 4;font-style:normal;font-size:.76rem;color:var(--accent)}
 }
+
+/* ---------- genesis NFT incubator ---------- */
+.mm.inc{
+  .gen-hero{display:grid;gap:30px;align-items:center;padding:50px 0 30px}
+  @media(min-width:960px){.gen-hero{grid-template-columns:1.05fr .95fr;padding:70px 0 40px}}
+  .gen-copy h1{font-size:clamp(2.4rem,5.6vw,4rem);line-height:1.02;letter-spacing:-.04em;margin-top:16px}
+  .gen-copy h1 .dim{color:var(--fg-3)}
+  .gen-copy .lead{font-size:1.12rem;color:var(--fg-2);max-width:50ch;margin-top:20px}
+  .gen-copy .ctas{display:flex;gap:10px;flex-wrap:wrap;margin-top:28px}
+  .gen-art{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:480px;width:100%;justify-self:center;padding-bottom:22px}
+  .gen-art::before{content:"";position:absolute;inset:8% 8% 14%;border-radius:50%;background:radial-gradient(closest-side,rgba(74,108,247,.35),transparent);filter:blur(20px);z-index:0}
+  .gen-art>img{position:relative;z-index:1;width:100%;height:auto;aspect-ratio:1;object-fit:cover;border-radius:16px;border:1px solid var(--line-hi);box-shadow:0 18px 40px -24px rgba(0,0,0,.9);animation:genFloat 6s ease-in-out infinite}
+  .gen-art>img:nth-child(even){transform:translateY(14px)}
+  .gen-art-tag{position:absolute;z-index:2;left:50%;bottom:0;transform:translateX(-50%);display:flex;gap:8px;align-items:center;white-space:nowrap;padding:6px 14px 6px 6px;border-radius:999px;border:1px solid rgba(217,183,95,.55);background:rgba(10,11,15,.92);font-size:.8rem;font-weight:600;color:#F3DFA2}
+  .gen-art-tag img{border-radius:50%}
+  @keyframes genFloat{50%{translate:0 -8px}}
+  @media(prefers-reduced-motion:reduce){.gen-art>img{animation:none}}
+  .gen-perks{display:grid;gap:12px}
+  @media(min-width:640px){.gen-perks{grid-template-columns:repeat(2,1fr)}}
+  @media(min-width:1000px){.gen-perks{grid-template-columns:repeat(3,1fr)}}
+  .gen-perk{display:grid;gap:8px;align-content:start;padding:24px 22px;border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(180deg,#0D0F15,var(--card));transition:border-color .2s,transform .2s}
+  .gen-perk:hover{border-color:rgba(140,165,255,.4);transform:translateY(-2px)}
+  .gen-perk p{color:var(--fg-2);font-size:.94rem}
+  .gen-ico{display:grid;place-items:center;width:44px;height:44px;border-radius:12px;background:var(--accent-soft);border:1px solid rgba(140,165,255,.25);font-size:1.3rem;line-height:1}
+  .gen-board{display:grid;gap:10px}
+  @media(min-width:760px){.gen-board{grid-template-columns:repeat(2,1fr)}}
+  .gen-quest{display:grid;grid-template-columns:auto 1fr auto;gap:14px;align-items:center;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2)}
+  .gen-quest b{display:block;font-weight:600}
+  .gen-quest small{color:var(--fg-2);font-size:.86rem}
+  .gen-reward{font-size:.68rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:5px 10px;border-radius:999px;color:#120d02;background:linear-gradient(180deg,#F3DFA2,#D9B75F)}
+  .gen-road{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+  @media(min-width:900px){.gen-road{grid-template-columns:repeat(4,1fr)}}
+  .gen-road li{position:relative;display:grid;gap:8px;align-content:start;padding:20px 18px;border:1px solid var(--line);border-radius:var(--r);background:var(--card)}
+  .gen-road li:last-child{border-color:rgba(140,165,255,.5);background:radial-gradient(300px 160px at 100% 0%,rgba(74,108,247,.22),transparent 70%),var(--card)}
+  .gen-when{font-family:var(--font-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+  .gen-dot{position:absolute;top:16px;right:16px;display:grid;place-items:center;width:26px;height:26px;border-radius:50%;border:1px solid var(--line-hi);font-size:.78rem;font-weight:600;color:var(--fg-2)}
+  .gen-road p{color:var(--fg-2);font-size:.92rem}
+  .gen-funnel{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:14px;padding:18px 20px;border:1px solid var(--line);border-radius:var(--r);background:var(--bg-2)}
+  .gen-funnel b{display:block;font-weight:600}
+  .gen-funnel span{color:var(--fg-2);font-size:.92rem}
+  .gen-cta{background:radial-gradient(600px 300px at 85% 50%,rgba(217,183,95,.18),transparent 70%),radial-gradient(500px 260px at 0% 100%,rgba(74,108,247,.2),transparent 70%),var(--card)}
+  .gen-cta>img{opacity:.22}
+  .gen-cta .ctas{position:relative;display:flex;gap:10px;flex-wrap:wrap}
+}
