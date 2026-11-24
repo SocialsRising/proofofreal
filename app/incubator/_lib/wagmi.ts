@@ -14,5 +14,6 @@ export const incubatorWagmi = createConfig({
   connectors: [injected(), coinbaseWallet({ appName: BRAND, appLogoUrl: `${SITE}/incubator/icon-180.png`, preference: "all" })],
   storage: createStorage({ storage: cookieStorage, key: "early-incubator" }),
   ssr: true,
-  transports: { [elysium.id]: fallback(RPCS.map((u) => http(u))) },
+  // Batched JSON-RPC: a page's many reads go out as a few requests, which keeps us under public RPC rate limits.
+  transports: { [elysium.id]: fallback(RPCS.map((u) => http(u, { batch: { batchSize: 40, wait: 20 } }))) },
 });

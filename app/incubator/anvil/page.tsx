@@ -1,21 +1,20 @@
 "use client";
 /* JPEG Anvil: a fixed-rate swap between a token and an NFT collection. Forge = tokens → NFT, melt = NFT → tokens.
-   Contracts: contracts/JpegAnvil.sol. Every action signs from the user's own wallet. */
+   Contracts: contracts/JpegAnvil.sol (no owner, no fees, no withdrawals). Every action signs from the user's own wallet. */
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
-import { concat, erc20Abi, formatEther, formatUnits, isAddress, parseEther, parseEventLogs, parseUnits } from "viem";
+import { concat, erc20Abi, formatUnits, isAddress, parseEventLogs, parseUnits } from "viem";
 import { useAccount, usePublicClient, useSendTransaction, useSwitchChain, useWriteContract } from "wagmi";
 import { WalletButton } from "../../launchpad/_components/Wallet";
 import { useToast } from "../../launchpad/_components/Toast";
 import { ELYSIUM, LINKS, explorerAddr, launchpad } from "../_lib/config";
-import { hypeUsd, montra, short } from "../_lib/montra";
+import { short } from "../_lib/montra";
 import { ERC721_ABI, LORE, MAX_BATCH, RATE_PRESETS, deployerReady, factoryLive, listAnvils, nftMeta, openseaCollection, openseaItem, ownedIds, parseIds, readAnvil, type AnvilInfo } from "../_lib/anvil";
 import { ANVIL_ABI, ANVIL_FACTORY, ANVIL_FACTORY_ABI, ANVIL_FACTORY_INITCODE, ANVIL_SALT, CREATE2_DEPLOYER } from "../_lib/anvilArtifacts";
 
 const fmt = (v: bigint, d: number) => Number(formatUnits(v, d)).toLocaleString(undefined, { maximumFractionDigits: 2 });
 const fmtC = (v: bigint, d: number) => new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 2 }).format(Number(formatUnits(v, d)));
-const hype = (wei: bigint) => `${Number(formatEther(wei)).toLocaleString(undefined, { maximumFractionDigits: 4 })} HYPE`;
 const pick1 = <T,>(a: T[]) => a[Math.floor(Math.random() * a.length)];
 const errMsg = (e: unknown) => {
   const m = (e as { shortMessage?: string; message?: string }).shortMessage ?? (e as Error).message ?? "Something went wrong.";
@@ -41,14 +40,6 @@ function useTx() {
   }, [chainId, client, switchChainAsync]);
   return { address, isConnected, client, busy, err, setErr, run };
 }
-
-/** HYPE's dollar price from Montra, for showing the fee in dollars. */
-function useHypeUsd() {
-  const [p, setP] = useState<number | null>(null);
-  useEffect(() => { hypeUsd().then(setP).catch(() => {}); }, []);
-  return p;
-}
-const usdOf = (wei: bigint, p: number | null) => (p ? `~$${(Number(formatEther(wei)) * p).toFixed(2)}` : "");
 
 function NftImg({ nft, id, className }: { nft: `0x${string}`; id: bigint; className?: string }) {
   const [img, setImg] = useState<string | null | undefined>(undefined);
@@ -82,7 +73,6 @@ function Celebrate({ win, onClose }: { win: Win; onClose: () => void }) {
 function AnvilPanel({ address }: { address: `0x${string}` }) {
   const { writeContractAsync } = useWriteContract();
   const { address: me, isConnected, client, busy, err, setErr, run } = useTx();
-  const usd = useHypeUsd();
   const [a, setA] = useState<AnvilInfo | null>(null);
   const [missing, setMissing] = useState(false);
   const [held, setHeld] = useState<bigint[]>([]);
@@ -91,7 +81,6 @@ function AnvilPanel({ address }: { address: `0x${string}` }) {
   const [idsText, setIdsText] = useState("");
   const [mine, setMine] = useState<bigint[] | null>(null);
   const [tokAmt, setTokAmt] = useState("");
-  const [tokUsd, setTokUsd] = useState<number | null>(null);
   const [win, setWin] = useState<Win | null>(null);
 
   const load = useCallback(async () => {
@@ -100,7 +89,6 @@ function AnvilPanel({ address }: { address: `0x${string}` }) {
       const info = await readAnvil(client, address);
       setA(info);
       setHeld(await client.readContract({ address, abi: ANVIL_ABI, functionName: "heldIds", args: [BigInt(0), BigInt(200)] }) as bigint[]);
-      montra.token(info.token).then((t) => setTokUsd(t.priceUsd)).catch(() => {});
     } catch { setMissing(true); }
   }, [client, address]);
   useEffect(() => { load(); }, [load]);
@@ -112,8 +100,7 @@ function AnvilPanel({ address }: { address: `0x${string}` }) {
   const typed = parseIds(idsText);
   const meltIds = mode !== "forge" ? typed ?? [] : [];
   const n = mode === "forge" ? pick.length : meltIds.length;
-  const total = a.rate * BigInt(n), feeTotal = a.fee * BigInt(n);
-  const nftUsd = tokUsd != null ? Number(formatUnits(a.rate, a.decimals)) * tokUsd : null;
+  const total = a.rate * BigInt(n);
   const toggle = (id: bigint) => setPick((p) => (p.includes(id) ? p.filter((x) => x !== id) : p.length >= MAX_BATCH ? p : [...p, id]));
   const shareFor = (verb: string, ids: bigint[]) => `Just ${verb} ${a.nftName} ${ids.slice(0, 3).map((i) => `#${i}`).join(" ")} on the JPEG Anvil ⚒️ 1 NFT = ${perNft} ${tok}\n\nproofofreal.app/incubator/anvil?a=${a.address.toLowerCase()}`;
 
@@ -122,7 +109,7 @@ function AnvilPanel({ address }: { address: `0x${string}` }) {
     const ids = pick;
     const allowance = await client.readContract({ address: a!.token, abi: erc20Abi, functionName: "allowance", args: [me, address] });
     if (allowance < total && !(await run("Approving", () => writeContractAsync({ address: a!.token, abi: erc20Abi, functionName: "approve", args: [address, total], chainId: ELYSIUM.chainId })))) return;
-    const r = await run("Forging", () => writeContractAsync({ address, abi: ANVIL_ABI, functionName: "forge", args: [ids], value: feeTotal, chainId: ELYSIUM.chainId }));
+    const r = await run("Forging", () => writeContractAsync({ address, abi: ANVIL_ABI, functionName: "forge", args: [ids], chainId: ELYSIUM.chainId }));
     if (r) { setWin({ kind: "forge", title: `Forged ${ids.length} NFT${ids.length > 1 ? "s" : ""}!`, line: pick1(LORE.forge), nft: a!.nft, ids, share: shareFor("forged", ids) }); setPick([]); load(); }
   }
   async function meltOrStock(kind: "melt" | "stock") {
@@ -131,7 +118,7 @@ function AnvilPanel({ address }: { address: `0x${string}` }) {
     const ok = await client.readContract({ address: a!.nft, abi: ERC721_ABI, functionName: "isApprovedForAll", args: [me, address] });
     if (!ok && !(await run("Approving", () => writeContractAsync({ address: a!.nft, abi: ERC721_ABI, functionName: "setApprovalForAll", args: [address, true], chainId: ELYSIUM.chainId })))) return;
     const r = kind === "melt"
-      ? await run("Melting", () => writeContractAsync({ address, abi: ANVIL_ABI, functionName: "melt", args: [ids], value: feeTotal, chainId: ELYSIUM.chainId }))
+      ? await run("Melting", () => writeContractAsync({ address, abi: ANVIL_ABI, functionName: "melt", args: [ids], chainId: ELYSIUM.chainId }))
       : await run("Stocking", () => writeContractAsync({ address, abi: ANVIL_ABI, functionName: "stock", args: [ids], chainId: ELYSIUM.chainId }));
     if (r) {
       setWin(kind === "melt"
@@ -153,20 +140,20 @@ function AnvilPanel({ address }: { address: `0x${string}` }) {
       <div className="anv-head">
         <div className="anv-cover">{held[0] != null ? <NftImg nft={a.nft} id={held[0]} /> : <span className="anv-ph">⚒️</span>}</div>
         <div className="anv-title">
-          <div className="eyebrow">{a.legacy ? "Anvil · v1 (no fee)" : "Anvil"}</div>
+          <div className="eyebrow">Anvil · no fees</div>
           <h2>{a.nftName} <span className="muted">⇄</span> {tok}</h2>
           <div className="anv-links">
             <a href={launchpad("montra").tokenUrl(a.token)} target="_blank" rel="noopener noreferrer">Trade {tok} on Montra ↗</a>
             <a href={openseaCollection(a.nft)} target="_blank" rel="noopener noreferrer">Collection on OpenSea ↗</a>
           </div>
         </div>
-        <div className="anv-rate"><small>1 NFT</small><b>{perNft} {tok}</b>{nftUsd != null && <small>≈ ${nftUsd.toLocaleString(undefined, { maximumFractionDigits: nftUsd < 10 ? 2 : 0 })}</small>}</div>
+        <div className="anv-rate"><small>1 NFT</small><b>{perNft} {tok}</b><small>both ways</small></div>
       </div>
 
       <div className="anv-stats">
         <div><b>{a.held.toString()}</b><span>NFTs in the anvil</span></div>
         <div><b>{fmtC(a.reserve, a.decimals)}</b><span>{tok} in the anvil</span></div>
-        <div><b>{a.fee > BigInt(0) ? hype(a.fee) : "Free"}</b><span>fee per NFT {a.fee > BigInt(0) ? usdOf(a.fee, usd) : ""}</span></div>
+        <div><b>{(a.reserve / a.rate).toString()}</b><span>NFTs it can buy back</span></div>
       </div>
 
       <div className="anv-tabs" role="tablist">
@@ -198,7 +185,6 @@ function AnvilPanel({ address }: { address: `0x${string}` }) {
         {mode !== "stock" && n > 0 && (
           <div className="anv-sum">
             <span>{mode === "forge" ? "You pay" : "You get"}</span><b>{fmt(total, a.decimals)} {tok}</b>
-            {feeTotal > BigInt(0) && <><span>Fee</span><b>{hype(feeTotal)} <small className="muted">{usdOf(feeTotal, usd)}</small></b></>}
           </div>
         )}
         {mode === "melt" && n > 0 && a.reserve < total && <div className="warn">The anvil has {fmt(a.reserve, a.decimals)} {tok}, not enough for {n} NFT{n > 1 ? "s" : ""}.</div>}
@@ -277,11 +263,11 @@ function CreateAnvil() {
 
   return (
     <div className="card pad anv-create">
-      <div className="field"><label htmlFor="a-token">1 · Your token</label><input id="a-token" className="inp mono" value={token} onChange={(e) => setToken(e.target.value)} placeholder="0x… token address" />
+      <div className="field"><label htmlFor="a-token">Token address</label><input id="a-token" className="inp mono" value={token} onChange={(e) => setToken(e.target.value)} placeholder="0x… token address" />
         <span className="hint">{meta.tokenErr ?? (meta.sym ? `✓ $${meta.sym}` : "Launched on Montra.")}</span></div>
-      <div className="field"><label htmlFor="a-nft">2 · Your NFT collection</label><input id="a-nft" className="inp mono" value={nft} onChange={(e) => setNft(e.target.value)} placeholder="0x… collection address" />
-        <span className="hint">{meta.nftErr ?? (meta.nftName ? `✓ ${meta.nftName}` : "On Elysium, e.g. made with OpenSea.")}</span></div>
-      <div className="field"><span className="flabel">3 · Tokens per NFT</span>
+      <div className="field"><label htmlFor="a-nft">Collection address</label><input id="a-nft" className="inp mono" value={nft} onChange={(e) => setNft(e.target.value)} placeholder="0x… collection address" />
+        <span className="hint">{meta.nftErr ?? (meta.nftName ? `✓ ${meta.nftName}` : "On Elysium.")}</span></div>
+      <div className="field"><span className="flabel">Tokens per NFT</span>
         <div className="chips" role="group" aria-label="Rate">
           {RATE_PRESETS.map((p) => <button key={p} type="button" aria-pressed={rateSel === p} className={`chip ${rateSel === p ? "on" : ""}`} onClick={() => setRateSel(p)}>{p >= 1e6 ? `${p / 1e6}M` : `${p / 1e3}K`}</button>)}
           <button type="button" aria-pressed={rateSel === "custom"} className={`chip ${rateSel === "custom" ? "on" : ""}`} onClick={() => setRateSel("custom")}>Custom</button>
@@ -297,39 +283,6 @@ function CreateAnvil() {
   );
 }
 
-/** Only shown to the fee wallet: set the fee in dollars, and send collected fees on. */
-function FeeDesk() {
-  const { writeContractAsync } = useWriteContract();
-  const { address: me, client, busy, err, setErr, run } = useTx();
-  const usd = useHypeUsd();
-  const [info, setInfo] = useState<{ recipient: string; fee: bigint; collected: bigint } | null>(null);
-  const [dollars, setDollars] = useState("1");
-  const load = useCallback(async () => {
-    if (!client || !(await factoryLive(client).catch(() => false))) return;
-    const [recipient, fee, collected] = await Promise.all([
-      client.readContract({ address: ANVIL_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "feeRecipient" }),
-      client.readContract({ address: ANVIL_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "fee" }),
-      client.getBalance({ address: ANVIL_FACTORY }),
-    ]);
-    setInfo({ recipient: recipient.toLowerCase(), fee, collected });
-  }, [client]);
-  useEffect(() => { load(); }, [load]);
-  if (!info || !me || me.toLowerCase() !== info.recipient) return null;
-  const want = usd && Number(dollars) > 0 ? parseEther((Number(dollars) / usd).toFixed(6)) : null;
-  return (
-    <div className="card pad anv-desk">
-      <div className="eyebrow">Fee desk · only you see this</div>
-      <div className="anv-sum"><span>Fee now</span><b>{hype(info.fee)} <small className="muted">{usdOf(info.fee, usd)}</small></b><span>Collected</span><b>{hype(info.collected)} <small className="muted">{usdOf(info.collected, usd)}</small></b></div>
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <input className="inp mono" style={{ maxWidth: 120 }} value={dollars} onChange={(e) => setDollars(e.target.value)} inputMode="decimal" aria-label="Fee in dollars" />
-        <button className="btn" disabled={!!busy || !want} onClick={async () => { if (want && (await run("Setting fee", () => writeContractAsync({ address: ANVIL_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "setFee", args: [want], chainId: ELYSIUM.chainId })))) load(); }}>Set fee to ${dollars}{want ? ` (${hype(want)})` : ""}</button>
-        <button className="btn primary" disabled={!!busy || info.collected === BigInt(0)} onClick={async () => { if (await run("Sending fees", () => writeContractAsync({ address: ANVIL_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "withdraw", chainId: ELYSIUM.chainId }))) load(); }}>Send fees to your wallet</button>
-      </div>
-      {err && <div className="warn" onClick={() => setErr("")}>{err}</div>}
-    </div>
-  );
-}
-
 function Directory() {
   const client = usePublicClient({ chainId: ELYSIUM.chainId });
   const [list, setList] = useState<AnvilInfo[] | null>(null);
@@ -340,9 +293,10 @@ function Directory() {
     <div className="anv-list">
       {list.map((a) => (
         <Link key={a.address} className="anv-card" href={`/incubator/anvil?a=${a.address.toLowerCase()}`}>
+          <span className="anv-card-img">{a.cover != null ? <NftImg nft={a.nft} id={a.cover} /> : <span className="anv-ph">⚒️</span>}</span>
           <b>{a.nftName} <span className="muted">⇄</span> ${a.symbol}</b>
           <span>1 NFT = {fmt(a.rate, a.decimals)} ${a.symbol}</span>
-          <small>{a.held.toString()} NFTs · {fmtC(a.reserve, a.decimals)} ${a.symbol}</small>
+          <small>{a.held.toString()} NFT{a.held === BigInt(1) ? "" : "s"} · {fmtC(a.reserve, a.decimals)} ${a.symbol}</small>
         </Link>
       ))}
     </div>
@@ -378,11 +332,15 @@ function AnvilPage() {
       </section>
 
       <section className="blk" id="create">
-        <div className="sh"><div className="eyebrow">For creators</div><h2>Make your own anvil</h2><p>Need a collection and a token first? Make the collection on <a href="https://opensea.io/studio" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>OpenSea</a> and <Link href="/incubator/elysium/launch" style={{ textDecoration: "underline" }}>launch your token on Montra</Link>.</p></div>
+        <div className="sh"><div className="eyebrow">For creators</div><h2>Make your own anvil</h2></div>
+        <ol className="anv-prep">
+          <li><span>1</span><div><b>Your NFT collection</b><small>Create it on <a href="https://opensea.io/studio" target="_blank" rel="noopener noreferrer">OpenSea ↗</a>, or launch it with our <Link href="/incubator/genesis">Genesis NFT Incubator →</Link></small></div></li>
+          <li><span>2</span><div><b>Your token</b><small><Link href="/incubator/elysium/launch">Launch it on Montra through EARLY →</Link></small></div></li>
+          <li><span>3</span><div><b>Your anvil</b><small>Paste both addresses below, pick a rate, then stock it.</small></div></li>
+        </ol>
         <div className="anv-create-wrap">
           <CreateAnvil />
-          <FeeDesk />
-          <p className="muted anv-hint">Every forge and melt pays a fee of about $1 in HYPE per NFT, which goes to EARLY&apos;s community wallet. No owner over the assets, no withdrawals. Questions? <a href={LINKS.helpTelegram} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>@Tradesgiving</a></p>
+          <p className="muted anv-hint">No fees, no owner, no withdrawals: the anvil just swaps. Questions? <a href={LINKS.helpTelegram} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>@Tradesgiving</a></p>
         </div>
       </section>
     </>

@@ -1,6 +1,6 @@
 /* JPEG Anvil helpers: read an anvil and its two sides, NFT images, and the factory checks. Contracts: contracts/JpegAnvil.sol. */
 import { erc20Abi, keccak256, type PublicClient } from "viem";
-import { ANVIL_ABI, ANVIL_FACTORY, ANVIL_FACTORY_ABI, ANVIL_FACTORY_RUNTIME_HASH, CREATE2_DEPLOYER, CREATE2_DEPLOYER_CODE_HASH, LEGACY_FACTORY } from "./anvilArtifacts";
+import { ANVIL_ABI, ANVIL_FACTORY, ANVIL_FACTORY_ABI, ANVIL_FACTORY_RUNTIME_HASH, CREATE2_DEPLOYER, CREATE2_DEPLOYER_CODE_HASH } from "./anvilArtifacts";
 
 export const ERC721_ABI = [
   { type: "function", name: "name", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
@@ -22,48 +22,46 @@ export const openseaItem = (nft: string, id: bigint) => `https://opensea.io/item
 export type AnvilInfo = {
   address: `0x${string}`; token: `0x${string}`; nft: `0x${string}`; rate: bigint; creator: `0x${string}`;
   held: bigint; reserve: bigint; symbol: string; decimals: number; nftName: string;
-  /** HYPE (wei) per NFT forged or melted. 0 for v1 anvils. */
-  fee: bigint;
-  /** A v1 anvil (made before the fee); still works, not listed. */
-  legacy: boolean;
+  /** The first NFT the anvil holds, for a cover image. */
+  cover: bigint | null;
 };
 
 const str = (v: unknown, max = 40) => (typeof v === "string" ? v.slice(0, max) : "");
-const legacyList = new Map<string, Promise<Set<string>>>();
-async function inLegacyFactory(c: PublicClient, a: string) {
-  if (!legacyList.has("v1")) legacyList.set("v1", (async () => {
-    const n = await c.readContract({ address: LEGACY_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "count" });
-    const all = await c.readContract({ address: LEGACY_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "list", args: [BigInt(0), n] });
+
+/** Every anvil the factory has made (lowercase), cached per page load. Anything else is refused. */
+let known: Promise<Set<string>> | null = null;
+function factoryAnvils(c: PublicClient) {
+  known ??= (async () => {
+    const n = await c.readContract({ address: ANVIL_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "count" });
+    const all = await c.readContract({ address: ANVIL_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "list", args: [BigInt(0), n] });
     return new Set(all.map((x) => x.toLowerCase()));
-  })().catch(() => new Set<string>()));
-  return (await legacyList.get("v1")!).has(a.toLowerCase());
+  })().catch((e) => { known = null; throw e; });
+  return known;
 }
 
-/** Everything the page shows about one anvil. Only anvils made by our factories are accepted. */
-export async function readAnvil(c: PublicClient, address: `0x${string}`): Promise<AnvilInfo> {
+/** Everything the page shows about one anvil. Only anvils made by our factory are accepted. */
+export async function readAnvil(c: PublicClient, address: `0x${string}`, checked = false): Promise<AnvilInfo> {
+  if (!checked && !(await factoryAnvils(c)).has(address.toLowerCase())) throw new Error("not a JPEG Anvil");
   const at = { address, abi: ANVIL_ABI } as const;
-  const madeHere = await c.readContract({ address: ANVIL_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "isAnvil", args: [address] }).catch(() => false);
-  const legacy = !madeHere && (await inLegacyFactory(c, address));
-  if (!madeHere && !legacy) throw new Error("not a JPEG Anvil");
-  const [token, nft, rate, creator, held, reserve, fee] = await Promise.all([
+  const [token, nft, rate, creator, held, reserve] = await Promise.all([
     c.readContract({ ...at, functionName: "token" }), c.readContract({ ...at, functionName: "nft" }), c.readContract({ ...at, functionName: "rate" }),
     c.readContract({ ...at, functionName: "creator" }), c.readContract({ ...at, functionName: "heldCount" }), c.readContract({ ...at, functionName: "reserve" }),
-    legacy ? Promise.resolve(BigInt(0)) : c.readContract({ ...at, functionName: "fee" }),
   ]);
-  const [symbol, decimals, nftName] = await Promise.all([
+  const [symbol, decimals, nftName, first] = await Promise.all([
     c.readContract({ address: token, abi: erc20Abi, functionName: "symbol" }).catch(() => "TOKEN"),
     c.readContract({ address: token, abi: erc20Abi, functionName: "decimals" }).catch(() => 18),
     c.readContract({ address: nft, abi: ERC721_ABI, functionName: "name" }).catch(() => "NFT collection"),
+    held > BigInt(0) ? c.readContract({ ...at, functionName: "heldIds", args: [BigInt(0), BigInt(1)] }).catch(() => []) : Promise.resolve([] as readonly bigint[]),
   ]);
-  return { address, token, nft, rate, creator, held, reserve, fee, legacy, symbol: str(symbol, 16) || "TOKEN", decimals: Number(decimals), nftName: str(nftName) || "NFT collection" };
+  return { address, token, nft, rate, creator, held, reserve, cover: first[0] ?? null, symbol: str(symbol, 16) || "TOKEN", decimals: Number(decimals), nftName: str(nftName) || "NFT collection" };
 }
 
-/** All anvils from the current factory, newest first. Empty until the factory exists. */
+/** All anvils from the factory, newest first. Empty until the factory exists. */
 export async function listAnvils(c: PublicClient, max = 60): Promise<AnvilInfo[]> {
   const n = await c.readContract({ address: ANVIL_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "count" });
   const start = n > BigInt(max) ? n - BigInt(max) : BigInt(0);
   const addrs = await c.readContract({ address: ANVIL_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "list", args: [start, BigInt(max)] });
-  const out = await Promise.all(addrs.map((a) => readAnvil(c, a).catch(() => null)));
+  const out = await Promise.all(addrs.map((a) => readAnvil(c, a, true).catch(() => null)));
   return out.filter((x): x is AnvilInfo => !!x).reverse();
 }
 

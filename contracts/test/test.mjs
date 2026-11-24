@@ -21,9 +21,9 @@ async function user(name, i) {
 const allAbis = Object.values(B).flatMap((c) => c.abi);
 const errAbi = allAbis.filter((x) => x.type === "error");
 
-async function exec(from, to, data, gasLimit = 15_000_000n, value = 0n) {
+async function exec(from, to, data, gasLimit = 15_000_000n) {
   const acct = await vm.stateManager.getAccount(from.addr);
-  const tx = createLegacyTx({ nonce: acct.nonce, gasPrice: 10n, gasLimit, value, to: to ? createAddressFromString(to) : undefined, data: hexToBytes(data) }, { common }).sign(from.pk);
+  const tx = createLegacyTx({ nonce: acct.nonce, gasPrice: 10n, gasLimit, to: to ? createAddressFromString(to) : undefined, data: hexToBytes(data) }, { common }).sign(from.pk);
   const r = await runTx(vm, { tx, skipBlockGasLimitValidation: true });
   const ret = bytesToHex(r.execResult.returnValue);
   let revert = null;
@@ -41,8 +41,6 @@ async function deploy(from, name, args = []) {
   return r.created;
 }
 const send = (from, to, name, fn, args = []) => exec(from, to, encodeFunctionData({ abi: B[name].abi, functionName: fn, args }));
-const sendV = (from, to, name, fn, args, value) => exec(from, to, encodeFunctionData({ abi: B[name].abi, functionName: fn, args }), 15_000_000n, value);
-const balanceOfEth = async (a) => (await vm.stateManager.getAccount(createAddressFromString(a)))?.balance ?? 0n;
 async function read(to, name, fn, args = []) {
   const r = await vm.evm.runCall({ to: createAddressFromString(to), data: hexToBytes(encodeFunctionData({ abi: B[name].abi, functionName: fn, args })), gasLimit: 30_000_000n });
   if (r.execResult.exceptionError) throw new Error(`read ${fn} reverted`);
@@ -56,10 +54,10 @@ function check(label, cond, extra = "") { if (cond) { pass++; console.log("  ✓
 const ids = (...a) => a.map(BigInt);
 const E18 = 10n ** 18n, RATE = 100_000n * E18;
 
-const creator = await user("creator", 0), alice = await user("alice", 1), bob = await user("bob", 2), feeWallet = await user("fee", 9);
+const creator = await user("creator", 0), alice = await user("alice", 1), bob = await user("bob", 2);
 
 console.log("factory");
-const factory = await deploy(creator, "JpegAnvilFactory", [feeWallet.hex, 0n]);
+const factory = await deploy(creator, "JpegAnvilFactory");
 const token = await deploy(creator, "MockToken"), nft = await deploy(creator, "MockNFT"), notNft = await deploy(creator, "NotNft");
 let r = await send(creator, factory, "JpegAnvilFactory", "create", [token, nft, RATE]);
 check("create an anvil", r.ok, r.revert);
@@ -228,42 +226,6 @@ const quiet = await deploy(creator, "QuietToken");
 check("token with a silent fallback can still get an anvil", (await send(creator, factory, "JpegAnvilFactory", "create", [quiet, nft, RATE])).ok);
 check("rate cap", (await send(creator, factory, "JpegAnvilFactory", "create", [token, nft, 2n ** 255n])).revert === "RateTooHigh");
 check("views survive a huge page size", (await read(anvil, "JpegAnvil", "heldIds", [0n, 2n ** 256n - 1n])).length > 0 && (await read(factory, "JpegAnvilFactory", "list", [0n, 2n ** 256n - 1n])).length > 0);
-
-console.log("fees");
-const F = 16n * 10n ** 15n; // 0.016 HYPE
-check("only the fee wallet can set the fee", (await send(creator, factory, "JpegAnvilFactory", "setFee", [F])).revert === "NotFeeRecipient");
-check("fee cap", (await send(feeWallet, factory, "JpegAnvilFactory", "setFee", [10n ** 17n + 1n])).revert === "FeeTooHigh");
-check("fee wallet sets the fee", (await send(feeWallet, factory, "JpegAnvilFactory", "setFee", [F])).ok && (await read(anvil, "JpegAnvil", "fee")) === F);
-const fNft3 = await deploy(creator, "MockNFT"), feeAnv = await anvilFor(token, fNft3);
-for (const id of [1n, 2n, 3n]) await send(creator, fNft3, "MockNFT", "mint", [creator.hex, id]);
-await send(creator, fNft3, "MockNFT", "setApprovalForAll", [feeAnv, true]);
-check("stock stays free", (await send(creator, feeAnv, "JpegAnvil", "stock", [ids(1, 2, 3)])).ok);
-check("stock refuses HYPE", !(await sendV(creator, feeAnv, "JpegAnvil", "stock", [ids(4)], 1n)).ok);
-await send(creator, token, "MockToken", "transfer", [feeAnv, 1_000_000n * E18]);
-await send(creator, token, "MockToken", "mint", [bob.hex, 1_000_000n * E18]); await send(bob, token, "MockToken", "approve", [feeAnv, 2n ** 255n]);
-check("forge without the fee", (await send(bob, feeAnv, "JpegAnvil", "forge", [ids(1, 2)])).revert === "FeeTooLow");
-check("forge underpaying the fee", (await sendV(bob, feeAnv, "JpegAnvil", "forge", [ids(1, 2)], 2n * F - 1n)).revert === "FeeTooLow");
-const fw0 = await balanceOfEth(feeWallet.hex), bobEth0 = await balanceOfEth(bob.hex);
-const fg2 = await sendV(bob, feeAnv, "JpegAnvil", "forge", [ids(1, 2)], 3n * F);
-check("forge 2 overpaying: works, extra refunded", fg2.ok && bobEth0 - (await balanceOfEth(bob.hex)) === 2n * F + fg2.gas * 10n);
-check("fee held by the factory, anvil keeps no HYPE", (await balanceOfEth(factory)) === 2n * F && (await balanceOfEth(feeAnv)) === 0n);
-check("isAnvil", (await read(factory, "JpegAnvilFactory", "isAnvil", [feeAnv])) && !(await read(factory, "JpegAnvilFactory", "isAnvil", [bob.hex])));
-await send(bob, fNft3, "MockNFT", "setApprovalForAll", [feeAnv, true]);
-check("melt without the fee", (await send(bob, feeAnv, "JpegAnvil", "melt", [ids(1)])).revert === "FeeTooLow");
-const bobTok0 = await read(token, "MockToken", "balanceOf", [bob.hex]);
-check("melt 1 with the fee", (await sendV(bob, feeAnv, "JpegAnvil", "melt", [ids(1)], F)).ok && (await read(token, "MockToken", "balanceOf", [bob.hex])) - bobTok0 === RATE);
-check("factory holds 3 fees", (await balanceOfEth(factory)) === 3n * F && (await balanceOfEth(feeAnv)) === 0n);
-check("anyone can send fees on to the fee wallet", (await send(bob, factory, "JpegAnvilFactory", "withdraw")).ok && (await balanceOfEth(feeWallet.hex)) - fw0 === 3n * F && (await balanceOfEth(factory)) === 0n);
-const badFactory = await deploy(creator, "JpegAnvilFactory", [token, F]); // a token contract can't receive HYPE
-const bx = await send(creator, badFactory, "JpegAnvilFactory", "create", [token, fNft3, RATE]);
-const badAnv = decodeEventLog({ abi: B.JpegAnvilFactory.abi, data: bytesToHex(bx.logs.at(-1)[2]), topics: bx.logs.at(-1)[1].map(bytesToHex) }).args.anvil.toLowerCase();
-await send(creator, fNft3, "MockNFT", "setApprovalForAll", [badAnv, true]);
-await send(bob, fNft3, "MockNFT", "setApprovalForAll", [badAnv, true]);
-await send(creator, token, "MockToken", "transfer", [badAnv, RATE]);
-check("recipient that rejects HYPE can't block swaps", (await sendV(bob, badAnv, "JpegAnvil", "melt", [ids(2)], F)).ok && (await balanceOfEth(badFactory)) === F);
-check("…only its own withdrawals", !(await send(bob, badFactory, "JpegAnvilFactory", "withdraw")).ok);
-check("factory refuses a zero fee wallet / fee over cap", !(await exec(creator, null, encodeDeployData({ abi: B.JpegAnvilFactory.abi, bytecode: B.JpegAnvilFactory.bytecode, args: ["0x0000000000000000000000000000000000000000", 0n] }))).ok && !(await exec(creator, null, encodeDeployData({ abi: B.JpegAnvilFactory.abi, bytecode: B.JpegAnvilFactory.bytecode, args: [feeWallet.hex, 10n ** 17n + 1n] }))).ok);
-await send(feeWallet, factory, "JpegAnvilFactory", "setFee", [0n]);
 
 console.log("gas");
 const gNft = await deploy(creator, "MockNFT"), gAnvil = await anvilFor(token, gNft);

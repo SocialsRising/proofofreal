@@ -2,7 +2,7 @@
 // least the minimum allocation. Read from the treasury's own holdings, so the list is also the allocation check.
 import { NextResponse } from "next/server";
 import { MEME } from "../../../incubator/_lib/config";
-import { MONTRA_API, isMemeLaunch, pctOf, type MemeToken, type TokenCard } from "../../../incubator/_lib/montra";
+import { MONTRA_API, isMemeLaunch, pctOf, safeUrl, type MemeToken, type TokenCard } from "../../../incubator/_lib/montra";
 
 export const runtime = "nodejs";
 export const revalidate = 60;
@@ -17,7 +17,7 @@ export async function GET() {
       for (const t of d.holdings ?? []) {
         const allocPct = pctOf(t.balance, t.supply);
         if (!/^0x[0-9a-fA-F]{40}$/.test(t.address) || !isMemeLaunch(t, allocPct)) continue;
-        out.push({ address: t.address.toLowerCase(), name: String(t.name).slice(0, 40), symbol: String(t.symbol).slice(0, 16), imageUrl: /^https:\/\//.test(t.imageUrl ?? "") ? t.imageUrl : null,
+        out.push({ address: t.address.toLowerCase(), name: String(t.name).slice(0, 40), symbol: String(t.symbol).slice(0, 16), imageUrl: safeUrl(t.imageUrl),
           marketCapUsd: t.marketCapUsd, change24hPct: t.change24hPct, holders: t.holders, launchedAt: t.launchedAt, allocPct });
       }
       pages = Math.max(1, Number(d.pages) || 1);

@@ -440,14 +440,23 @@
   .anv-verify{display:flex;gap:6px 16px;flex-wrap:wrap;font-size:.78rem;color:var(--fg-3)}
   .anv-verify a{color:var(--fg-2)}
   .anv-list{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
-  .anv-card{display:grid;gap:4px;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:radial-gradient(260px 120px at 100% 0%,var(--ember-soft),transparent 70%),var(--card);transition:border-color .15s,transform .15s}
+  .anv-card{display:grid;grid-template-columns:64px 1fr;gap:2px 14px;align-content:center;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:radial-gradient(260px 120px at 100% 0%,var(--ember-soft),transparent 70%),var(--card);transition:border-color .15s,transform .15s}
   .anv-card:hover{border-color:rgba(255,122,61,.5);transform:translateY(-2px)}
-  .anv-card span{color:var(--ember-2);font-weight:600;font-size:.9rem}
+  .anv-card>span:not(.anv-card-img){color:var(--ember-2);font-weight:600;font-size:.9rem}
+  .anv-card-img{grid-row:span 3;position:relative;width:64px;height:64px;border-radius:12px;overflow:hidden;border:1px solid var(--line-hi);background:var(--card-2);display:grid;place-items:center}
+  .anv-card-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
   .anv-card small{color:var(--fg-3)}
+  .anv-prep{list-style:none;margin:0 0 16px;padding:0;display:grid;gap:10px}
+  @media(min-width:860px){.anv-prep{grid-template-columns:repeat(3,1fr)}}
+  .anv-prep li{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:var(--bg-2)}
+  .anv-prep li>span{display:grid;place-items:center;width:28px;height:28px;border-radius:50%;background:var(--ember-soft);border:1px solid rgba(255,122,61,.45);color:var(--ember-2);font-weight:700;font-size:.85rem}
+  .anv-prep b{display:block;font-weight:600}
+  .anv-prep small{color:var(--fg-2);font-size:.86rem;line-height:1.5}
+  .anv-prep a{color:var(--ember-2)}
+  .anv-prep a:hover{text-decoration:underline}
   .anv-create-wrap{display:grid;gap:14px;max-width:640px}
   .anv-create{display:grid;gap:14px}
   .anv-create label,.anv-create .flabel{font-weight:600}
-  .anv-desk{display:grid;gap:12px;border-color:rgba(255,122,61,.4)}
 
   .anv-pop{position:fixed;inset:0;z-index:100;display:grid;place-items:center;padding:16px;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);animation:anvFade .2s ease-out}
   .anv-pop-card{position:relative;overflow:hidden;width:min(440px,100%);display:grid;gap:12px;justify-items:center;text-align:center;padding:30px 24px 22px;border-radius:22px;border:1px solid rgba(255,122,61,.55);background:radial-gradient(360px 220px at 50% 0%,rgba(255,122,61,.32),transparent 70%),#0B0C11;box-shadow:0 40px 90px -30px rgba(255,122,61,.55);animation:anvPop .35s cubic-bezier(.2,1.4,.4,1)}

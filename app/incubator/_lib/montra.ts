@@ -30,7 +30,7 @@ export type Holders = { holders: { address: string; pct: number; isCreator: bool
 export type LaunchRow = { id: number; quote: string; totalFeePips: number; earlyBuyFeeStartPips: number; earlyBuyFeeWindow: number; enabled: boolean; openingUsd?: number | null };
 
 async function get<T>(path: string, init?: RequestInit): Promise<T> {
-  const r = await fetch(`${MONTRA_API}${path}`, { ...init, headers: { accept: "application/json" } });
+  const r = await fetch(`${MONTRA_API}${path}`, { signal: AbortSignal.timeout(10_000), ...init, headers: { accept: "application/json" } });
   if (!r.ok) throw new Error(`Montra API ${r.status} on ${path}`);
   return r.json() as Promise<T>;
 }
