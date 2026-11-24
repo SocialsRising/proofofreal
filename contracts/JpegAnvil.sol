@@ -9,13 +9,20 @@ pragma solidity 0.8.28;
     sync/prune  fix the list of held NFTs after plain transfers in, or NFTs that left without a swap.
     Tokens are seeded with a plain ERC-20 transfer to the anvil.
 
-    No owner, no admin, no fees, no withdrawals: whatever goes in stays as liquidity for both sides, forever.
+    Each forge and melt pays a small HYPE fee per NFT (read from the factory). Fees collect in the factory and anyone
+    can send them on to EARLY's community wallet, so the wallet can never block swaps. That wallet can adjust the fee
+    (to track about $1) up to a hard cap, and can do nothing else. Overpaying is fine: the extra is refunded.
+    No owner, no admin over assets, no withdrawals: whatever goes in stays as liquidity for both sides, forever.
     Every swap only moves the caller's own assets. Tokens and NFTs that move each other (ERC-404 style hybrids)
     and fee-on-transfer tokens are refused by balance checks. */
 
 interface IERC20Min {
     function balanceOf(address) external view returns (uint256);
     function totalSupply() external view returns (uint256);
+}
+
+interface IAnvilFactory {
+    function fee() external view returns (uint256);
 }
 
 interface IERC721Min {
@@ -33,6 +40,8 @@ contract JpegAnvil {
     uint256 public immutable rate;
     /// Who created the anvil. Shown in apps only: it has no special powers.
     address public immutable creator;
+    /// The factory that made this anvil; it holds the swap fee and where fees go.
+    address public immutable factory;
 
     /// Most NFTs one call can move, to keep every call well inside the block gas limit.
     uint256 public constant MAX_BATCH = 50;
@@ -41,8 +50,8 @@ contract JpegAnvil {
     mapping(uint256 => uint256) private _slot;  // id => index in _held + 1 (0 = not held)
     uint256 private _lock = 1;
 
-    event Forged(address indexed by, uint256[] ids, uint256 paid);
-    event Melted(address indexed by, uint256[] ids, uint256 received);
+    event Forged(address indexed by, uint256[] ids, uint256 paid, uint256 fee);
+    event Melted(address indexed by, uint256[] ids, uint256 received, uint256 fee);
     event Stocked(address indexed by, uint256[] ids);
 
     error Reentrant();
@@ -56,6 +65,8 @@ contract JpegAnvil {
     error TokenBalanceMoved();
     error NotEnoughTokens();
     error TokenTransferFailed();
+    error FeeTooLow(uint256 due);
+    error HypeTransferFailed();
 
     modifier nonReentrant() {
         if (_lock != 1) revert Reentrant();
@@ -69,13 +80,16 @@ contract JpegAnvil {
         nft = nft_;
         rate = rate_;
         creator = creator_;
+        factory = msg.sender;
     }
 
     /* ------------------------------------------------------------------ swaps */
 
-    /// Pay `rate` tokens per NFT and receive the NFTs with these ids. Needs a token approval for rate * ids.length.
-    function forge(uint256[] calldata ids) external nonReentrant {
+    /// Pay `rate` tokens per NFT and receive the NFTs with these ids. Needs a token approval for rate * ids.length,
+    /// and `fee() * ids.length` in HYPE sent with the call.
+    function forge(uint256[] calldata ids) external payable nonReentrant {
         uint256 n = _checkBatch(ids.length);
+        uint256 due = _checkFee(n);
         uint256 cost = rate * n;
         uint256 before = IERC20Min(token).balanceOf(address(this));
         _tokenCall(abi.encodeWithSelector(0x23b872dd, msg.sender, address(this), cost)); // transferFrom
@@ -88,12 +102,15 @@ contract JpegAnvil {
         // Checked after the NFTs leave: the anvil must end up exactly `cost` richer. Refuses fee-on-transfer tokens
         // (they would underpay) and hybrids where moving an NFT also moves tokens (they would drain the reserve).
         if (IERC20Min(token).balanceOf(address(this)) != before + cost) revert ShortPayment();
-        emit Forged(msg.sender, ids, cost);
+        _payFee(due);
+        emit Forged(msg.sender, ids, cost, due);
     }
 
-    /// Give the anvil your NFTs with these ids and receive `rate` tokens for each. Needs an NFT approval for the anvil.
-    function melt(uint256[] calldata ids) external nonReentrant {
+    /// Give the anvil your NFTs with these ids and receive `rate` tokens for each. Needs an NFT approval for the anvil,
+    /// and `fee() * ids.length` in HYPE sent with the call.
+    function melt(uint256[] calldata ids) external payable nonReentrant {
         uint256 n = _checkBatch(ids.length);
+        uint256 due = _checkFee(n);
         uint256 payout = rate * n;
         uint256 before = IERC20Min(token).balanceOf(address(this));
         if (before < payout) revert NotEnoughTokens();
@@ -101,7 +118,8 @@ contract JpegAnvil {
         // Receiving NFTs must not move tokens (refuses ERC-404 style hybrids).
         if (IERC20Min(token).balanceOf(address(this)) != before) revert TokenBalanceMoved();
         _tokenCall(abi.encodeWithSelector(0xa9059cbb, msg.sender, payout)); // transfer
-        emit Melted(msg.sender, ids, payout);
+        _payFee(due);
+        emit Melted(msg.sender, ids, payout, due);
     }
 
     /// Add NFTs to the anvil for nothing in return: how a creator stocks it for forging.
@@ -158,12 +176,36 @@ contract JpegAnvil {
         return _slot[id] != 0;
     }
 
+    /// HYPE fee per NFT forged or melted, set on the factory.
+    function fee() external view returns (uint256) {
+        return IAnvilFactory(factory).fee();
+    }
+
     /// Tokens the anvil holds, available to melters.
     function reserve() external view returns (uint256) {
         return IERC20Min(token).balanceOf(address(this));
     }
 
     /* ------------------------------------------------------------------ internals */
+
+    /// At least the HYPE fee for n NFTs must come with the call. msg.value is the most the caller agrees to pay,
+    /// so a fee change while the transaction is pending can't make it fail unless the fee went up.
+    function _checkFee(uint256 n) private view returns (uint256 due) {
+        due = IAnvilFactory(factory).fee() * n;
+        if (msg.value < due) revert FeeTooLow(due);
+    }
+
+    /// Refunds any overpayment, then moves the fee (and any HYPE forced into the anvil) to the factory, which holds
+    /// fees until someone sends them on. The factory is this project's own code, so this call can't be blocked.
+    function _payFee(uint256 due) private {
+        if (msg.value > due) _sendHype(msg.sender, msg.value - due);
+        if (address(this).balance > 0) _sendHype(factory, address(this).balance);
+    }
+
+    function _sendHype(address to, uint256 amount) private {
+        (bool ok, ) = to.call{value: amount}("");
+        if (!ok) revert HypeTransferFailed();
+    }
 
     function _checkBatch(uint256 n) private pure returns (uint256) {
         if (n == 0) revert EmptyBatch();
@@ -204,10 +246,23 @@ contract JpegAnvil {
     }
 }
 
-/// Creates anvils and lists them. No owner and no fees. Deployed once through the standard CREATE2 deployer,
-/// so its address is the same for everyone.
+/// Creates anvils and lists them, and holds the swap fee. Deployed once through the standard CREATE2 deployer.
+/// The fee recipient (EARLY's community wallet) is the only address that can change the fee, never above MAX_FEE.
 contract JpegAnvilFactory {
+    /// Hard cap on the per-NFT fee, in HYPE (wei).
+    uint256 public constant MAX_FEE = 0.1 ether;
+    /// Where every swap fee goes; also the only address allowed to change the fee.
+    address public immutable feeRecipient;
+    /// HYPE (wei) per NFT forged or melted, in every anvil this factory made.
+    uint256 public fee;
+
+    /// True for every anvil this factory created. Apps should only trust anvils that pass this check.
+    mapping(address => bool) public isAnvil;
+
     address[] private _anvils;
+
+    event FeeChanged(uint256 fee);
+    event FeesSent(uint256 amount);
 
     event AnvilCreated(address indexed anvil, address indexed token, address indexed nft, uint256 rate, address creator);
 
@@ -217,6 +272,37 @@ contract JpegAnvilFactory {
     error ZeroRate();
     error SameAddress();
     error RateTooHigh();
+    error NotFeeRecipient();
+    error FeeTooHigh();
+    error ZeroAddress();
+    error SendFailed();
+
+    constructor(address feeRecipient_, uint256 fee_) {
+        if (feeRecipient_ == address(0)) revert ZeroAddress();
+        if (fee_ > MAX_FEE) revert FeeTooHigh();
+        feeRecipient = feeRecipient_;
+        fee = fee_;
+        emit FeeChanged(fee_);
+    }
+
+    /// Swap fees from anvils arrive here.
+    receive() external payable {}
+
+    /// Sends the collected fees to the fee recipient. Anyone can call it.
+    function withdraw() external {
+        uint256 amount = address(this).balance;
+        (bool ok, ) = feeRecipient.call{value: amount}("");
+        if (!ok) revert SendFailed();
+        emit FeesSent(amount);
+    }
+
+    /// The fee recipient keeps the fee near $1 as HYPE's price moves. Capped at MAX_FEE.
+    function setFee(uint256 fee_) external {
+        if (msg.sender != feeRecipient) revert NotFeeRecipient();
+        if (fee_ > MAX_FEE) revert FeeTooHigh();
+        fee = fee_;
+        emit FeeChanged(fee_);
+    }
 
     /// Creates an anvil for this token and collection at `rate` token base units per NFT.
     function create(address token, address nft, uint256 rate) external returns (address anvil) {
@@ -230,6 +316,7 @@ contract JpegAnvilFactory {
         (bool ok, bytes memory ret) = token.staticcall(abi.encodeWithSelector(IERC20Min.totalSupply.selector));
         if (!ok || ret.length < 32) revert NotAToken();
         anvil = address(new JpegAnvil(token, nft, rate, msg.sender));
+        isAnvil[anvil] = true;
         _anvils.push(anvil);
         emit AnvilCreated(anvil, token, nft, rate, msg.sender);
     }

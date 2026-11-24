@@ -1,46 +1,64 @@
-/* JPEG Anvil helpers: read an anvil and its two sides, plus NFT image lookup. Contracts: contracts/JpegAnvil.sol. */
+/* JPEG Anvil helpers: read an anvil and its two sides, NFT images, and the factory checks. Contracts: contracts/JpegAnvil.sol. */
 import { erc20Abi, keccak256, type PublicClient } from "viem";
-import { ANVIL_ABI, ANVIL_FACTORY, ANVIL_FACTORY_ABI, ANVIL_FACTORY_RUNTIME_HASH, CREATE2_DEPLOYER, CREATE2_DEPLOYER_CODE_HASH } from "./anvilArtifacts";
+import { ANVIL_ABI, ANVIL_FACTORY, ANVIL_FACTORY_ABI, ANVIL_FACTORY_RUNTIME_HASH, CREATE2_DEPLOYER, CREATE2_DEPLOYER_CODE_HASH, LEGACY_FACTORY } from "./anvilArtifacts";
 
 export const ERC721_ABI = [
   { type: "function", name: "name", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
-  { type: "function", name: "symbol", stateMutability: "view", inputs: [], outputs: [{ type: "string" }] },
   { type: "function", name: "ownerOf", stateMutability: "view", inputs: [{ type: "uint256" }], outputs: [{ type: "address" }] },
   { type: "function", name: "balanceOf", stateMutability: "view", inputs: [{ type: "address" }], outputs: [{ type: "uint256" }] },
-  { type: "function", name: "tokenURI", stateMutability: "view", inputs: [{ type: "uint256" }], outputs: [{ type: "string" }] },
   { type: "function", name: "tokenOfOwnerByIndex", stateMutability: "view", inputs: [{ type: "address" }, { type: "uint256" }], outputs: [{ type: "uint256" }] },
   { type: "function", name: "supportsInterface", stateMutability: "view", inputs: [{ type: "bytes4" }], outputs: [{ type: "bool" }] },
   { type: "function", name: "isApprovedForAll", stateMutability: "view", inputs: [{ type: "address" }, { type: "address" }], outputs: [{ type: "bool" }] },
   { type: "function", name: "setApprovalForAll", stateMutability: "nonpayable", inputs: [{ type: "address" }, { type: "bool" }], outputs: [] },
 ] as const;
 
-/** Rate presets: tokens per NFT. */
+/** Rate presets: tokens per NFT. 100K first. */
 export const RATE_PRESETS = [100_000, 1_000_000, 10_000_000];
 export const MAX_BATCH = 50;
+
+export const openseaCollection = (nft: string) => `https://opensea.io/assets/elysium/${nft.toLowerCase()}`;
+export const openseaItem = (nft: string, id: bigint) => `https://opensea.io/item/elysium/${nft.toLowerCase()}/${id}`;
 
 export type AnvilInfo = {
   address: `0x${string}`; token: `0x${string}`; nft: `0x${string}`; rate: bigint; creator: `0x${string}`;
   held: bigint; reserve: bigint; symbol: string; decimals: number; nftName: string;
+  /** HYPE (wei) per NFT forged or melted. 0 for v1 anvils. */
+  fee: bigint;
+  /** A v1 anvil (made before the fee); still works, not listed. */
+  legacy: boolean;
 };
 
 const str = (v: unknown, max = 40) => (typeof v === "string" ? v.slice(0, max) : "");
+const legacyList = new Map<string, Promise<Set<string>>>();
+async function inLegacyFactory(c: PublicClient, a: string) {
+  if (!legacyList.has("v1")) legacyList.set("v1", (async () => {
+    const n = await c.readContract({ address: LEGACY_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "count" });
+    const all = await c.readContract({ address: LEGACY_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "list", args: [BigInt(0), n] });
+    return new Set(all.map((x) => x.toLowerCase()));
+  })().catch(() => new Set<string>()));
+  return (await legacyList.get("v1")!).has(a.toLowerCase());
+}
 
-/** Everything the page shows about one anvil. Token and collection names come from their own contracts. */
+/** Everything the page shows about one anvil. Only anvils made by our factories are accepted. */
 export async function readAnvil(c: PublicClient, address: `0x${string}`): Promise<AnvilInfo> {
   const at = { address, abi: ANVIL_ABI } as const;
-  const [token, nft, rate, creator, held, reserve] = await Promise.all([
+  const madeHere = await c.readContract({ address: ANVIL_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "isAnvil", args: [address] }).catch(() => false);
+  const legacy = !madeHere && (await inLegacyFactory(c, address));
+  if (!madeHere && !legacy) throw new Error("not a JPEG Anvil");
+  const [token, nft, rate, creator, held, reserve, fee] = await Promise.all([
     c.readContract({ ...at, functionName: "token" }), c.readContract({ ...at, functionName: "nft" }), c.readContract({ ...at, functionName: "rate" }),
     c.readContract({ ...at, functionName: "creator" }), c.readContract({ ...at, functionName: "heldCount" }), c.readContract({ ...at, functionName: "reserve" }),
+    legacy ? Promise.resolve(BigInt(0)) : c.readContract({ ...at, functionName: "fee" }),
   ]);
   const [symbol, decimals, nftName] = await Promise.all([
     c.readContract({ address: token, abi: erc20Abi, functionName: "symbol" }).catch(() => "TOKEN"),
     c.readContract({ address: token, abi: erc20Abi, functionName: "decimals" }).catch(() => 18),
     c.readContract({ address: nft, abi: ERC721_ABI, functionName: "name" }).catch(() => "NFT collection"),
   ]);
-  return { address, token, nft, rate, creator, held, reserve, symbol: str(symbol, 16) || "TOKEN", decimals: Number(decimals), nftName: str(nftName) || "NFT collection" };
+  return { address, token, nft, rate, creator, held, reserve, fee, legacy, symbol: str(symbol, 16) || "TOKEN", decimals: Number(decimals), nftName: str(nftName) || "NFT collection" };
 }
 
-/** All anvils from the factory, newest first. Empty until the factory exists. */
+/** All anvils from the current factory, newest first. Empty until the factory exists. */
 export async function listAnvils(c: PublicClient, max = 60): Promise<AnvilInfo[]> {
   const n = await c.readContract({ address: ANVIL_FACTORY, abi: ANVIL_FACTORY_ABI, functionName: "count" });
   const start = n > BigInt(max) ? n - BigInt(max) : BigInt(0);
@@ -60,19 +78,12 @@ export async function deployerReady(c: PublicClient) {
   return code.length > 2 && keccak256(code) === CREATE2_DEPLOYER_CODE_HASH;
 }
 
-/** An NFT's image from its tokenURI (https, ipfs or inline JSON). null when there is none we're willing to show. */
-export async function nftImage(c: PublicClient, nft: `0x${string}`, id: bigint): Promise<string | null> {
-  const ipfs = (u: string) => (u.startsWith("ipfs://") ? `https://ipfs.io/ipfs/${u.slice(7).replace(/^ipfs\//, "")}` : u);
-  try {
-    const uri = ipfs(await c.readContract({ address: nft, abi: ERC721_ABI, functionName: "tokenURI", args: [id] }));
-    let meta: { image?: unknown };
-    if (uri.startsWith("data:application/json;base64,")) meta = JSON.parse(atob(uri.slice(29)));
-    else if (uri.startsWith("data:application/json,")) meta = JSON.parse(decodeURIComponent(uri.slice(22)));
-    else if (/^https:\/\//.test(uri)) meta = await (await fetch(uri, { signal: AbortSignal.timeout(8000) })).json();
-    else return null;
-    const img = typeof meta.image === "string" ? ipfs(meta.image) : "";
-    return /^https:\/\//.test(img) || /^data:image\/(png|jpeg|gif|webp|svg\+xml);/.test(img) ? img : null;
-  } catch { return null; }
+/** An NFT's name and image, through our cached route (IPFS images are served from our own domain). */
+const metaCache = new Map<string, Promise<{ name: string | null; image: string | null }>>();
+export function nftMeta(nft: string, id: bigint) {
+  const k = `${nft.toLowerCase()}:${id}`;
+  if (!metaCache.has(k)) metaCache.set(k, fetch(`/api/incubator/anvil/meta?nft=${nft.toLowerCase()}&id=${id}`).then((r) => r.json()).catch(() => ({ name: null, image: null })));
+  return metaCache.get(k)!;
 }
 
 /** The ids a wallet holds, if the collection can list them (ERC721Enumerable). Up to `max`. */
@@ -97,3 +108,10 @@ export function parseIds(s: string): bigint[] | null {
   const uniq = [...new Set(out.map(String))].map(BigInt);
   return uniq.length && uniq.length <= MAX_BATCH ? uniq : null;
 }
+
+/** Lore lines for the celebration pop-up. */
+export const LORE = {
+  forge: ["The anvil rings. A legend steps out of the fire.", "Hammer down, sparks up. It's yours now.", "Forged in fire, kept forever.", "The smiths nod. Fine work."],
+  melt: ["Back into the flow. The metal remembers.", "The fire takes the art and pays in coin.", "Melted down, liquid again.", "Smelted clean. Spend it well."],
+  stock: ["The forge burns hotter.", "More metal for the anvil.", "The smiths thank you.", "Fuel for the fire."],
+};
