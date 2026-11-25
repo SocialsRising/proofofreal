@@ -1,7 +1,7 @@
 /* Montra adapter: read-only public API (no key, CORS-open for GETs) + the factory's one-transaction launch.
    Docs: https://montramarkets.xyz/docs/build · API: https://montramarkets.xyz/docs/api */
 import { stringToHex, toHex } from "viem";
-import { HIDDEN_TOKENS, LEGACY_TOKENS, LEGACY_WALLETS, MEME, MONTRA_BUILDER_CODE, SLOTS, launchpad, type LaunchpadKey } from "./config";
+import { HIDDEN_TOKENS, LEGACY_TOKENS, LEGACY_WALLETS, MEME, MONTRA_BUILDER_CODE, SLOTS, STOCKS, launchpad, type LaunchpadKey } from "./config";
 
 export const MONTRA_API = "https://api.montramarkets.xyz";
 export const MONTRA_FACTORY = "0x38d3ef3a06d18fa3286fb5deafe611be725fcd15" as const;
@@ -109,7 +109,8 @@ export const pctOf = (balance: string | null | undefined, supply: string | null 
     and EARLY's treasury holds at least the minimum allocation. The allocation is what makes it ours, so it's read live. */
 export const isMemeLaunch = (d: Pick<TokenCard, "address" | "recipientKind" | "quote" | "totalFeePips">, treasuryPct: number) =>
   !HIDDEN_TOKENS.includes(d.address.toLowerCase() as `0x${string}`) && d.recipientKind === "holders"
-  && (d.quote?.native === true || d.quote?.address?.toLowerCase() === ZERO) && MEME.fees.some((f) => f.pct * 10000 === d.totalFeePips)
+  && (d.quote?.native === true || d.quote?.address?.toLowerCase() === ZERO || STOCKS.some((x) => x.address === d.quote?.address?.toLowerCase()))
+  && MEME.fees.some((f) => f.pct * 10000 === d.totalFeePips)
   && treasuryPct >= MEME.minAllocPct;
 /** The token's on-chain split is exactly the incubator split: same wallets, same shares, no extras. */
 export function hasIncubatorSplit(d: Pick<TokenDetail, "splitter">) {

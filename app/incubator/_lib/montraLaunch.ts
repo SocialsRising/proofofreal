@@ -11,8 +11,8 @@ export type LaunchMeta = { imageUri: string; metadataUri: string; socials: Recor
 export type MontraLaunchInput = {
   name: string; symbol: string; description: string; feePct: number; snipe: number; firstBuy: bigint;
   fees: { feeRecipients: `0x${string}`[]; feeShares: number[] };
-  /** What the token pairs with: native HYPE (default) or a listed ERC-20 such as a tokenized stock. A dev buy is only
-      supported with HYPE here (an ERC-20 dev buy needs an approval first). */
+  /** What the token pairs with: native HYPE (default) or a listed ERC-20 such as a tokenized stock. With an ERC-20 the
+      first buy is pulled from the sender, who must have approved the factory for it first. */
   quote?: `0x${string}`;
   upload: () => Promise<LaunchMeta>;
   onStep: (s: "check" | "upload") => void;
@@ -25,7 +25,6 @@ export async function prepareMontraLaunch(c: PublicClient, from: `0x${string}`, 
   const cfg = await montra.config();
   if (cfg.contracts?.factory && cfg.contracts.factory.toLowerCase() !== MONTRA_FACTORY) throw new Error("Montra reports a different factory than this page expects, so we stopped. Message @Tradesgiving.");
   const quote = (o.quote ?? ZERO).toLowerCase();
-  if (quote !== ZERO && o.firstBuy > BigInt(0)) throw new Error("A dev buy is only available for HYPE pairs.");
   const row = pickRow(cfg.configs, fee, o.snipe, quote);
   if (!row) throw new Error("Montra doesn't offer that fee + anti-snipe combination right now. Pick another.");
   const [onchain, launchFee, enabled] = await Promise.all([
@@ -48,7 +47,7 @@ export async function prepareMontraLaunch(c: PublicClient, from: `0x${string}`, 
     firstBuyAmount: o.firstBuy, firstBuyMinOut: BigInt(0),
     permit: { deadline: BigInt(0), v: 0, r: zeroHash, s: zeroHash },
   } as const;
-  const value = launchFee + o.firstBuy;
+  const value = launchFee + (quote === ZERO ? o.firstBuy : BigInt(0)); // an ERC-20 first buy is pulled, not sent
   const dataSuffix = builderSuffix();
   await c.simulateContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launch", args: [params], account: from, value, dataSuffix });
   return { args: [params] as const, value, dataSuffix };
