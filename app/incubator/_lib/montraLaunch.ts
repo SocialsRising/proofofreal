@@ -11,6 +11,9 @@ export type LaunchMeta = { imageUri: string; metadataUri: string; socials: Recor
 export type MontraLaunchInput = {
   name: string; symbol: string; description: string; feePct: number; snipe: number; firstBuy: bigint;
   fees: { feeRecipients: `0x${string}`[]; feeShares: number[] };
+  /** What the token pairs with: native HYPE (default) or a listed ERC-20 such as a tokenized stock. A dev buy is only
+      supported with HYPE here (an ERC-20 dev buy needs an approval first). */
+  quote?: `0x${string}`;
   upload: () => Promise<LaunchMeta>;
   onStep: (s: "check" | "upload") => void;
 };
@@ -21,7 +24,9 @@ export async function prepareMontraLaunch(c: PublicClient, from: `0x${string}`, 
   const fee = o.feePct * 10000;
   const cfg = await montra.config();
   if (cfg.contracts?.factory && cfg.contracts.factory.toLowerCase() !== MONTRA_FACTORY) throw new Error("Montra reports a different factory than this page expects, so we stopped. Message @Tradesgiving.");
-  const row = pickRow(cfg.configs, fee, o.snipe);
+  const quote = (o.quote ?? ZERO).toLowerCase();
+  if (quote !== ZERO && o.firstBuy > BigInt(0)) throw new Error("A dev buy is only available for HYPE pairs.");
+  const row = pickRow(cfg.configs, fee, o.snipe, quote);
   if (!row) throw new Error("Montra doesn't offer that fee + anti-snipe combination right now. Pick another.");
   const [onchain, launchFee, enabled] = await Promise.all([
     c.readContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "getConfig", args: [BigInt(row.id)] }),
@@ -29,7 +34,7 @@ export async function prepareMontraLaunch(c: PublicClient, from: `0x${string}`, 
     c.readContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launchEnabled" }),
   ]);
   if (!enabled) throw new Error("Montra has launches paused at the moment. Try again later.");
-  const termsMatch = onchain.exists && onchain.enabled && onchain.quote.toLowerCase() === ZERO && onchain.totalFeePips === fee
+  const termsMatch = onchain.exists && onchain.enabled && onchain.quote.toLowerCase() === quote && onchain.totalFeePips === fee
     && onchain.earlyBuyFeeWindow === o.snipe && (o.snipe === 0 || onchain.earlyBuyFeeStartPips > 0);
   if (!termsMatch) throw new Error("Montra's fee menu doesn't match its contract right now, so we stopped before anything was signed. Try again in a few minutes.");
   if (launchFee > MAX_LAUNCH_FEE) throw new Error(`Montra's launch fee is now ${formatEther(launchFee)} HYPE, above this page's safety limit. Message @Tradesgiving before launching.`);

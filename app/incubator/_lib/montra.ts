@@ -146,9 +146,9 @@ export const SNIPE_WINDOWS = [
   { s: 0, label: "Off" }, { s: 30, label: "30 seconds" }, { s: 60, label: "1 minute" }, { s: 300, label: "5 minutes" }, { s: 900, label: "15 minutes" }, { s: 1800, label: "30 minutes" },
 ] as const;
 
-/** The factory's menu row for native-HYPE pools at this fee tier and anti-snipe window. Rows are read live, never hard-coded. */
-export function pickRow(rows: LaunchRow[], feePips: number, snipeSeconds: number) {
-  return rows.find((r) => r.enabled !== false && r.quote === ZERO && r.totalFeePips === feePips && (snipeSeconds ? r.earlyBuyFeeWindow === snipeSeconds && r.earlyBuyFeeStartPips > 0 : r.earlyBuyFeeWindow === 0));
+/** The factory's menu row for this pair asset (native HYPE by default), fee tier and anti-snipe window. Rows are read live. */
+export function pickRow(rows: LaunchRow[], feePips: number, snipeSeconds: number, quote: string = ZERO) {
+  return rows.find((r) => r.enabled !== false && r.quote.toLowerCase() === quote.toLowerCase() && r.totalFeePips === feePips && (snipeSeconds ? r.earlyBuyFeeWindow === snipeSeconds && r.earlyBuyFeeStartPips > 0 : r.earlyBuyFeeWindow === 0));
 }
 
 /** ERC-8021 suffix that credits the launch to our Montra Builders code: ascii(code) ‖ len ‖ 0x00 ‖ marker. */

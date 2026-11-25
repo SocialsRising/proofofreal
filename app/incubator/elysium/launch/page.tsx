@@ -9,18 +9,19 @@ import { useAccount, useBalance, usePublicClient, useReadContract, useSwitchChai
 import { WalletButton } from "../../../launchpad/_components/Wallet";
 import { useToast } from "../../../launchpad/_components/Toast";
 import Link from "next/link";
-import { BUYBACKS, DEFAULT_FEE_PCT, ELYSIUM, FEE_TIERS, LINKS, MEME, MONTRA_BUILDER_CODE, PERKS, SLOTS, explorerAddr, launchpad } from "../../_lib/config";
+import { BUYBACKS, DEFAULT_FEE_PCT, ELYSIUM, FEE_TIERS, LINKS, MEME, STOCKS, MONTRA_BUILDER_CODE, PERKS, SLOTS, explorerAddr, launchpad } from "../../_lib/config";
 import { Bonus, HelpLine } from "../../_components/Bits";
 import { MemeFeed, MemeNextSteps, fmtPct } from "../../_components/Meme";
 import { LAUNCH_ABI, MONTRA_FACTORY, SNIPE_WINDOWS, ZERO, incubatorSplit, isAddr, montra, safeLink, short } from "../../_lib/montra";
 import { launchedToken, prepareMontraLaunch } from "../../_lib/montraLaunch";
 
-type Template = "utility" | "meme";
+type Template = "utility" | "meme" | "stock";
 type Step = "idle" | "switch" | "check" | "upload" | "sign" | "confirm" | "done";
 const STEPS: [Step, string][] = [["switch", "Switch to Elysium"], ["check", "Check the launch terms on-chain"], ["upload", "Upload image + details"], ["sign", "Confirm in your wallet"], ["confirm", "Wait for Elysium to confirm"]];
 const TEMPLATES: { key: Template; name: string; sub: string }[] = [
   { key: "utility", name: "Utility", sub: "Fees fund buybacks for your community" },
   { key: "meme", name: "Meme", sub: "Fees go to holders, plus a 24h push" },
+  { key: "stock", name: "Stock", sub: "Holders earn tokenized stocks" },
 ];
 const LINK_FIELDS = [
   ["website", "Website", "Website must be an https:// link."],
@@ -44,10 +45,13 @@ function Launch() {
   const bal = useBalance({ address, chainId: ELYSIUM.chainId, query: { enabled: !!address } });
   const launchFee = useReadContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launchFee", chainId: ELYSIUM.chainId }).data ?? BigInt(0);
 
-  const [tpl, setTpl] = useState<Template>(params.get("template") === "meme" ? "meme" : "utility");
-  const isMeme = tpl === "meme";
-  const [f, setF] = useState({ name: "", symbol: "", description: "", website: "", twitter: "", telegram: "", discord: "", firstBuy: isMeme ? MEME.defaultFirstBuy : UTILITY_FIRST_BUY });
-  const [feePct, setFeePct] = useState<number>(isMeme ? MEME.defaultFee : DEFAULT_FEE_PCT);
+  const startTpl = params.get("template");
+  const [tpl, setTpl] = useState<Template>(startTpl === "meme" || startTpl === "stock" ? startTpl : "utility");
+  const isMeme = tpl === "meme", isStock = tpl === "stock", toHolders = isMeme || isStock;
+  const [stockAddr, setStockAddr] = useState<`0x${string}`>(STOCKS[0].address);
+  const stock = STOCKS.find((x) => x.address === stockAddr) ?? STOCKS[0];
+  const [f, setF] = useState({ name: "", symbol: "", description: "", website: "", twitter: "", telegram: "", discord: "", firstBuy: isMeme ? MEME.defaultFirstBuy : isStock ? "" : UTILITY_FIRST_BUY });
+  const [feePct, setFeePct] = useState<number>(toHolders ? MEME.defaultFee : DEFAULT_FEE_PCT);
   const [snipe, setSnipe] = useState<number>(60);
   const [img, setImg] = useState<File | null>(null);
   const [ack, setAck] = useState(false);
@@ -64,12 +68,12 @@ function Launch() {
   function pickTemplate(k: Template) {
     if (k === tpl) return;
     setTpl(k); setErr(""); setAck(false); setLaunched(null);
-    setFeePct(k === "meme" ? MEME.defaultFee : DEFAULT_FEE_PCT);
-    setF((s) => ({ ...s, firstBuy: k === "meme" ? MEME.defaultFirstBuy : UTILITY_FIRST_BUY }));
-    router.replace(`/incubator/elysium/launch${k === "meme" ? "?template=meme" : ""}`, { scroll: false });
+    setFeePct(k === "utility" ? DEFAULT_FEE_PCT : MEME.defaultFee);
+    setF((s) => ({ ...s, firstBuy: k === "meme" ? MEME.defaultFirstBuy : k === "stock" ? "" : UTILITY_FIRST_BUY }));
+    router.replace(`/incubator/elysium/launch${k === "utility" ? "" : `?template=${k}`}`, { scroll: false });
   }
 
-  const fees = isMeme ? MEME.fees.map((t) => ({ pct: t.pct, name: t.name, desc: t.desc, rec: "recommended" in t && !!t.recommended }))
+  const fees = toHolders ? MEME.fees.map((t) => ({ pct: t.pct, name: t.name, desc: isStock ? t.desc.replace("of every trade.", `of every trade, in $${stock.ticker}.`) : t.desc, rec: "recommended" in t && !!t.recommended }))
     : FEE_TIERS.filter((t) => lp.fees.includes(t.pct)).map((t) => ({ pct: t.pct, name: t.name, desc: t.desc, rec: "recommended" in t && !!t.recommended }));
   const firstBuy = (() => { try { return f.firstBuy.trim() ? parseEther(f.firstBuy.trim()) : BigInt(0); } catch { return BigInt(-1); } })();
   // About what share of supply a dev buy gets at the opening price, after the fee. A rough guide, not a quote.
@@ -105,7 +109,8 @@ function Launch() {
       if (chainId !== ELYSIUM.chainId) { setStep("switch"); await switchChainAsync({ chainId: ELYSIUM.chainId }); }
       const call = await prepareMontraLaunch(client, address, {
         name: f.name.trim(), symbol: f.symbol, description: f.description.trim(), feePct, snipe, firstBuy,
-        fees: isMeme ? { feeRecipients: [MEME.holders], feeShares: [10000] } : incubatorSplit(), upload, onStep: setStep,
+        fees: toHolders ? { feeRecipients: [MEME.holders], feeShares: [10000] } : incubatorSplit(), upload, onStep: setStep,
+        quote: isStock ? stock.address : undefined,
       });
       setStep("sign");
       const hash = await writeContractAsync({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launch", ...call, chainId: ELYSIUM.chainId });
@@ -113,9 +118,9 @@ function Launch() {
       const { token, firstBuyOut } = launchedToken(await client.waitForTransactionReceipt({ hash, timeout: 180_000 }));
       setStep("done");
       toast(`$${f.symbol} is live 🚀`);
-      if (isMeme) {
+      if (toHolders) {
         setLaunched({ token, firstBuyOut });
-        router.replace(`/incubator/elysium/launch?template=meme&token=${token.toLowerCase()}`, { scroll: false });
+        router.replace(`/incubator/elysium/launch?template=${tpl}&token=${token.toLowerCase()}`, { scroll: false });
         window.scrollTo({ top: 0, behavior: "smooth" });
       } else router.push(`/incubator/elysium/p/${token.toLowerCase()}?new=1`);
     } catch (e) {
@@ -126,7 +131,8 @@ function Launch() {
   }
 
   const paramToken = params.get("token") ?? "";
-  const memeDone = isMeme ? (launched?.token ?? (isAddr(paramToken) ? (paramToken.toLowerCase() as `0x${string}`) : null)) : null;
+  const doneToken = toHolders ? (launched?.token ?? (isAddr(paramToken) ? (paramToken.toLowerCase() as `0x${string}`) : null)) : null;
+  const memeDone = isMeme ? doneToken : null, stockDone = isStock ? doneToken : null;
   const stepIdx = STEPS.findIndex(([s]) => s === step);
   return (
     <>
@@ -142,8 +148,31 @@ function Launch() {
         </div>
         <div style={{ marginTop: 12, maxWidth: 760 }}><Bonus lp={lp} /></div>
 
-        {memeDone ? <div style={{ marginTop: 24 }}><MemeNextSteps token={memeDone} firstBuyOut={launched?.firstBuyOut} /></div> : (
+        {stockDone ? (
+          <div className="card pad memenext" style={{ marginTop: 24 }}>
+            <h2>Your stock meme is live 🚀</h2>
+            <p className="muted" style={{ marginTop: 8 }}>Every trade now pays its holders in ${stock.ticker} ({stock.symbol}), streamed every hour and claimable on Montra.</p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 14 }}>
+              <a className="btn primary" href={lp.tokenUrl(stockDone)} target="_blank" rel="noopener noreferrer">Buy + claim on Montra ↗</a>
+              <a className="btn" href={`https://x.com/intent/post?text=${encodeURIComponent(`Just launched a meme that pays its holders in $${stock.ticker} stock tokens 📈 Every trade = ${stock.symbol} rewards, claimable on @montramarkets\n\nhttps://montramarkets.xyz/token/${stockDone}`)}`} target="_blank" rel="noopener noreferrer">Share on X ↗</a>
+              <a className="btn ghost" href={LINKS.helpTelegram} target="_blank" rel="noopener noreferrer">Tell @Tradesgiving ↗</a>
+            </div>
+          </div>
+        ) : memeDone ? <div style={{ marginTop: 24 }}><MemeNextSteps token={memeDone} firstBuyOut={launched?.firstBuyOut} /></div> : (
           <>
+            {isStock && (
+              <div className="stockpick">
+                <div className="eyebrow">Holders earn</div>
+                <div className="stockpick-grid" role="group" aria-label="Stock token holders earn">
+                  {STOCKS.map((x) => (
+                    <button key={x.address} type="button" aria-pressed={stockAddr === x.address} className={`stockopt ${stockAddr === x.address ? "on" : ""}`} onClick={() => { setStockAddr(x.address); if (x.symbol === "EQANT") setSnipe(0); }}>
+                      <b>${x.ticker}</b><small>{x.name}</small>
+                    </button>
+                  ))}
+                </div>
+                <p className="muted" style={{ fontSize: ".8rem", marginTop: 8 }}>Your token pairs with {stock.symbol}, and 100% of its trading fees stream to holders in it. Stock tokens are issued by third parties (xStocks, EQX) with their own rules, e.g. not for US persons. Your token isn&apos;t backed by or redeemable for shares.</p>
+              </div>
+            )}
             {isMeme && (
               <div className="memehot">
                 {MEME.ideas.map((i) => (
@@ -171,7 +200,7 @@ function Launch() {
                   ))}
                 </div>
 
-                <div className="field"><span className="flabel">Trading fee{isMeme ? " · 100% to holders" : ""}</span>
+                <div className="field"><span className="flabel">Trading fee{toHolders ? " · 100% to holders" : ""}</span>
                   <div className="feeopts" role="group" aria-label="Trading fee">
                     {fees.map((t) => (
                       <button key={t.pct} type="button" aria-pressed={feePct === t.pct} className={`feeopt ${feePct === t.pct ? "on" : ""}`} onClick={() => setFeePct(t.pct)}>
@@ -180,27 +209,27 @@ function Launch() {
                       </button>
                     ))}
                   </div>
-                  <span className="hint">Fixed forever. Montra keeps 0.4%; {isMeme ? "the rest streams to holders every hour, you included." : "the rest funds the buybacks."}</span>
+                  <span className="hint">Fixed forever. Montra keeps 0.4%; {toHolders ? `the rest streams to holders every hour${isStock ? ` in $${stock.ticker}` : ""}, you included.` : "the rest funds the buybacks."}</span>
                 </div>
                 <div className="field"><span className="flabel">Anti-snipe</span>
                   <div className="chips" role="group" aria-label="Anti-snipe window">{SNIPES.map((w) => <button key={w.s} type="button" aria-pressed={snipe === w.s} className={`chip ${snipe === w.s ? "on" : ""}`} onClick={() => setSnipe(w.s)}>{w.label}</button>)}</div>
                   <span className="hint">Bots pay up to 99% during this window. Your dev buy is exempt.</span>
                 </div>
-                <div className="field"><label htmlFor="f-buy">Dev buy (HYPE)</label>
+                {!isStock && <div className="field"><label htmlFor="f-buy">Dev buy (HYPE)</label>
                   {isMeme && <div className="chips" role="group" aria-label="Dev buy" style={{ marginBottom: 8 }}>{MEME.firstBuyPresets.map((p) => <button key={p} type="button" aria-pressed={f.firstBuy === p} className={`chip ${f.firstBuy === p ? "on" : ""}`} onClick={() => setF((s) => ({ ...s, firstBuy: p }))}>{p} HYPE{estPct(Number(p)) != null ? ` · ~${fmtPct(estPct(Number(p))!)}%` : ""}</button>)}</div>}
                   <input id="f-buy" className="inp mono" value={f.firstBuy} onChange={set("firstBuy")} inputMode="decimal" placeholder={isMeme ? "Custom amount" : "0"} />
                   <span className="hint">{isMeme ? `Same transaction, before anyone else.${est != null ? ` About ${fmtPct(est)}% of supply.` : ""}` : "Optional. Same transaction, before anyone else."}</span>
                   {isMeme && est != null && est < MEME.minAllocPct && <div className="warn" style={{ marginTop: 8 }}>That&apos;s under {MEME.minAllocPct}% of supply, not enough to send EARLY its allocation.</div>}
-                </div>
+                </div>}
               </div>
 
               <div style={{ display: "grid", gap: 14, alignContent: "start" }}>
                 <div className="card pad">
                   <div className="eyebrow">Where your fees go</div>
-                  {isMeme ? (
+                  {toHolders ? (
                     <>
                       <div className="bar3" style={{ marginTop: 14 }}><i className="a" style={{ width: "100%" }} /></div>
-                      <div className="kv"><span>Token holders, in HYPE every hour</span><b>100%</b></div>
+                      <div className="kv"><span>Token holders, in {isStock ? `$${stock.ticker} (${stock.symbol})` : "HYPE"} every hour</span><b>100%</b></div>
                     </>
                   ) : (
                     <>
@@ -229,7 +258,9 @@ function Launch() {
                       {bal.data && total != null && bal.data.value < total && <div className="warn">Not enough HYPE on Elysium. <a href={ELYSIUM.bridgeHelp} target="_blank" rel="noreferrer" style={{ textDecoration: "underline" }}>How to bridge ↗</a></div>}
                       <label style={{ display: "flex", gap: 10, alignItems: "flex-start", fontSize: ".86rem" }}>
                         <input type="checkbox" checked={ack} onChange={(e) => setAck(e.target.checked)} style={{ marginTop: 3 }} />
-                        <span className="muted">{isMeme
+                        <span className="muted">{isStock
+                          ? <>I&apos;m launching this myself. 100% of fees go to holders in {stock.symbol}, fixed at launch. {stock.symbol} is a third-party tokenized stock with its own eligibility rules. My token isn&apos;t backed by shares. Nothing here promises returns.</>
+                          : isMeme
                           ? <>I&apos;m launching this myself. 100% of fees go to holders, fixed at launch. EARLY&apos;s allocation pays for marketing effort, not results. Nothing here promises returns.</>
                           : <>I&apos;m launching this myself. I get none of the trading fees and the split is fixed at launch. Rewards depend on trading. Nothing here promises returns.</>}</span>
                       </label>
@@ -243,7 +274,7 @@ function Launch() {
                   <HelpLine />
                 </div>
 
-                {!isMeme && (
+                {tpl === "utility" && (
                   <div className="card pad">
                     <div className="eyebrow">You get</div>
                     <ul className="perklist">

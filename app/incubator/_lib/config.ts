@@ -140,6 +140,18 @@ export const launchpad = (k: LaunchpadKey) => LAUNCHPADS.find((l) => l.key === k
 export const explorerAddr = (a: string) => `${ELYSIUM.explorer}/address/${a}`;
 export const explorerTx = (h: string) => `${ELYSIUM.explorer}/tx/${h}`;
 
+/* ----------------------------------------------------------------------------------- Stock rewards template */
+/** Tokenized stocks Montra lets a token pair with. A stock-paired token with 100% of fees to holders pays its holders
+    in that stock token, streamed hourly and claimable on Montra: no extra contracts. Names are the tokens' own. */
+export const STOCKS: { address: `0x${string}`; symbol: string; name: string; ticker: string }[] = [
+  { address: "0x11265018bf2d5a99fb71efae73ad670203c1df44", symbol: "wNVDAx", name: "Wrapped NVIDIA xStock", ticker: "NVDA" },
+  { address: "0x7559191f12413d122493fe43de6d0b4544c6579f", symbol: "EQTSLA", name: "EQX Tokenized TSLA", ticker: "TSLA" },
+  { address: "0x437c847644ff22cbcf0ea56896aa25504aad93b4", symbol: "wSPYx", name: "Wrapped SP500 xStock", ticker: "SPY" },
+  { address: "0x9039ebd84ee2a0e198eb265e692390762995872c", symbol: "wQQQx", name: "Wrapped Nasdaq xStock", ticker: "QQQ" },
+  { address: "0x8264c91cedfe6cc078116083d5a3e198c16b1898", symbol: "EQSPCX", name: "EQX Tokenized SPCX", ticker: "SPCX" },
+  { address: "0x529f5b123d6782f0a09f59587bc87d86adc65652", symbol: "EQANT", name: "EQX Tokenized ANT", ticker: "ANT" },
+];
+
 /* ----------------------------------------------------------------------------------- Meme coin launch template */
 /** The meme template: every creator-side fee goes to the token's holders, fixed forever. The creator makes a dev buy,
     sends EARLY's treasury (the 60% Community Initiatives wallet) 2%+ of supply, then DMs @Tradesgiving for a 24-hour push. */
