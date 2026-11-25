@@ -143,9 +143,10 @@ export const explorerTx = (h: string) => `${ELYSIUM.explorer}/tx/${h}`;
 /* ----------------------------------------------------------------------------------- Stock meme template */
 /** 3x stock tokens a meme can pair with on Montra. With 100% of fees to holders, Montra pays holders in the pair asset,
     so holders earn the 3x token, streamed hourly and claimable on Montra: no extra contracts. Names are the tokens' own. */
-export const STOCKS: { address: `0x${string}`; symbol: string; name: string; ticker: string }[] = [
-  { address: "0xc4be5f25dfaa81ed188db01fee37e2ed4163c8d5", symbol: "xyz:NVDA3L", name: "xyz:NVDA 3x Long", ticker: "NVDA 3x" },
-  { address: "0xc03449cd7633b2fbe33c3b9ab49e7420f32b0b83", symbol: "xyz:ANT3L", name: "xyz:ANT 3x Long", ticker: "ANT 3x" },
+/** `mark`/`color` draw a simple badge; `logo` (a file in /public) replaces it if you add one. */
+export const STOCKS: { address: `0x${string}`; symbol: string; name: string; ticker: string; company: string; mark: string; color: string; logo?: string }[] = [
+  { address: "0xc4be5f25dfaa81ed188db01fee37e2ed4163c8d5", symbol: "xyz:NVDA3L", name: "xyz:NVDA 3x Long", ticker: "NVDA 3x", company: "NVIDIA", mark: "N", color: "#76B900" },
+  { address: "0xc03449cd7633b2fbe33c3b9ab49e7420f32b0b83", symbol: "xyz:ANT3L", name: "xyz:ANT 3x Long", ticker: "ANT 3x", company: "Anthropic", mark: "A", color: "#D97757" },
 ];
 /** Dev buy presets for stock memes, in dollars of the pair token. */
 export const STOCK_BUY_USD = [50, 150, 300];

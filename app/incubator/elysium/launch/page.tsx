@@ -18,10 +18,10 @@ import { launchedToken, prepareMontraLaunch } from "../../_lib/montraLaunch";
 type Template = "utility" | "meme" | "stock";
 type Step = "idle" | "switch" | "approve" | "check" | "upload" | "sign" | "confirm" | "done";
 const STEPS: [Step, string][] = [["switch", "Switch to Elysium"], ["approve", "Approve your dev buy"], ["check", "Check the launch terms on-chain"], ["upload", "Upload image + details"], ["sign", "Confirm in your wallet"], ["confirm", "Wait for Elysium to confirm"]];
-const TEMPLATES: { key: Template; name: string; sub: string }[] = [
-  { key: "utility", name: "Utility", sub: "Fees fund buybacks for your community" },
-  { key: "meme", name: "Meme", sub: "Fees go to holders, plus a 24h push" },
-  { key: "stock", name: "Stock meme", sub: "Holders earn NVDA or ANT 3x" },
+const TEMPLATES: { key: Template; icon: string; name: string; sub: string }[] = [
+  { key: "utility", icon: "🛠️", name: "Utility", sub: "Fees fund buybacks for your community" },
+  { key: "meme", icon: "🐸", name: "Meme", sub: "Fees go to holders, plus a 24h push" },
+  { key: "stock", icon: "📈", name: "Stock meme", sub: "Holders earn NVIDIA or Anthropic 3x" },
 ];
 const LINK_FIELDS = [
   ["website", "Website", "Website must be an https:// link."],
@@ -168,7 +168,7 @@ function Launch() {
         <div className="tplpick" role="group" aria-label="Template">
           {TEMPLATES.map((t) => (
             <button key={t.key} type="button" aria-pressed={tpl === t.key} className={`tplopt ${tpl === t.key ? "on" : ""}`} onClick={() => pickTemplate(t.key)} disabled={busy}>
-              <b>{t.name}</b><small>{t.sub}</small>
+              <span className="tpl-ico" aria-hidden>{t.icon}</span><b>{t.name}</b><small>{t.sub}</small>
             </button>
           ))}
         </div>
@@ -178,15 +178,17 @@ function Launch() {
           <>
             {isStock && (
               <div className="stockpick">
-                <div className="eyebrow">Holders earn</div>
+                <div className="eyebrow">Your holders earn</div>
                 <div className="stockpick-grid" role="group" aria-label="Stock token holders earn">
                   {STOCKS.map((x) => (
-                    <button key={x.address} type="button" aria-pressed={stockAddr === x.address} className={`stockopt ${stockAddr === x.address ? "on" : ""}`} onClick={() => setStockAddr(x.address)}>
-                      <b>${x.ticker}</b><small>{x.name}</small>
+                    <button key={x.address} type="button" aria-pressed={stockAddr === x.address} className={`stockopt ${stockAddr === x.address ? "on" : ""}`} style={{ ["--brand" as string]: x.color }} onClick={() => setStockAddr(x.address)}>
+                      <span className="stock-badge" aria-hidden>{x.logo ? <img src={x.logo} alt="" /> : x.mark}</span>
+                      <span className="stock-txt"><b>{x.company} <em>3x</em></b><small>{x.name}</small></span>
+                      <span className="stock-check" aria-hidden>✓</span>
                     </button>
                   ))}
                 </div>
-                <p className="muted" style={{ fontSize: ".8rem", marginTop: 8 }}>Your meme pairs with {stock.symbol}: 100% of its trading fees stream to holders in it. 3x tokens move about 3× the stock&apos;s daily move and can drop fast. Your meme isn&apos;t backed by shares.</p>
+                <p className="stock-fine">100% of trading fees stream to holders in {stock.symbol}. 3x tokens move about 3× the stock&apos;s daily move and can drop fast. Not backed by shares, and not affiliated with NVIDIA or Anthropic.</p>
               </div>
             )}
             {isMeme && (
@@ -205,11 +207,11 @@ function Launch() {
                     <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(e) => setImg(e.target.files?.[0] ?? null)} />
                   </label>
                   <div style={{ display: "grid", gap: 12 }}>
-                    <div className="field"><label htmlFor="f-name">Name <span className="req">*</span></label><input id="f-name" className="inp" maxLength={32} value={f.name} onChange={set("name")} placeholder={isMeme ? "Wanted Level" : "Agent Smith"} /></div>
-                    <div className="field"><label htmlFor="f-symbol">Ticker <span className="req">*</span></label><input id="f-symbol" className="inp mono" maxLength={10} value={f.symbol} onChange={(e) => setF((s) => ({ ...s, symbol: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") }))} placeholder={isMeme ? "WANTED" : "SMITH"} /></div>
+                    <div className="field"><label htmlFor="f-name">Name <span className="req">*</span></label><input id="f-name" className="inp" maxLength={32} value={f.name} onChange={set("name")} placeholder={toHolders ? "Wanted Level" : "Agent Smith"} /></div>
+                    <div className="field"><label htmlFor="f-symbol">Ticker <span className="req">*</span></label><input id="f-symbol" className="inp mono" maxLength={10} value={f.symbol} onChange={(e) => setF((s) => ({ ...s, symbol: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") }))} placeholder={toHolders ? "WANTED" : "SMITH"} /></div>
                   </div>
                 </div>
-                <div className="field"><label htmlFor="f-desc">{isMeme ? "The meme" : "What is it?"}</label><textarea id="f-desc" className="inp" rows={isMeme ? 3 : 4} maxLength={1000} value={f.description} onChange={set("description")} placeholder={isMeme ? "The joke in a sentence or two." : "What your project or agent does, in a few sentences."} /><span className="hint">Fixed forever at launch.</span></div>
+                <div className="field"><label htmlFor="f-desc">{toHolders ? "The meme" : "What is it?"}</label><textarea id="f-desc" className="inp" rows={toHolders ? 3 : 4} maxLength={1000} value={f.description} onChange={set("description")} placeholder={toHolders ? "The joke in a sentence or two." : "What your project or agent does, in a few sentences."} /><span className="hint">Fixed forever at launch.</span></div>
                 <div className="g2 grid" style={{ gap: 12 }}>
                   {LINK_FIELDS.map(([k, label]) => (
                     <div key={k} className="field"><label htmlFor={`f-${k}`}>{label}</label><input id={`f-${k}`} type="url" className="inp" value={f[k]} onChange={set(k)} placeholder={{ website: "https://", twitter: "https://x.com/…", telegram: "https://t.me/…", discord: "https://discord.gg/…" }[k]} /></div>
