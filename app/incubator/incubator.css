@@ -511,3 +511,13 @@
   .stockopt.on .stock-check{background:var(--brand);border-color:var(--brand);color:#0a0a0a}
   .stock-fine{margin-top:12px;font-size:.78rem;color:var(--fg-3)}
 }
+
+/* ---------- stock meme: swap link + "New" tag ---------- */
+.mm.inc{
+  .tpl-tag{position:absolute;top:12px;right:12px;font-size:.62rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--up);color:#06140c}
+  .stock-swap{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px;padding:12px 16px;border-radius:12px;border:1px dashed color-mix(in srgb,var(--brand) 60%,transparent);background:color-mix(in srgb,var(--brand) 8%,transparent);font-size:.9rem;color:var(--fg-2);transition:background .15s,border-color .15s}
+  .stock-swap:hover{border-style:solid;border-color:var(--brand);background:color-mix(in srgb,var(--brand) 14%,transparent)}
+  .stock-swap b{color:var(--fg)}
+  .stock-swap small{display:block;font-size:.74rem;color:var(--fg-3);margin-top:2px}
+  .stock-swap span:last-child{color:var(--brand);font-weight:700}
+}

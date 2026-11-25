@@ -18,10 +18,11 @@ import { launchedToken, prepareMontraLaunch } from "../../_lib/montraLaunch";
 type Template = "utility" | "meme" | "stock";
 type Step = "idle" | "switch" | "approve" | "check" | "upload" | "sign" | "confirm" | "done";
 const STEPS: [Step, string][] = [["switch", "Switch to Elysium"], ["approve", "Approve your dev buy"], ["check", "Check the launch terms on-chain"], ["upload", "Upload image + details"], ["sign", "Confirm in your wallet"], ["confirm", "Wait for Elysium to confirm"]];
-const TEMPLATES: { key: Template; icon: string; name: string; sub: string }[] = [
-  { key: "utility", icon: "🛠️", name: "Utility", sub: "Fees fund buybacks for your community" },
+const DEFAULT_TPL: Template = "stock";
+const TEMPLATES: { key: Template; icon: string; name: string; sub: string; tag?: string }[] = [
+  { key: "stock", icon: "📈", name: "Stock meme", sub: "Holders earn NVIDIA or Anthropic 3x", tag: "New" },
   { key: "meme", icon: "🐸", name: "Meme", sub: "Fees go to holders, plus a 24h push" },
-  { key: "stock", icon: "📈", name: "Stock meme", sub: "Holders earn NVIDIA or Anthropic 3x" },
+  { key: "utility", icon: "🛠️", name: "Utility", sub: "Fees fund buybacks for your community" },
 ];
 const LINK_FIELDS = [
   ["website", "Website", "Website must be an https:// link."],
@@ -46,7 +47,7 @@ function Launch() {
   const launchFee = useReadContract({ address: MONTRA_FACTORY, abi: LAUNCH_ABI, functionName: "launchFee", chainId: ELYSIUM.chainId }).data ?? BigInt(0);
 
   const startTpl = params.get("template");
-  const [tpl, setTpl] = useState<Template>(startTpl === "meme" || startTpl === "stock" ? startTpl : "utility");
+  const [tpl, setTpl] = useState<Template>(startTpl === "meme" || startTpl === "stock" || startTpl === "utility" ? startTpl : DEFAULT_TPL);
   const isMeme = tpl === "meme", isStock = tpl === "stock", toHolders = isMeme || isStock;
   const [stockAddr, setStockAddr] = useState<`0x${string}`>(STOCKS[0].address);
   const stock = STOCKS.find((x) => x.address === stockAddr) ?? STOCKS[0];
@@ -80,7 +81,7 @@ function Launch() {
     setTpl(k); setErr(""); setAck(false); setLaunched(null);
     setFeePct(k === "utility" ? DEFAULT_FEE_PCT : MEME.defaultFee);
     setF((s) => ({ ...s, firstBuy: k === "meme" ? MEME.defaultFirstBuy : k === "stock" ? "" : UTILITY_FIRST_BUY }));
-    router.replace(`/incubator/elysium/launch${k === "utility" ? "" : `?template=${k}`}`, { scroll: false });
+    router.replace(`/incubator/elysium/launch${k === DEFAULT_TPL ? "" : `?template=${k}`}`, { scroll: false });
   }
 
   const fees = toHolders ? MEME.fees.map((t) => ({ pct: t.pct, name: t.name, desc: isStock ? t.desc.replace("of every trade.", `of every trade, in $${stock.ticker}.`) : t.desc, rec: "recommended" in t && !!t.recommended }))
@@ -168,7 +169,7 @@ function Launch() {
         <div className="tplpick" role="group" aria-label="Template">
           {TEMPLATES.map((t) => (
             <button key={t.key} type="button" aria-pressed={tpl === t.key} className={`tplopt ${tpl === t.key ? "on" : ""}`} onClick={() => pickTemplate(t.key)} disabled={busy}>
-              <span className="tpl-ico" aria-hidden>{t.icon}</span><b>{t.name}</b><small>{t.sub}</small>
+              <span className="tpl-ico" aria-hidden>{t.icon}</span>{t.tag && <span className="tpl-tag">{t.tag}</span>}<b>{t.name}</b><small>{t.sub}</small>
             </button>
           ))}
         </div>
@@ -188,6 +189,10 @@ function Launch() {
                     </button>
                   ))}
                 </div>
+                <a className="stock-swap" href={`https://montramarkets.xyz/swap?to=${stock.address}`} target="_blank" rel="noopener noreferrer" style={{ ["--brand" as string]: stock.color }}
+                  onClick={() => { navigator.clipboard?.writeText(stock.address).then(() => toast(`${stock.company} 3x address copied: paste it under "You receive" on Montra`)).catch(() => {}); }}>
+                  <span>Swap HYPE → <b>{stock.company} 3x</b> on Montra<small>Copies the token address: paste it under &quot;You receive&quot;</small></span><span aria-hidden>↗</span>
+                </a>
                 <p className="stock-fine">100% of trading fees stream to holders in {stock.symbol}. 3x tokens move about 3× the stock&apos;s daily move and can drop fast. Not backed by shares, and not affiliated with NVIDIA or Anthropic.</p>
               </div>
             )}
@@ -207,8 +212,8 @@ function Launch() {
                     <input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(e) => setImg(e.target.files?.[0] ?? null)} />
                   </label>
                   <div style={{ display: "grid", gap: 12 }}>
-                    <div className="field"><label htmlFor="f-name">Name <span className="req">*</span></label><input id="f-name" className="inp" maxLength={32} value={f.name} onChange={set("name")} placeholder={toHolders ? "Wanted Level" : "Agent Smith"} /></div>
-                    <div className="field"><label htmlFor="f-symbol">Ticker <span className="req">*</span></label><input id="f-symbol" className="inp mono" maxLength={10} value={f.symbol} onChange={(e) => setF((s) => ({ ...s, symbol: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") }))} placeholder={toHolders ? "WANTED" : "SMITH"} /></div>
+                    <div className="field"><label htmlFor="f-name">Name <span className="req">*</span></label><input id="f-name" className="inp" maxLength={32} value={f.name} onChange={set("name")} placeholder="Token name" /></div>
+                    <div className="field"><label htmlFor="f-symbol">Ticker <span className="req">*</span></label><input id="f-symbol" className="inp mono" maxLength={10} value={f.symbol} onChange={(e) => setF((s) => ({ ...s, symbol: e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "") }))} placeholder="TICKER" /></div>
                   </div>
                 </div>
                 <div className="field"><label htmlFor="f-desc">{toHolders ? "The meme" : "What is it?"}</label><textarea id="f-desc" className="inp" rows={toHolders ? 3 : 4} maxLength={1000} value={f.description} onChange={set("description")} placeholder={toHolders ? "The joke in a sentence or two." : "What your project or agent does, in a few sentences."} /><span className="hint">Fixed forever at launch.</span></div>
@@ -236,7 +241,7 @@ function Launch() {
                 {isStock && <div className="field"><label htmlFor="f-buy">Dev buy ({stock.symbol}) · recommended</label>
                   <div className="chips" role="group" aria-label="Dev buy" style={{ marginBottom: 8 }}>{STOCK_BUY_USD.map((u) => { const amt = usdPreset(u); const pc = amt ? estPct(Number(amt)) : null; return <button key={u} type="button" disabled={!amt} aria-pressed={!!amt && f.firstBuy === amt} className={`chip ${amt && f.firstBuy === amt ? "on" : ""}`} onClick={() => setF((s) => ({ ...s, firstBuy: amt }))}>${u}{pc != null ? ` · ~${fmtPct(pc)}%` : ""}</button>; })}</div>
                   <input id="f-buy" className="inp mono" value={f.firstBuy} onChange={set("firstBuy")} inputMode="decimal" placeholder={`Custom amount of ${stock.symbol}`} />
-                  <span className="hint">Same transaction, before anyone else, and you earn {stock.ticker} on your bag too.{est != null ? ` About ${fmtPct(est)}% of supply.` : ""}{pairBal != null ? ` You hold ${Number(formatEther(pairBal)).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${stock.symbol}.` : ""} <a href="https://montramarkets.xyz/swap" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>Get {stock.symbol} ↗</a></span>
+                  <span className="hint">Same transaction, before anyone else, and you earn {stock.ticker} on your bag too.{est != null ? ` About ${fmtPct(est)}% of supply.` : ""}{pairBal != null ? ` You hold ${Number(formatEther(pairBal)).toLocaleString(undefined, { maximumFractionDigits: 2 })} ${stock.symbol}.` : ""} <a href={`https://montramarkets.xyz/swap?to=${stock.address}`} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }} onClick={() => { navigator.clipboard?.writeText(stock.address).then(() => toast(`${stock.company} 3x address copied: paste it under "You receive" on Montra`)).catch(() => {}); }}>Swap HYPE for it ↗</a></span>
                 </div>}
                 {!isStock && <div className="field"><label htmlFor="f-buy">Dev buy (HYPE)</label>
                   {isMeme && <div className="chips" role="group" aria-label="Dev buy" style={{ marginBottom: 8 }}>{MEME.firstBuyPresets.map((p) => <button key={p} type="button" aria-pressed={f.firstBuy === p} className={`chip ${f.firstBuy === p ? "on" : ""}`} onClick={() => setF((s) => ({ ...s, firstBuy: p }))}>{p} HYPE{estPct(Number(p)) != null ? ` · ~${fmtPct(estPct(Number(p))!)}%` : ""}</button>)}</div>}
